@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ed8c1435b7eab154cbd74b2e4250bcde
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190818
+  packageName: 'SummonBox: Prototype Enviroment Asset Pack - Standard RP'
+  packageVersion: 1.0
+  assetPath: Assets/SBPrototypeEnvironment_SRP/Materials/Terrain/GroundLayer6.terrainlayer
+  uploadId: 421463
