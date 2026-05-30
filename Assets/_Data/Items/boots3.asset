@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c915bcedf3985ca4f8bda30f7aafac00, type: 3}
+  m_Name: boots3
+  m_EditorClassIdentifier: 
+  iId: 7
+  iIcon: {fileID: 21300000, guid: 1477b98c9db06a9419e73e4eb96e25c1, type: 3}
+  iName: "\uC720\uB2C8\uD06C\uC7A5\uD654"
+  iStatDescription: "\uC774\uB3D9\uC18D\uB3C4 + 7"
+  iDescription: "\uC7A5\uD654\uC0BC"
+  iRank: 2
+  iSynergy: 0100000002000000
+  iEffect: 0
+  iPrice: 800
+  iBaseStat:
+    maxHp: 20
+    maxMp: 0
+    mpRegen: 0
+    maxDashCount: 0
+    dashRegen: 0
+    dashDistance: 0
+    attackDamage: 0
+    attackRange: 0
+    attackSpeed: 5
+    projectileCount: 0
+    projectileSpeed: 0
+    moveSpeed: 8
+    criticalRate: 0
+    criticalDamage: 0
+    shield: 0
+    bonusExpRate: 0
+    bonusGoldRate: 0
+    luck: 0
+    cooldownReduction: 0
+    reviveCount: 0
+    startItemCount: 0
+  iBonusStat:
+    maxHp: 0
+    maxMp: 0
+    mpRegen: 0
+    maxDashCount: 0
+    dashRegen: 0
+    dashDistance: 0
+    attackDamage: 0
+    attackRange: 0
+    attackSpeed: 0
+    projectileCount: 0
+    projectileSpeed: 0
+    moveSpeed: 2
+    criticalRate: 0
+    criticalDamage: 0
+    shield: 0
+    bonusExpRate: 0
+    bonusGoldRate: 0
+    luck: 0
+    cooldownReduction: 0
+    reviveCount: 0
+    startItemCount: 0
+  iExtraAttackDamage: 0
+  iExtraRange: 0
+  iExtraAttackRange: 0
+  iExtraAttackSpeed: 0
+  iExtraProjectileSpeed: 0

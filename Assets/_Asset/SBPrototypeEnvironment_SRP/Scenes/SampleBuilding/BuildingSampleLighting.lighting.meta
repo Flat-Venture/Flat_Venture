@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 93b4b8827f4ca974f8d81a1c5a5d3f4a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190818
+  packageName: 'SummonBox: Prototype Enviroment Asset Pack - Standard RP'
+  packageVersion: 1.0
+  assetPath: Assets/SBPrototypeEnvironment_SRP/Scenes/SampleBuilding/BuildingSampleLighting.lighting
+  uploadId: 421463

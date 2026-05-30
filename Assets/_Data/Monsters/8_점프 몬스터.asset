@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08bd4ad4ec8022e429577107dd1e2dd9, type: 3}
+  m_Name: "8_\uC810\uD504 \uBAAC\uC2A4\uD130"
+  m_EditorClassIdentifier: 
+  monsterRank: 0
+  mId: 8
+  monsterName: "\uAE40\uD604\uC218"
+  maxHp: 50
+  attackDamage: 35
+  attackRange: 10
+  attackSpeed: 1.2
+  projectileCount: 0
+  projectileSpeed: 0
+  moveSpeed: 0
+  dropGold: 10
+  dropExp: 5
+  shield: 0
+  mosterPrefab: {fileID: 2305738969686351384, guid: 813c4f2cee4ddb445973c50ae17f84ec, type: 3}
+  stunGauge: 0

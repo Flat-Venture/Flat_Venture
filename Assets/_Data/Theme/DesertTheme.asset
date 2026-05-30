@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f28eb5509c18448a39bf819bb33add, type: 3}
+  m_Name: DesertTheme
+  m_EditorClassIdentifier: 
+  theme: 0
+  floorMaterial: {fileID: 2100000, guid: deeb7b716b0268342a77eb4cadd204de, type: 2}
+  themeProps:
+  - {fileID: 175704, guid: fb9f189dcf5d2ad4aad003a8a44b136d, type: 3}
+  - {fileID: 127060, guid: f149d460950e2ce478841483a0926f2a, type: 3}
+  - {fileID: 143784, guid: 5d8a4c5c2390fc54e96a652c3eeaf313, type: 3}
+  - {fileID: 110776, guid: 63ff2386a1262d64f99de6e3e1183874, type: 3}
+  - {fileID: 178436, guid: 587331bb58ede6149bd7d31473a36202, type: 3}
+  - {fileID: 145164, guid: 8b8681c086a094348955216d4ef3cf0f, type: 3}
+  - {fileID: 163980, guid: 2fb6f5d47657319408dbd4f3e8412b4c, type: 3}
+  - {fileID: 145430, guid: 82f6882977329724ca4b934e09af87fc, type: 3}
+  propSpawnPoints:
+  - {fileID: 402682, guid: fb9f189dcf5d2ad4aad003a8a44b136d, type: 3}
+  - {fileID: 421428, guid: f149d460950e2ce478841483a0926f2a, type: 3}
+  - {fileID: 400094, guid: 5d8a4c5c2390fc54e96a652c3eeaf313, type: 3}
+  - {fileID: 490634, guid: 63ff2386a1262d64f99de6e3e1183874, type: 3}
+  - {fileID: 404184, guid: 587331bb58ede6149bd7d31473a36202, type: 3}
+  - {fileID: 447314, guid: 8b8681c086a094348955216d4ef3cf0f, type: 3}
+  - {fileID: 433264, guid: 2fb6f5d47657319408dbd4f3e8412b4c, type: 3}
+  - {fileID: 456744, guid: 82f6882977329724ca4b934e09af87fc, type: 3}

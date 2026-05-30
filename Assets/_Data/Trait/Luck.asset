@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ba45bfe08ad304698cbe728d89ca4d, type: 3}
+  m_Name: Luck
+  m_EditorClassIdentifier: 
+  traitType: 2
+  traitName: "\uD589\uC6B4"
+  traitColor: {r: 0, g: 1, b: 0, a: 1}
+  icon: {fileID: 0}
+  statsPerPoint:
+    maxHp: 0
+    maxMp: 0
+    mpRegen: 0
+    maxDashCount: 0
+    dashRegen: 0
+    dashDistance: 0
+    attackDamage: 0
+    attackRange: 0
+    attackSpeed: 0
+    projectileCount: 0
+    projectileSpeed: 0
+    moveSpeed: 0
+    criticalRate: 0
+    criticalDamage: 0
+    shield: 0
+    bonusExpRate: 0
+    bonusGoldRate: 0
+    luck: 2
+    cooldownReduction: 0
+    reviveCount: 0
+    startItemCount: 0
+  bonusTrait:
+  - requiredPoints: 5
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 0
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0.1
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+    bonusDescription: "\uACBD\uD5D8\uCE58 \uCD94\uAC00 \uD68D\uB4DD\uB7C9 + 10%"
+  - requiredPoints: 10
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 0
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0.1
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+    bonusDescription: "\uACE8\uB4DC \uCD94\uAC00 \uD68D\uB4DD\uB7C9 + 10%"
+  - requiredPoints: 20
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 0
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 1
+    bonusDescription: "\uC2DC\uC791 \uC544\uC774\uD15C + 1"

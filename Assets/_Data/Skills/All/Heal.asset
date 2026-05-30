@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963bd89e6b715304894ae9472e81563d, type: 3}
+  m_Name: Heal
+  m_EditorClassIdentifier: 
+  skillName: Heal
+  icon: {fileID: 21300000, guid: 8c859ca448b515445a236cc94944f09c, type: 3}
+  cooldown: 5
+  desc: "\uCCB4\uB825 \uD68C\uBCF5"
+  baseHealRatio: 0.2
+  healRatioPerLevel: 0.05

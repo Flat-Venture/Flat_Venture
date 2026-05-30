@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 405e37174235d304db9493af483fb314
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 190818
+  packageName: 'SummonBox: Prototype Enviroment Asset Pack - Standard RP'
+  packageVersion: 1.0
+  assetPath: Assets/SBPrototypeEnvironment_SRP/Shader/TriplanarCliff.shadergraph
+  uploadId: 421463

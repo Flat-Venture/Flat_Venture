@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85887ad9d0aae434bb01525b6ac77ef6, type: 3}
+  m_Name: ArcherBase
+  m_EditorClassIdentifier: 
+  className: Archer
+  classSkills:
+  - {fileID: 11400000, guid: b0f2f1b152e95b04ab1b09db0b1b3811, type: 2}
+  - {fileID: 11400000, guid: d573a67e9ccb70f4e9cec17f8796cd5e, type: 2}

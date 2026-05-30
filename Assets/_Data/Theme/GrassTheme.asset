@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f28eb5509c18448a39bf819bb33add, type: 3}
+  m_Name: GrassTheme
+  m_EditorClassIdentifier: 
+  theme: 1
+  floorMaterial: {fileID: 2100000, guid: abc35906bdef2d048825dbc729a8cab0, type: 2}
+  themeProps:
+  - {fileID: 192044, guid: 19682540d8a014522a319b1cf788aee2, type: 3}
+  - {fileID: 191266, guid: c44bd9bdc114d4a60932c0087d9d1732, type: 3}
+  - {fileID: 188006, guid: c6b7fb383a3534b039692b5485b6e739, type: 3}
+  - {fileID: 137650, guid: 826b6a0b570e8460990010fa615b5a2a, type: 3}
+  propSpawnPoints:
+  - {fileID: 471828, guid: 19682540d8a014522a319b1cf788aee2, type: 3}
+  - {fileID: 405256, guid: c44bd9bdc114d4a60932c0087d9d1732, type: 3}
+  - {fileID: 481554, guid: c6b7fb383a3534b039692b5485b6e739, type: 3}
+  - {fileID: 413218, guid: 826b6a0b570e8460990010fa615b5a2a, type: 3}

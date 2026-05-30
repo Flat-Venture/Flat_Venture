@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0e9de300b8018b44bd8a738fe081a12, type: 3}
+  m_Name: ItemRankProbability
+  m_EditorClassIdentifier: 
+  rankWeights:
+  - rank: 0
+    weight: 385
+  - rank: 1
+    weight: 85
+  - rank: 2
+    weight: 30
+  - rank: 3
+    weight: 10

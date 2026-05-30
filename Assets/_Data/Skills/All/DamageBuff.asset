@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 797815e9ae042e845a1451e4d76d9294, type: 3}
+  m_Name: DamageBuff
+  m_EditorClassIdentifier: 
+  skillName: Damage Buff
+  icon: {fileID: 21300000, guid: 30a623dd3dffd2e40aa9c45e379d01ad, type: 3}
+  cooldown: 5
+  desc: "\uACF5\uACA9\uB825 \uC99D\uAC00 \uBC84\uD504"
+  baseMultiplier: 1.2
+  multiplierPerLevel: 0.1
+  duration: 5

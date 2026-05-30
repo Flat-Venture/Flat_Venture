@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f28eb5509c18448a39bf819bb33add, type: 3}
+  m_Name: LavaTheme
+  m_EditorClassIdentifier: 
+  theme: 2
+  floorMaterial: {fileID: 2100000, guid: 9df0b241e6303e64eb99bcf12ae9b642, type: 2}
+  themeProps: []
+  propSpawnPoints: []

@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed451b19c7608f441b0c843e4d21a9c8, type: 3}
+  m_Name: Archer
+  m_EditorClassIdentifier: 
+  classType: 2
+  classImage: {fileID: 0}
+  cLevel: 0
+  currentExp: 0
+  maxExp: 0
+  classPoints: 0
+  cBaseStat:
+    maxHp: 500
+    maxMp: 50
+    mpRegen: 1
+    maxDashCount: 1
+    dashRegen: 1
+    dashDistance: 4
+    attackDamage: 50
+    attackRange: 20
+    attackSpeed: 2
+    projectileCount: 1
+    projectileSpeed: 20
+    moveSpeed: 15
+    criticalRate: 0
+    criticalDamage: 0
+    shield: 0
+    bonusExpRate: 1
+    bonusGoldRate: 1
+    luck: 0
+    cooldownReduction: 0
+    reviveCount: 0
+    startItemCount: 0
+  cTraitStat:
+    maxHp: 0
+    maxMp: 0
+    mpRegen: 0
+    maxDashCount: 0
+    dashRegen: 0
+    dashDistance: 0
+    attackDamage: 0
+    attackRange: 0
+    attackSpeed: 0
+    projectileCount: 0
+    projectileSpeed: 0
+    moveSpeed: 0
+    criticalRate: 0
+    criticalDamage: 0
+    shield: 0
+    bonusExpRate: 0
+    bonusGoldRate: 0
+    luck: 0
+    cooldownReduction: 0
+    reviveCount: 0
+    startItemCount: 0
+  classSkills: []
+  hpPerLevel: 0
+  mpPerLevel: 0
+  attackDamagePerLevel: 0
+  criticalRatePerLevel: 0
+  criticalDamagePerLevel: 0
+  classLogic: {fileID: 11400000, guid: 390be119dde920b46a0fe5e86c811556, type: 2}

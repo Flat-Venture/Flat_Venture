@@ -1,0 +1,182 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d8cbdba176f58b41b43eb36d1c18c02, type: 3}
+  m_Name: Fire
+  m_EditorClassIdentifier: 
+  synergyIcon: {fileID: 21300000, guid: 054cb76ae86f6594fa5efc73c0d2a8d3, type: 3}
+  synergyType: 1
+  synergyName: "\uBD88"
+  synergyDescription: "\uC5EC\uB7EC\uAC1C \uC788\uC73C\uBA74 \uACF5\uACA9\uB825\uC774
+    \uC62C\uB77C\uAC04\uB300\uC694"
+  maxLevel: 8
+  levels:
+  - requiredLines: 1
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 2
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 2
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 4
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 3
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 6
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 4
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 8
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 5
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 10
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 6
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 12
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
+  - requiredLines: 8
+    bonusStats:
+      maxHp: 0
+      maxMp: 0
+      mpRegen: 0
+      maxDashCount: 0
+      dashRegen: 0
+      dashDistance: 0
+      attackDamage: 30
+      attackRange: 0
+      attackSpeed: 0
+      projectileCount: 0
+      projectileSpeed: 0
+      moveSpeed: 0
+      criticalRate: 0
+      criticalDamage: 0
+      shield: 0
+      bonusExpRate: 0
+      bonusGoldRate: 0
+      luck: 0
+      cooldownReduction: 0
+      reviveCount: 0
+      startItemCount: 0
