@@ -1,0 +1,182 @@
+using System.IO;
+using FlatVenture.NUH.Player;
+using FlatVenture.NUH.Player.Data;
+using FlatVenture.NUH.Player.Input;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+namespace FlatVenture.NUH.Editor
+{
+    /// <summary>
+    /// 의현 담당 1단계 테스트 에셋과 씬을 재현 가능하게 생성합니다.
+    /// </summary>
+    public static class PlayerBaseTestSceneBuilder
+    {
+        private const string SceneDirectory = "Assets/Scenes/NUH";
+        private const string ScenePath = SceneDirectory + "/Test_01_PlayerBase.unity";
+        private const string DataDirectory = "Assets/NUH/Data/Player";
+        private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
+        private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
+
+        [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
+        public static void BuildFromMenu()
+        {
+            Build();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_01_PlayerBase 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void Build()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(DataDirectory);
+
+            PlayerStatsData stats = LoadOrCreateStats();
+            InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
+            if (inputActions == null)
+            {
+                throw new FileNotFoundException("공유 InputActionAsset을 찾을 수 없습니다.", InputActionsPath);
+            }
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            scene.name = "Test_01_PlayerBase";
+
+            CreateEnvironment();
+            CreatePlayer(stats, inputActions);
+            CreateCamera();
+            CreateLight();
+            CreateTestUi();
+
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 1단계 테스트 씬 생성 완료: {ScenePath}");
+        }
+
+        private static PlayerStatsData LoadOrCreateStats()
+        {
+            PlayerStatsData stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(StatsPath);
+            if (stats != null)
+            {
+                return stats;
+            }
+
+            stats = ScriptableObject.CreateInstance<PlayerStatsData>();
+            AssetDatabase.CreateAsset(stats, StatsPath);
+            return stats;
+        }
+
+        private static void CreateEnvironment()
+        {
+            GameObject environment = new GameObject("Environment_Test");
+
+            GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floor.name = "Floor_01";
+            floor.transform.SetParent(environment.transform);
+            floor.transform.position = new Vector3(0f, -0.25f, 0f);
+            floor.transform.localScale = new Vector3(20f, 0.5f, 20f);
+
+            CreateWall(environment.transform, "Wall_01", new Vector3(0f, 1f, 10f), new Vector3(20f, 2f, 0.5f));
+            CreateWall(environment.transform, "Wall_02", new Vector3(0f, 1f, -10f), new Vector3(20f, 2f, 0.5f));
+            CreateWall(environment.transform, "Wall_03", new Vector3(10f, 1f, 0f), new Vector3(0.5f, 2f, 20f));
+            CreateWall(environment.transform, "Wall_04", new Vector3(-10f, 1f, 0f), new Vector3(0.5f, 2f, 20f));
+        }
+
+        private static void CreateWall(Transform parent, string name, Vector3 position, Vector3 scale)
+        {
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = name;
+            wall.transform.SetParent(parent);
+            wall.transform.position = position;
+            wall.transform.localScale = scale;
+        }
+
+        private static void CreatePlayer(PlayerStatsData stats, InputActionAsset inputActions)
+        {
+            GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            player.name = "Player_Warrior_Test";
+            player.transform.position = new Vector3(0f, 1f, 0f);
+
+            Collider primitiveCollider = player.GetComponent<Collider>();
+            if (primitiveCollider != null)
+            {
+                Object.DestroyImmediate(primitiveCollider);
+            }
+
+            CharacterController controller = player.AddComponent<CharacterController>();
+            controller.height = 2f;
+            controller.radius = 0.5f;
+            controller.center = Vector3.zero;
+            controller.stepOffset = 0.3f;
+            controller.slopeLimit = 45f;
+
+            PlayerInputReader inputReader = player.AddComponent<PlayerInputReader>();
+            SerializedObject inputReaderObject = new SerializedObject(inputReader);
+            inputReaderObject.FindProperty("inputActions").objectReferenceValue = inputActions;
+            inputReaderObject.ApplyModifiedPropertiesWithoutUndo();
+
+            PlayerController playerController = player.AddComponent<PlayerController>();
+            SerializedObject controllerObject = new SerializedObject(playerController);
+            controllerObject.FindProperty("baseStats").objectReferenceValue = stats;
+            controllerObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateCamera()
+        {
+            GameObject cameraObject = new GameObject("Main Camera");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            cameraObject.tag = "MainCamera";
+            cameraObject.transform.position = new Vector3(0f, 10f, -10f);
+            cameraObject.transform.rotation = Quaternion.Euler(45f, 0f, 0f);
+            camera.clearFlags = CameraClearFlags.Skybox;
+        }
+
+        private static void CreateLight()
+        {
+            GameObject lightObject = new GameObject("Directional Light");
+            Light light = lightObject.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.2f;
+            lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+        }
+
+        private static void CreateTestUi()
+        {
+            GameObject canvasObject = new GameObject("Pnl_TestUI", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            Canvas canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+            GameObject textObject = new GameObject("Txt_TestGuide", typeof(RectTransform), typeof(Text));
+            textObject.transform.SetParent(canvasObject.transform, false);
+            RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = new Vector2(0f, 1f);
+            rectTransform.anchorMax = new Vector2(0f, 1f);
+            rectTransform.pivot = new Vector2(0f, 1f);
+            rectTransform.anchoredPosition = new Vector2(24f, -24f);
+            rectTransform.sizeDelta = new Vector2(800f, 120f);
+
+            Text text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 24;
+            text.color = Color.white;
+            text.alignment = TextAnchor.UpperLeft;
+            text.text = "Test_01_PlayerBase\nWASD: 이동\n1단계: 플레이어 데이터 / 런타임 상태 / 입력 구조";
+        }
+
+        private static void EnsureDirectory(string assetPath)
+        {
+            string systemPath = Path.GetFullPath(assetPath);
+            if (!Directory.Exists(systemPath))
+            {
+                Directory.CreateDirectory(systemPath);
+            }
+        }
+    }
+}

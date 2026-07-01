@@ -1,0 +1,8 @@
+{
+  "name": "FlatVenture.NUH.Runtime",
+  "rootNamespace": "FlatVenture.NUH",
+  "references": [
+    "Unity.InputSystem"
+  ],
+  "autoReferenced": true
+}
