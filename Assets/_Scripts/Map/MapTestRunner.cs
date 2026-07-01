@@ -20,7 +20,7 @@ public class MapTestRunner : MonoBehaviour
         presenter = new MapPresenter(model, uiManager);
 
         //임시 시드로 데이터 생성
-        int testSeed = 100;
+        int testSeed = 12345;
         var mapData = generator.GenerateMap(testSeed);
 
         //model에 생성된 데이터 저장
@@ -29,7 +29,7 @@ public class MapTestRunner : MonoBehaviour
         //presenter를 통해 view에 데이터 전달 및 랜더링 초기화
         presenter.InitializeMapRendering();
 
-        //테스트를 위해ㅔ 맵을 강제로 오픈
+        //테스트를 위해 맵을 강제로 오픈
         presenter.OpenMapForSelection();
 
         Debug.Log($"테스트 맵 랜더링 완료. 시드: {testSeed}");

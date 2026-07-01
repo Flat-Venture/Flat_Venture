@@ -22,14 +22,66 @@ public class MapPresenter
     {
         //Model에서 맵 데이터를 가져와 View에 전달
         view.DrawMap(model.EntireMap, OnNodeClicked);
+
+        //최초 생성 직후 시각적 상태 업데이트
+        UpdateMapState();
     }
 
     private void OnNodeClicked(int nodeID)
     {
-        Debug.Log($"Node clicked: {nodeID}");
+        //플레이어의 현재 위치 노드를 가져옴
+        MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
 
-        //이동이 유효하다면 던전으로 진입 상태 변경 및 뷰 닫기
-        //EnterNode();
+        if (currentNode == null) return;
+
+        //클릭한 노드가 '현재 위치에서 선으로 이어진 다음 노드'인지 확인
+        bool isValidMove = false;
+        MapNode targetNode = null;
+
+        for (int i = 0; i < currentNode.NextNodes.Count; i++)
+        {
+            if (currentNode.NextNodes[i].NodeID == nodeID)
+            {
+                isValidMove = true;
+                targetNode = currentNode.NextNodes[i];
+                break;
+            }
+        }
+
+        //결과 처리
+        if (isValidMove)
+        {
+            Debug.Log($"<color=green>[이동 승인]</color> 플레이어가 {currentNode.NodeID}번에서 {nodeID}번({targetNode.RoomType}) 노드로 전진합니다.");
+
+            //현재 위치를 지안 노드 목록에 추가
+            model.VisitedNodeIDs.Add(model.CurrentNodeID);
+
+            //모델의 현재 위치 상태를 다음 방으로 갱신
+            model.CurrentNodeID = nodeID;
+
+            //갱신된 상태를 바탕으로 맵 전체 시작적 피드백 업데이트
+            UpdateMapState();
+
+            //TODO: 실제 던전 씬 로드, 몬스터 스폰 등 게임 시스템 호출
+            EnterNode();
+        }
+
+        else
+        {
+            //이동 실패 (연결되지 않은 방을 눌렀거나, 이전 층을 누른 경우)
+            Debug.LogWarning($"<color=red>[이동 불가]</color> {nodeID}번 노드는 현재 위치({currentNode.NodeID}번)에서 갈 수 없는 경로입니다.");
+
+            // TODO: 실패 삑- 소리 재생, 화면 흔들림 효과 등 View에 요청
+        }
+    }
+
+    /// <summary>
+    /// 현재 모델의 위치 정보를 기반으로 뷰에게 상태 업데이트를 지시
+    /// </summary>
+    private void UpdateMapState()
+    {
+        MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
+        view.UpdateNodeVisuals(model.CurrentNodeID, model.VisitedNodeIDs, currentNode?.NextNodes);
     }
 
     /// <summary>

@@ -212,8 +212,11 @@ public class MapGenerator
             {
                 MapNode node = nodesInFloor[i];
 
+                //0층: 게임 시작 지점
+                if (floor == 0) node.RoomType = RoomType.Start;
+
                 //1층: 게임의 시작은 무조건 일반 몬스터 전투로 배치하여 빌드업 시작
-                if (floor == 0) node.RoomType = RoomType.Normal;
+                else if (floor == 1) node.RoomType = RoomType.Normal;
 
                 //마지막 층 (8층, index 7): 각 챕터(막) 보스 방 고정
                 else if (floor == map.Count - 1) node.RoomType = RoomType.Boss;
