@@ -8,9 +8,9 @@ using UnityEngine;
 /// </summary>
 public class MapGenerator
 {
-    private const int MAX_FLOOR = 8;        //세로 노드 수
+    private const int MAX_FLOOR = 9;        //세로 노드 수
     private const int MAX_WIDTH = 6;        //가로 최대 노드 수
-    private const int MAX_START_NODES = 4;  //시작 최대 노드 수
+    private const int MAX_START_NODES = 3;  //시작 최대 노드 수
 
     public int CurrentSeed { get; private set; }
 
@@ -31,17 +31,48 @@ public class MapGenerator
             List<MapNode> currentFloorNode = new List<MapNode>();
 
             //1층은 시작 노드 1~4개 랜덤 생성, 나머지는 1~6개 사이로 무작위 생성 로직 적용
-            int nodeCount = (floor == 0) ? mapRandom.Next(2, MAX_START_NODES + 1) : mapRandom.Next(2, MAX_WIDTH + 1);
+            int nodeCount;
+
+            //0층: 플레이어 최초 시작점
+            if (floor == 0) nodeCount = 1;
+
+            //1층: 시작점에서 뻗어나가는 첫 선택지 (2~4개)
+            else if (floor == 1) nodeCount = mapRandom.Next(2, MAX_START_NODES + 1);
+
+            //8층: 보스 방
+            else if (floor == MAX_FLOOR - 1) nodeCount = 1;
+
+            //나머지 층: 일반 맵 진행 (1~6개)
+            else nodeCount = mapRandom.Next(2, MAX_WIDTH + 1);
 
             for (int i = 0; i < nodeCount; i++)
             {
                 MapNode newNode = new MapNode(globalNodeID++, floor);
-                
-                //노드의 UI 가로 위치 비율 설정 (충돌 방지를 위한 균등 분할 기반 미세 조정)
-                newNode.NormalizedX = (i + 1.0f) / (nodeCount + 1.0f) + (float)(mapRandom.NextDouble() * 0.1f - 0.05f);
-                newNode.NormalizedY = (float)floor / (MAX_FLOOR - 1);
+
+                //시작 노드는 맵의 맨 아래(Y=0), 정중앙(X=0.5)에 고정 배치
+                if (floor == 0)
+                {
+                    newNode.NormalizedX = 0.5f;
+                    newNode.NormalizedY = 0.0f;
+                }
+
+                //보스 방
+                else if (floor == MAX_FLOOR - 1)
+                {
+                    newNode.NormalizedX = 0.5f;
+                    newNode.NormalizedY = 1.0f;
+                }
+
+                else
+                {
+                    //노드의 UI 가로 위치 비율 설정 (충돌 방지를 위한 균등 분할 기반 미세 조정)
+                    newNode.NormalizedX = (i + 1.0f) / (nodeCount + 1.0f) + (float)(mapRandom.NextDouble() * 0.04f - 0.02f);
+                    newNode.NormalizedY = (float)floor / (MAX_FLOOR - 1);
+                }
+
                 currentFloorNode.Add(newNode);
             }
+
             entireMap.Add(currentFloorNode);
         }
 
@@ -64,67 +95,101 @@ public class MapGenerator
             List<MapNode> currentNodes = map[floor];
             List<MapNode> nextNodes = map[floor + 1];
 
-            //현재 층의 모든 노드에서 다음 층으로 최소 1개 이상의 길을 연결
-            for (int i = 0; i < currentNodes.Count; i++)
+            //X좌표 기준 오름차순 정렬
+            currentNodes.Sort((a, b) => a.NormalizedX.CompareTo(b.NormalizedX));
+            nextNodes.Sort((a, b) => a.NormalizedX.CompareTo(b.NormalizedX));
+
+            int currentCount = currentNodes.Count;
+            int nextCount = nextNodes.Count;
+
+            //연결 개수를 엄격하게 추적하기 위한 카운터 배열
+            int[] outCount = new int[currentCount];
+            int[] inCount = new int[nextCount];
+
+            //다음 층이 보스 방(마지막 층)인지 확인
+            bool isBossLayer = (floor == map.Count - 2);
+
+            //1:1 비례 뼈대 생성
+            if (currentCount <= nextCount)
             {
-                MapNode currentNode = currentNodes[i];
-                MapNode targetNode = GetRandomClosestNode(currentNode, nextNodes, mapRandom);
-                currentNode.AddNextNode(targetNode);
+                //윗층이 더 많거나 같으면: 윗층 노드들에게 아랫층 부모를 공평하게 할당
+                for (int j = 0; j < nextCount; j++)
+                {
+                    int i = j * currentCount / nextCount;
+                    AddEdge(i, j, currentNodes, nextNodes, outCount, inCount);
+                }
             }
 
-            //고립 방지: 다음 층의 노드 중 들어오는 연결(Incoming)이 없는 노드를 찾아 반드시 연결
-            for (int i = 0; i < nextNodes.Count; i++)
+            else
             {
-                MapNode nextNode = nextNodes[i];
-                bool hasIncoming = false;
-
-                for (int j = 0; j < currentNodes.Count; j++)
+                //아랫층이 더 많으면: 아랫층 노드들에게 윗층 자식을 공평하게 할당
+                for (int i = 0; i < currentCount; i++)
                 {
-                    if (currentNodes[j].NextNodes.Contains(nextNode))
-                    {
-                        hasIncoming = true;
-                        break;
-                    }
+                    int j = i * nextCount / currentCount;
+                    AddEdge(i, j, currentNodes, nextNodes, outCount, inCount);
                 }
+            }
 
-                //들어오는 길이 없다면, 이전 층의 노드 중 가장 가까운 것을 찾아 강제로 연결
-                if (hasIncoming)
+            //맵을 다채롭게 만들기 위해 2번 반복하며 여분의 선을 금
+            for (int step = 0; step < 2; step++)
+            {
+                for (int i = 0; i < currentCount; i++)
                 {
-                    MapNode sourceNode = GetRandomClosestNode(nextNode, currentNodes, mapRandom);
-                    sourceNode.AddNextNode(nextNode);
+                    //40% 확률로 새로운 갈래길 시도
+                    if (mapRandom.NextDouble() < 0.4f)
+                    {
+                        //선 교차를 막기 위해 연결 가능한 최소/최대 인덱스(Valid Range)를 동적으로 계산
+                        int minJ = 0;
+                        int maxJ = nextCount - 1;
+
+                        if (i > 0)
+                        {
+                            foreach (var target in currentNodes[i - 1].NextNodes)
+                            {
+                                int idx = nextNodes.IndexOf(target);
+                                if (idx > minJ) minJ = idx;
+                            }
+                        }
+
+                        if (i < currentCount - 1)
+                        {
+                            int tempMax = nextCount - 1;
+                            foreach (var target in currentNodes[i + 1].NextNodes)
+                            {
+                                int idx = nextNodes.IndexOf(target);
+                                if (idx < tempMax) tempMax = idx;
+                            }
+                            maxJ = tempMax;
+                        }
+
+                        //유효한 범위 내에서 무작위 타겟 선택
+                        if (minJ <= maxJ)
+                        {
+                            int targetJ = mapRandom.Next(minJ, maxJ + 1);
+
+                            //보내는 쪽 3개 미만 && (받는 쪽 3개 미만 OR 보스 방) 일 때만 연결 허용
+                            if (outCount[i] < 3 && (inCount[targetJ] < 3 || isBossLayer))
+                            {
+                                AddEdge(i, targetJ, currentNodes, nextNodes, outCount, inCount);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     /// <summary>
-    /// X 좌표를 기준으로 가장 가까운 거리에 있는 노드 후보군을 찾고 무작위로 하나를 반환
+    /// 중복 연결을 방지하고 카운트를 올려주는 헬퍼
     /// </summary>
-    private MapNode GetRandomClosestNode(MapNode sourceNode, List<MapNode> targetNodes, System.Random mapRandom)
+    private void AddEdge(int c, int n, List<MapNode> currentNodes, List<MapNode> nextNodes, int[] outCount, int[] inCount)
     {
-        float minDistance = float.MaxValue;
-        List<MapNode> closestNodes = new List<MapNode>();
-
-        //최적화: LINQ를 배제하고 O(N) 순회로 탐색하여 가비지 컬렉션(GC) 발생을 원천 차단
-        for (int i = 0; i < targetNodes.Count; i++)
+        if (!currentNodes[c].NextNodes.Contains(nextNodes[n]))
         {
-            float distance = Math.Abs(sourceNode.NormalizedX - targetNodes[i].NormalizedX);
-
-            //새로운 최소 거리를 갱신한 경우
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                closestNodes.Clear();
-                closestNodes.Add(targetNodes[i]);
-            }
-
-            //기존 최소 거리와 비슷하게 가까운 경우(오차 범위 내) 후보군에 추가
-            else if (distance < minDistance + 0.15f) closestNodes.Add(targetNodes[i]);
+            currentNodes[c].AddNextNode(nextNodes[n]);
+            outCount[c]++;
+            inCount[n]++;
         }
-
-        //후보군 중 무작휘 선택을 통해 경로가 예층 불가능하게 꼬이는 것을 구현
-        int randomIndex = mapRandom.Next(0, closestNodes.Count);
-        return closestNodes[randomIndex];
     }
 
     /// <summary>
@@ -189,5 +254,93 @@ public class MapGenerator
         }
 
         return selectedType;
+    }
+
+    /// <summary>
+    /// 각 층의 노드들을 다음 층과 연결
+    /// </summary>
+    private void ConnectNode(List<List<MapNode>> map, System.Random mapRandom)
+    {
+        for (int floor = 0; floor < map.Count - 1; floor++)
+        {
+            List<MapNode> currentNodes = map[floor];
+            List<MapNode> nextNodes = map[floor + 1];
+
+            //노드 꼬임 방지를 위해 각 층의 노드들을 X좌표 기준으로 오름차순 정렬
+            currentNodes.Sort((a, b) => a.NormalizedX.CompareTo(b.NormalizedX));
+            nextNodes.Sort((a, b) => a.NormalizedX.CompareTo(b.NormalizedX));
+
+            //현재 노드보다 오른쪽에 있는 노드는 현재 노드가 연결된 다음 층 노드보다 왼쪽에 있는 노드와 연결할 수 없음
+            int nextNodeStartIndex = 0;
+
+            //현재 층을 순회하며 다음 층으로 길을 염
+            for (int i = 0; i < currentNodes.Count; i++)
+            {
+                MapNode currentNode = currentNodes[i];
+
+                //현재 노드에더 다음 층으로 뻗어나갈 길의 개수를 결정
+                int connectionCount = mapRandom.Next(1, 3); //1~2개 연결
+
+                for (int j = 0; j < connectionCount; j++)
+                {
+                    //교차 방지: 항상 이전 노드가 연결했던 인덱스 이상만 연결
+                    int targetIndex = nextNodeStartIndex + mapRandom.Next(0, 2);
+
+                    //인덱스가 다음 층 녿드의 최대 개수를 넘지 않도로 제한
+                    if (targetIndex >= nextNodes.Count) targetIndex = nextNodes.Count - 1;
+
+                    MapNode targetNode = nextNodes[targetIndex];
+                    currentNode.AddNextNode(targetNode);
+
+                    //다음 노드는 최소한 현재 타겟 노드와 같은 위치거나 그 오른쪽과 연결되어 있어야 함
+                    nextNodeStartIndex = targetIndex;
+                }
+            }
+
+            //고립 방지: 다음 층 노드 중 들어오는 길이 없는 노드를 구제
+            for (int i = 0; i < nextNodes.Count; i++)
+            {
+                MapNode nextNode = nextNodes[i];
+                bool hasIncoming = false;
+
+                for (int j = 0; j < currentNodes.Count; j++)
+                {
+                    if (currentNodes[j].NextNodes.Contains(nextNode))
+                    {
+                        hasIncoming = true;
+                        break;
+                    }
+                }
+
+                //들어오는 길이 없다면 이전 층의 노드 중 수 X좌표 거리가 가장 가까운 노드를 찾아 강제로 연결
+                if (!hasIncoming)
+                {
+                    int closestIndex = GetClosestNodeIndex(nextNode, currentNodes);
+                    currentNodes[closestIndex].AddNextNode(nextNode);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// X좌표를 기준으로 가장 가까운 거리에 있는 노드의 인덱스를 O(N) 순회로 탐색
+    /// </summary>
+    private int GetClosestNodeIndex(MapNode targetNode, List<MapNode> candidates)
+    {
+        int bestIndex = 0;
+        float minDistance = float.MaxValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            float distance = Math.Abs(candidates[i].NormalizedX - targetNode.NormalizedX);
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
     }
 }

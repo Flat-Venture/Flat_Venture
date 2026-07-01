@@ -1,4 +1,4 @@
-using UnityEngine.UIElements;
+using UnityEngine;
 
 /// <summary>
 /// MapModel과 MapUIManager를 연결하는 Presenter
@@ -13,6 +13,23 @@ public class MapPresenter
     {
         this.model = model;
         this.view = view;
+    }
+
+    /// <summary>
+    /// 게임 시작 시 맵이 생성된 직후 호출해 Model의 데이터를 View에 전달하여 랜더링을 초기화
+    /// </summary>
+    public void InitializeMapRendering()
+    {
+        //Model에서 맵 데이터를 가져와 View에 전달
+        view.DrawMap(model.EntireMap, OnNodeClicked);
+    }
+
+    private void OnNodeClicked(int nodeID)
+    {
+        Debug.Log($"Node clicked: {nodeID}");
+
+        //이동이 유효하다면 던전으로 진입 상태 변경 및 뷰 닫기
+        //EnterNode();
     }
 
     /// <summary>
