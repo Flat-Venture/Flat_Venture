@@ -1,0 +1,12 @@
+{
+  "name": "FlatVenture.NUH.Editor",
+  "rootNamespace": "FlatVenture.NUH.Editor",
+  "references": [
+    "FlatVenture.NUH.Runtime",
+    "Unity.InputSystem"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}
