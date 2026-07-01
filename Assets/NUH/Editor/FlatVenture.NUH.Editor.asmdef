@@ -3,7 +3,8 @@
   "rootNamespace": "FlatVenture.NUH.Editor",
   "references": [
     "FlatVenture.NUH.Runtime",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.Cinemachine"
   ],
   "includePlatforms": [
     "Editor"
