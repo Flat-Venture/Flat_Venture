@@ -13,6 +13,8 @@ namespace FlatVenture.NUH.Player
     public sealed class PlayerController : MonoBehaviour
     {
         [SerializeField] private PlayerStatsData baseStats;
+        [Tooltip("이동 방향의 기준입니다. 비어 있으면 Main Camera를 자동으로 사용합니다.")]
+        [SerializeField] private Transform movementReference;
 
         private CharacterController characterController;
         private PlayerInputReader inputReader;
@@ -35,6 +37,11 @@ namespace FlatVenture.NUH.Player
 
             runtimeState = new PlayerRuntimeState();
             runtimeState.Initialize(baseStats);
+
+            if (movementReference == null && Camera.main != null)
+            {
+                movementReference = Camera.main.transform;
+            }
         }
 
         private void Update()
@@ -50,7 +57,7 @@ namespace FlatVenture.NUH.Player
         private void Move()
         {
             Vector2 input = inputReader.Move;
-            Vector3 planarDirection = new Vector3(input.x, 0f, input.y);
+            Vector3 planarDirection = GetPlanarMoveDirection(input);
 
             if (characterController.isGrounded && verticalVelocity < 0f)
             {
@@ -64,6 +71,25 @@ namespace FlatVenture.NUH.Player
             Vector3 velocity = planarDirection * runtimeState.MoveSpeed;
             velocity.y = verticalVelocity;
             characterController.Move(velocity * Time.deltaTime);
+        }
+
+        private Vector3 GetPlanarMoveDirection(Vector2 input)
+        {
+            if (movementReference == null)
+            {
+                return new Vector3(input.x, 0f, input.y);
+            }
+
+            Vector3 forward = movementReference.forward;
+            forward.y = 0f;
+            forward.Normalize();
+
+            Vector3 right = movementReference.right;
+            right.y = 0f;
+            right.Normalize();
+
+            Vector3 direction = (right * input.x) + (forward * input.y);
+            return Vector3.ClampMagnitude(direction, 1f);
         }
     }
 }
