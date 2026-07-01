@@ -4,6 +4,15 @@ using UnityEngine;
 
 namespace FlatVenture.NUH.Player.State
 {
+    [Flags]
+    public enum InvincibilityReason
+    {
+        None = 0,
+        Dash = 1 << 0,
+        HitGrace = 1 << 1,
+        Debug = 1 << 2
+    }
+
     /// <summary>
     /// 한 플레이 동안 변하는 플레이어 상태입니다. ScriptableObject 원본과 분리됩니다.
     /// </summary>
@@ -12,6 +21,8 @@ namespace FlatVenture.NUH.Player.State
         public PlayerStatsData Source { get; private set; }
         public float CurrentHealth { get; private set; }
         public bool IsDead { get; private set; }
+        public InvincibilityReason Invincibility { get; private set; }
+        public bool IsInvincible => Invincibility != InvincibilityReason.None;
 
         public float MaxHealth => Source != null ? Source.MaxHealth : 0f;
         public float MoveSpeed => Source != null ? Source.MoveSpeed : 0f;
@@ -37,6 +48,7 @@ namespace FlatVenture.NUH.Player.State
             }
 
             IsDead = false;
+            Invincibility = InvincibilityReason.None;
             CurrentHealth = Source.MaxHealth;
             HealthChanged?.Invoke(CurrentHealth, MaxHealth);
             ResetCompleted?.Invoke();
@@ -44,7 +56,7 @@ namespace FlatVenture.NUH.Player.State
 
         public void ApplyDamage(float amount)
         {
-            if (IsDead || amount <= 0f)
+            if (IsDead || IsInvincible || amount <= 0f)
             {
                 return;
             }
@@ -59,6 +71,14 @@ namespace FlatVenture.NUH.Player.State
 
             IsDead = true;
             Died?.Invoke();
+        }
+
+        public void SetInvincibility(InvincibilityReason reason, bool active)
+        {
+            if (active)
+                Invincibility |= reason;
+            else
+                Invincibility &= ~reason;
         }
     }
 }

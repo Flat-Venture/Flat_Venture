@@ -11,12 +11,15 @@ namespace FlatVenture.NUH.Player.Input
     {
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string moveActionPath = "Player/Move";
+        [SerializeField] private string dashActionPath = "Player/Dash";
 
         private InputAction moveAction;
+        private InputAction dashAction;
 
         public Vector2 Move { get; private set; }
 
         public event Action<Vector2> MoveChanged;
+        public event Action DashPressed;
 
         private void OnEnable()
         {
@@ -28,19 +31,26 @@ namespace FlatVenture.NUH.Player.Input
 
             moveAction.performed += OnMovePerformed;
             moveAction.canceled += OnMoveCanceled;
+            dashAction.performed += OnDashPerformed;
             moveAction.Enable();
+            dashAction.Enable();
         }
 
         private void OnDisable()
         {
-            if (moveAction == null)
+            if (moveAction != null)
             {
-                return;
+                moveAction.performed -= OnMovePerformed;
+                moveAction.canceled -= OnMoveCanceled;
+                moveAction.Disable();
             }
 
-            moveAction.performed -= OnMovePerformed;
-            moveAction.canceled -= OnMoveCanceled;
-            moveAction.Disable();
+            if (dashAction != null)
+            {
+                dashAction.performed -= OnDashPerformed;
+                dashAction.Disable();
+            }
+
             Move = Vector2.zero;
         }
 
@@ -53,7 +63,8 @@ namespace FlatVenture.NUH.Player.Input
             }
 
             moveAction = inputActions.FindAction(moveActionPath, false);
-            if (moveAction != null)
+            dashAction = inputActions.FindAction(dashActionPath, false);
+            if (moveAction != null && dashAction != null)
             {
                 return true;
             }
@@ -76,6 +87,11 @@ namespace FlatVenture.NUH.Player.Input
         {
             Move = Vector2.ClampMagnitude(value, 1f);
             MoveChanged?.Invoke(Move);
+        }
+
+        private void OnDashPerformed(InputAction.CallbackContext context)
+        {
+            DashPressed?.Invoke();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.IO;
 using FlatVenture.NUH.Player;
 using FlatVenture.NUH.Player.Data;
+using FlatVenture.NUH.Player.Debugging;
 using FlatVenture.NUH.Player.Input;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -20,6 +21,7 @@ namespace FlatVenture.NUH.Editor
         private const string SceneDirectory = "Assets/_Scenes/NUH";
         private const string ScenePath = SceneDirectory + "/Test_01_PlayerBase.unity";
         private const string Stage02ScenePath = SceneDirectory + "/Test_02_MovementCamera.unity";
+        private const string Stage03ScenePath = SceneDirectory + "/Test_03_Dash.unity";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
@@ -89,6 +91,118 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 2단계 테스트 씬 생성 완료: {Stage02ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/3단계 대시 씬 생성")]
+        public static void BuildStage03FromMenu()
+        {
+            BuildStage03();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_03_Dash 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage03()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDashInputAction();
+
+            if (!File.Exists(Path.GetFullPath(Stage02ScenePath)))
+            {
+                BuildStage02();
+            }
+
+            Scene scene = EditorSceneManager.OpenScene(Stage02ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            if (player == null)
+            {
+                throw new MissingReferenceException("2단계 씬에서 PlayerController를 찾을 수 없습니다.");
+            }
+
+            CreateDashDebugUi(player);
+            CreateDashWallTest();
+            UpdateDashTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage03ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 3단계 테스트 씬 생성 완료: {Stage03ScenePath}");
+        }
+
+        private static void EnsureDashInputAction()
+        {
+            InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
+            if (inputActions == null)
+            {
+                throw new FileNotFoundException("공유 InputActionAsset을 찾을 수 없습니다.", InputActionsPath);
+            }
+
+            InputActionMap playerMap = inputActions.FindActionMap("Player", true);
+            InputAction dash = playerMap.FindAction("Dash", false);
+            if (dash == null)
+            {
+                dash = playerMap.AddAction("Dash", InputActionType.Button);
+                dash.AddBinding("<Keyboard>/space", groups: "Keyboard&Mouse");
+                File.WriteAllText(Path.GetFullPath(InputActionsPath), inputActions.ToJson());
+                AssetDatabase.ImportAsset(InputActionsPath, ImportAssetOptions.ForceUpdate);
+            }
+        }
+
+        private static void CreateDashDebugUi(PlayerController player)
+        {
+            GameObject existing = GameObject.Find("Txt_DashDebug");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing);
+            }
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            GameObject textObject = new GameObject("Txt_DashDebug", typeof(RectTransform), typeof(Text), typeof(PlayerDashDebugView));
+            textObject.transform.SetParent(canvas.transform, false);
+
+            RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = new Vector2(1f, 1f);
+            rectTransform.anchorMax = new Vector2(1f, 1f);
+            rectTransform.pivot = new Vector2(1f, 1f);
+            rectTransform.anchoredPosition = new Vector2(-24f, -24f);
+            rectTransform.sizeDelta = new Vector2(420f, 180f);
+
+            Text text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 24;
+            text.color = Color.white;
+            text.alignment = TextAnchor.UpperRight;
+
+            PlayerDashDebugView view = textObject.GetComponent<PlayerDashDebugView>();
+            SerializedObject viewObject = new SerializedObject(view);
+            viewObject.FindProperty("player").objectReferenceValue = player;
+            viewObject.FindProperty("output").objectReferenceValue = text;
+            viewObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateDashWallTest()
+        {
+            GameObject existing = GameObject.Find("Environment_DashTest");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing);
+            }
+
+            GameObject area = new GameObject("Environment_DashTest");
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "DashWall_01";
+            wall.transform.SetParent(area.transform);
+            wall.transform.position = new Vector3(-4f, 1f, 2f);
+            wall.transform.localScale = new Vector3(0.5f, 2f, 6f);
+        }
+
+        private static void UpdateDashTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+            {
+                return;
+            }
+
+            guide.text = "Test_03_Dash\nWASD: 이동 / Space: 이동 입력 방향 대시\n2회 충전, 순차 회복, 대시 중 무적";
         }
 
         private static PlayerStatsData LoadOrCreateStats()
