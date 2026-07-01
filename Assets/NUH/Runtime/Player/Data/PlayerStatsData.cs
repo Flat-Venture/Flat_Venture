@@ -23,6 +23,12 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0f)]
         [SerializeField] private float moveSpeed = 5f;
 
+        [Header("대시")]
+        [Min(0.01f)] [SerializeField] private float dashDuration = 0.25f;
+        [Min(0f)] [SerializeField] private float dashDistance = 4f;
+        [Min(0.01f)] [SerializeField] private float dashRechargeCooldown = 2f;
+        [Min(1)] [SerializeField] private int maxDashCharges = 2;
+
         [Header("기본 공격")]
         [Min(0f)]
         [SerializeField] private float attackPower = 10f;
@@ -44,6 +50,10 @@ namespace FlatVenture.NUH.Player.Data
         public float MaxHealth => maxHealth;
         public float HitInvincibilityDuration => hitInvincibilityDuration;
         public float MoveSpeed => moveSpeed;
+        public float DashDuration => dashDuration;
+        public float DashDistance => dashDistance;
+        public float DashRechargeCooldown => dashRechargeCooldown;
+        public int MaxDashCharges => maxDashCharges;
         public float AttackPower => attackPower;
         public float AttacksPerSecond => attacksPerSecond;
         public float BasicAttackRange => basicAttackRange;
@@ -55,6 +65,10 @@ namespace FlatVenture.NUH.Player.Data
             maxHealth = Mathf.Max(1f, maxHealth);
             hitInvincibilityDuration = Mathf.Max(0f, hitInvincibilityDuration);
             moveSpeed = Mathf.Max(0f, moveSpeed);
+            dashDuration = Mathf.Max(0.01f, dashDuration);
+            dashDistance = Mathf.Max(0f, dashDistance);
+            dashRechargeCooldown = Mathf.Max(0.01f, dashRechargeCooldown);
+            maxDashCharges = Mathf.Max(1, maxDashCharges);
             attackPower = Mathf.Max(0f, attackPower);
             attacksPerSecond = Mathf.Max(0.01f, attacksPerSecond);
             basicAttackRange = Mathf.Max(0f, basicAttackRange);
