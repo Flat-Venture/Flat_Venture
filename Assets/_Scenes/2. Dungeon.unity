@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -401,7 +401,38 @@ MonoBehaviour:
   nodeContainer: {fileID: 1457642500}
   linePrefab: {fileID: 8640281032263202927, guid: 7ec070e952657f341867bca2e9383de5, type: 3}
   nodePrefab: {fileID: 5730389573133801876, guid: 12a324f11b8f68d459c72de7f73471c9, type: 3}
-  isMapOpendByTab: 0
+  visitedMarkSprites:
+  - {fileID: -313554656, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -874304996, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: 1052330124, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -2070706745, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: 122414893, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -221197228, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: 1008574005, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -1713055870, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -748981971, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: 1763026200, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -382173290, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -2106333201, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  - {fileID: -401241458, guid: 3a35a51eeb65bfa4aa9423f5484bc80f, type: 3}
+  roomIconList:
+  - roomType: 0
+    iconSprite: {fileID: 21300000, guid: 1ae95ac7bf2d20c499c36b873c9c26a7, type: 3}
+  - roomType: 1
+    iconSprite: {fileID: 21300000, guid: 68d1c91d76670ab4ab667a9f4d977958, type: 3}
+  - roomType: 2
+    iconSprite: {fileID: 21300000, guid: 34645a9c46ba2904a8b4e6bdcd9650a8, type: 3}
+  - roomType: 3
+    iconSprite: {fileID: 21300000, guid: 5c8ad821e99bddf458df714842cdd989, type: 3}
+  - roomType: 4
+    iconSprite: {fileID: 21300000, guid: bc440999f69723541a2a4353d4630eec, type: 3}
+  - roomType: 5
+    iconSprite: {fileID: 21300000, guid: c3ea5f46eebab104f84e9a2b40abdf81, type: 3}
+  - roomType: 6
+    iconSprite: {fileID: 21300000, guid: ba96e77c24cc9ed42892e74df0ff22b0, type: 3}
+  - roomType: 7
+    iconSprite: {fileID: 21300000, guid: e4e2ad1d0fa5fe0408f3958ea8f0f696, type: 3}
+  isMapOpendByTab: 1
 --- !u!1 &406052646
 GameObject:
   m_ObjectHideFlags: 0
@@ -439,7 +470,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1920, y: 1080}
+  m_SizeDelta: {x: 1424.5522, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &406052648
 MonoBehaviour:
@@ -484,7 +515,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -868,7 +899,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.8627451}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
