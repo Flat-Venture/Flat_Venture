@@ -15,9 +15,9 @@ namespace FlatVenture.NUH.Common.Pooling
         private readonly Transform container;
         private readonly ObjectPool<T> pool;
 
-        public int CountInactive => pool.CountInactive;
-        public int CountActive => pool.CountActive;
-        public int CountAll => pool.CountAll;
+        public int CountInactive { get { return pool.CountInactive; } }
+        public int CountActive { get { return pool.CountActive; } }
+        public int CountAll { get { return pool.CountAll; } }
 
         public ComponentObjectPool(
             T prefab,
@@ -40,7 +40,10 @@ namespace FlatVenture.NUH.Common.Pooling
                 maxSize: Mathf.Max(defaultCapacity, maxSize));
         }
 
-        public T Get() => pool.Get();
+        public T Get()
+        {
+            return pool.Get();
+        }
 
         public void Release(T instance)
         {
@@ -59,7 +62,10 @@ namespace FlatVenture.NUH.Common.Pooling
                 pool.Release(instances[i]);
         }
 
-        public void Dispose() => pool.Dispose();
+        public void Dispose()
+        {
+            pool.Dispose();
+        }
 
         private T Create()
         {

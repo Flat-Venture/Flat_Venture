@@ -1,9 +1,12 @@
 using System.IO;
 using FlatVenture.NUH.Player;
 using FlatVenture.NUH.Player.Combat;
+using FlatVenture.NUH.Player.Aiming;
 using FlatVenture.NUH.Player.Data;
 using FlatVenture.NUH.Player.Debugging;
+using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Input;
+using FlatVenture.NUH.Player.Movement;
 using FlatVenture.NUH.Player.Skills.Warrior;
 using UnityEditor;
 using UnityEditor.Events;
@@ -13,6 +16,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -30,6 +34,7 @@ namespace FlatVenture.NUH.Editor
         private const string Stage04ScenePath = SceneDirectory + "/Test_04_HealthDeath.unity";
         private const string Stage05ScenePath = SceneDirectory + "/Test_05_AimBasicAttack.unity";
         private const string Stage06ScenePath = SceneDirectory + "/Test_06_SwordWave.unity";
+        private const string Stage07ScenePath = SceneDirectory + "/Test_07_IntegratedDebugUI.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
@@ -37,6 +42,25 @@ namespace FlatVenture.NUH.Editor
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
+
+        [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
+        public static void RebuildAllStagesFromMenu()
+        {
+            RebuildAllStages();
+            EditorUtility.DisplayDialog("Flat Venture", "1~7단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+        }
+
+        public static void RebuildAllStages()
+        {
+            Build();
+            BuildStage02();
+            BuildStage03();
+            BuildStage04();
+            BuildStage05();
+            BuildStage06();
+            BuildStage07();
+            Debug.Log("[NUH] 1~7단계 테스트 씬 전체 재생성 완료");
+        }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
         public static void BuildFromMenu()
@@ -95,6 +119,8 @@ namespace FlatVenture.NUH.Editor
                 throw new MissingReferenceException("1단계 씬에서 Player_Warrior_Test를 찾을 수 없습니다.");
             }
 
+            EnsurePlayerCoreComponents(player);
+
             ReplaceWithCinemachineCamera(player.transform);
             CreateSlopeTestArea();
             UpdateTestGuide();
@@ -129,6 +155,8 @@ namespace FlatVenture.NUH.Editor
                 throw new MissingReferenceException("2단계 씬에서 PlayerController를 찾을 수 없습니다.");
             }
 
+            EnsurePlayerCoreComponents(player.gameObject);
+
             CreateDashDebugUi(player);
             CreateDashWallTest();
             UpdateDashTestGuide();
@@ -156,6 +184,8 @@ namespace FlatVenture.NUH.Editor
             PlayerController player = Object.FindFirstObjectByType<PlayerController>();
             if (player == null)
                 throw new MissingReferenceException("3단계 씬에서 PlayerController를 찾을 수 없습니다.");
+
+            EnsurePlayerCoreComponents(player.gameObject);
 
             EnsureEventSystem();
             CreateHealthDebugUi(player);
@@ -186,6 +216,8 @@ namespace FlatVenture.NUH.Editor
             PlayerController player = Object.FindFirstObjectByType<PlayerController>();
             if (player == null)
                 throw new MissingReferenceException("4단계 씬에서 PlayerController를 찾을 수 없습니다.");
+
+            EnsurePlayerCoreComponents(player.gameObject);
 
             PlayerBasicAttackController attackController = player.GetComponent<PlayerBasicAttackController>();
             if (attackController == null)
@@ -224,6 +256,8 @@ namespace FlatVenture.NUH.Editor
             if (player == null)
                 throw new MissingReferenceException("5단계 씬에서 PlayerController를 찾을 수 없습니다.");
 
+            EnsurePlayerCoreComponents(player.gameObject);
+
             PlayerBasicAttackController basicAttack = player.GetComponent<PlayerBasicAttackController>();
             if (basicAttack != null)
                 basicAttack.enabled = false;
@@ -244,6 +278,151 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 6단계 테스트 씬 생성 완료: {Stage06ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/7단계 통합 테스트 UI 씬 생성")]
+        public static void BuildStage07FromMenu()
+        {
+            BuildStage07();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_07_IntegratedDebugUI 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage07()
+        {
+            EnsureDirectory(SceneDirectory);
+            if (!File.Exists(Path.GetFullPath(Stage06ScenePath)))
+                BuildStage06();
+
+            Scene scene = EditorSceneManager.OpenScene(Stage06ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            if (player != null)
+                EnsurePlayerCoreComponents(player.gameObject);
+            WarriorSwordWaveController swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
+            PlayerHealthController health = Object.FindFirstObjectByType<PlayerHealthController>();
+            if (player == null || locomotion == null || health == null || swordWave == null)
+                throw new MissingReferenceException("6단계 씬에서 플레이어 또는 검기 컨트롤러를 찾을 수 없습니다.");
+
+            RemoveLegacyDebugUi();
+            CreateIntegratedDebugPanel(player, locomotion, health, swordWave);
+            UpdateIntegratedUiGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage07ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 7단계 테스트 씬 생성 완료: {Stage07ScenePath}");
+        }
+
+        private static void EnsurePlayerCoreComponents(GameObject player)
+        {
+            if (player.GetComponent<PlayerLocomotionController>() == null)
+                player.AddComponent<PlayerLocomotionController>();
+            if (player.GetComponent<PlayerHealthController>() == null)
+                player.AddComponent<PlayerHealthController>();
+            if (player.GetComponent<PlayerAimResolver>() == null)
+                player.AddComponent<PlayerAimResolver>();
+        }
+
+        private static void RemoveLegacyDebugUi()
+        {
+            string[] names =
+            {
+                "Pnl_HealthDebug",
+                "Txt_DashDebug",
+                "Txt_AttackDebug",
+                "Txt_SwordWaveDebug",
+                "Btn_SwordWaveNoCooldown",
+                "Pnl_IntegratedDebug"
+            };
+
+            foreach (string objectName in names)
+            {
+                GameObject target = GameObject.Find(objectName);
+                if (target != null)
+                    Object.DestroyImmediate(target);
+            }
+        }
+
+        private static void CreateIntegratedDebugPanel(
+            PlayerController player,
+            PlayerLocomotionController locomotion,
+            PlayerHealthController health,
+            WarriorSwordWaveController swordWave)
+        {
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            GameObject panel = new GameObject("Pnl_IntegratedDebug", typeof(RectTransform), typeof(Image), typeof(PlayerIntegratedDebugPanel));
+            panel.transform.SetParent(canvas.transform, false);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(1f, 1f);
+            panelRect.anchorMax = new Vector2(1f, 1f);
+            panelRect.pivot = new Vector2(1f, 1f);
+            panelRect.anchoredPosition = new Vector2(-20f, -20f);
+            panelRect.sizeDelta = new Vector2(600f, 1000f);
+            panel.GetComponent<Image>().color = new Color(0.02f, 0.03f, 0.05f, 0.88f);
+
+            Text output = CreateUiText(panel.transform, "Txt_IntegratedStatus", new Vector2(20f, -20f), new Vector2(560f, 300f), 20, TextAnchor.UpperLeft);
+
+            PlayerIntegratedDebugPanel debugPanel = panel.GetComponent<PlayerIntegratedDebugPanel>();
+            SerializedObject serializedPanel = new SerializedObject(debugPanel);
+            serializedPanel.FindProperty("player").objectReferenceValue = player;
+            serializedPanel.FindProperty("locomotion").objectReferenceValue = locomotion;
+            serializedPanel.FindProperty("health").objectReferenceValue = health;
+            serializedPanel.FindProperty("swordWave").objectReferenceValue = swordWave;
+            serializedPanel.FindProperty("output").objectReferenceValue = output;
+            serializedPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            float y = 620f;
+            CreateDebugButtonPair(panel.transform, "이동 속도", y, debugPanel.MoveSpeedDown, debugPanel.MoveSpeedUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "공격력", y, debugPanel.AttackPowerDown, debugPanel.AttackPowerUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "공격 속도", y, debugPanel.AttackSpeedDown, debugPanel.AttackSpeedUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "대시 거리", y, debugPanel.DashDistanceDown, debugPanel.DashDistanceUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "대시 쿨타임", y, debugPanel.DashCooldownDown, debugPanel.DashCooldownUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "대시 충전", y, debugPanel.DashChargesDown, debugPanel.DashChargesUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "검기 피해", y, debugPanel.SkillDamageDown, debugPanel.SkillDamageUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "검기 속도", y, debugPanel.SkillSpeedDown, debugPanel.SkillSpeedUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "검기 폭", y, debugPanel.SkillWidthDown, debugPanel.SkillWidthUp); y -= 55f;
+            CreateDebugButtonPair(panel.transform, "검기 시전", y, debugPanel.SkillCastTimeDown, debugPanel.SkillCastTimeUp);
+
+            Button damage = CreateUiButton(panel.transform, "Btn_DebugDamage", "피해 10", new Vector2(20f, 20f));
+            Button heal = CreateUiButton(panel.transform, "Btn_DebugHeal", "체력 회복", new Vector2(165f, 20f));
+            Button invincible = CreateUiButton(panel.transform, "Btn_DebugInvincible", "무적 토글", new Vector2(310f, 20f));
+            Button reset = CreateUiButton(panel.transform, "Btn_DebugReset", "원본 초기화", new Vector2(455f, 20f));
+            Button noCooldown = CreateUiButton(panel.transform, "Btn_DebugNoCooldown", "검기 쿨타임 제거", new Vector2(20f, 78f));
+            noCooldown.GetComponent<RectTransform>().sizeDelta = new Vector2(190f, 48f);
+
+            UnityEventTools.AddPersistentListener(damage.onClick, debugPanel.Damage10);
+            UnityEventTools.AddPersistentListener(heal.onClick, debugPanel.HealFull);
+            UnityEventTools.AddPersistentListener(invincible.onClick, debugPanel.ToggleInvincibility);
+            UnityEventTools.AddPersistentListener(reset.onClick, debugPanel.ResetPlayer);
+            UnityEventTools.AddPersistentListener(noCooldown.onClick, debugPanel.ToggleSwordWaveNoCooldown);
+        }
+
+        private static void CreateDebugButtonPair(Transform parent, string label, float y, UnityAction downAction, UnityAction upAction)
+        {
+            Text rowLabel = CreateUiText(parent, $"Txt_{label}", Vector2.zero, new Vector2(250f, 44f), 20, TextAnchor.MiddleLeft);
+            RectTransform labelRect = rowLabel.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.zero;
+            labelRect.pivot = Vector2.zero;
+            labelRect.anchoredPosition = new Vector2(20f, y);
+            rowLabel.text = label;
+
+            Button down = CreateUiButton(parent, $"Btn_{label}_Down", "-", new Vector2(320f, y));
+            Button up = CreateUiButton(parent, $"Btn_{label}_Up", "+", new Vector2(455f, y));
+            down.GetComponent<RectTransform>().sizeDelta = new Vector2(110f, 44f);
+            up.GetComponent<RectTransform>().sizeDelta = new Vector2(110f, 44f);
+            UnityEventTools.AddPersistentListener(down.onClick, downAction);
+            UnityEventTools.AddPersistentListener(up.onClick, upAction);
+        }
+
+        private static void UpdateIntegratedUiGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_07_IntegratedDebugUI\n오른쪽 패널: 런타임 수치 조절\n원본 초기화: SO 기본값 복원 (SO 에셋은 변경되지 않음)";
         }
 
         private static void EnsureActiveSkillInputAction()
@@ -452,6 +631,7 @@ namespace FlatVenture.NUH.Editor
             PlayerHealthDebugView view = panel.GetComponent<PlayerHealthDebugView>();
             SerializedObject viewObject = new SerializedObject(view);
             viewObject.FindProperty("player").objectReferenceValue = player;
+            viewObject.FindProperty("health").objectReferenceValue = player.GetComponent<PlayerHealthController>();
             viewObject.FindProperty("output").objectReferenceValue = status;
             viewObject.ApplyModifiedPropertiesWithoutUndo();
 
@@ -580,6 +760,7 @@ namespace FlatVenture.NUH.Editor
             PlayerDashDebugView view = textObject.GetComponent<PlayerDashDebugView>();
             SerializedObject viewObject = new SerializedObject(view);
             viewObject.FindProperty("player").objectReferenceValue = player;
+            viewObject.FindProperty("locomotion").objectReferenceValue = player.GetComponent<PlayerLocomotionController>();
             viewObject.FindProperty("output").objectReferenceValue = text;
             viewObject.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -677,6 +858,9 @@ namespace FlatVenture.NUH.Editor
             SerializedObject controllerObject = new SerializedObject(playerController);
             controllerObject.FindProperty("baseStats").objectReferenceValue = stats;
             controllerObject.ApplyModifiedPropertiesWithoutUndo();
+            player.AddComponent<PlayerLocomotionController>();
+            player.AddComponent<PlayerHealthController>();
+            player.AddComponent<PlayerAimResolver>();
         }
 
         private static void CreateCamera()

@@ -1,19 +1,16 @@
+using FlatVenture.NUH.Player.Health;
 using UnityEngine;
 
 namespace FlatVenture.NUH.Player.Debugging
 {
-    /// <summary>
-    /// OnTrigger 이벤트로 플레이어에게 반복 피해를 주는 테스트 전용 구역입니다.
-    /// </summary>
+    /// <summary>OnTriggerStay 이벤트로 반복 피해를 검증하는 테스트 전용 구역입니다.</summary>
     [RequireComponent(typeof(BoxCollider))]
     [RequireComponent(typeof(Rigidbody))]
     public sealed class PlayerDamageZone : MonoBehaviour
     {
         [Min(0f)] [SerializeField] private float damage = 10f;
         [Min(0.05f)] [SerializeField] private float repeatInterval = 0.5f;
-
         private float nextDamageTime;
-        private PlayerController playerInside;
 
         private void Awake()
         {
@@ -29,18 +26,14 @@ namespace FlatVenture.NUH.Player.Debugging
 
         private void OnTriggerStay(Collider other)
         {
-            if (Time.time < nextDamageTime) return;
+            if (Time.time < nextDamageTime)
+                return;
 
-            PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player == null) return;
+            PlayerHealthController health = other.GetComponentInParent<PlayerHealthController>();
+            if (health == null)
+                return;
 
-            //playerInside = player;
-            TryApplyDamage(player);
-        }
-
-        private void TryApplyDamage(PlayerController player)
-        {
-            if (player.TakeDamage(damage))
+            if (health.TakeDamage(damage))
                 nextDamageTime = Time.time + repeatInterval;
         }
     }

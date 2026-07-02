@@ -1,4 +1,5 @@
 using FlatVenture.NUH.Player.State;
+using FlatVenture.NUH.Player.Health;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,7 @@ namespace FlatVenture.NUH.Player.Debugging
     public sealed class PlayerHealthDebugView : MonoBehaviour
     {
         [SerializeField] private PlayerController player;
+        [SerializeField] private PlayerHealthController health;
         [SerializeField] private Text output;
 
         private void Update()
@@ -22,7 +24,11 @@ namespace FlatVenture.NUH.Player.Debugging
                 $"Dead: {state.IsDead}";
         }
 
-        public void ApplyTestDamage() => player?.TakeDamage(10f);
+        public void ApplyTestDamage()
+        {
+            if (health != null)
+                health.TakeDamage(10f);
+        }
 
         public void ToggleDebugInvincibility()
         {
@@ -35,7 +41,8 @@ namespace FlatVenture.NUH.Player.Debugging
 
         public void ResetPlayer()
         {
-            player?.ResetPlayer();
+            if (player != null)
+                player.ResetPlayer();
         }
     }
 }

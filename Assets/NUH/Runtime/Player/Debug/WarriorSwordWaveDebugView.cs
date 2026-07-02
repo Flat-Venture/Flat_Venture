@@ -49,6 +49,10 @@ namespace FlatVenture.NUH.Player.Debugging
             }
         }
 
-        public void ToggleNoCooldown() => skill?.ToggleIgnoreCooldown();
+        public void ToggleNoCooldown()
+        {
+            if (skill != null)
+                skill.ToggleIgnoreCooldown();
+        }
     }
 }

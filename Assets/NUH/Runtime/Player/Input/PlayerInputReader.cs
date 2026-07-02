@@ -26,7 +26,6 @@ namespace FlatVenture.NUH.Player.Input
         public bool IsManualAimHeld { get; private set; }
         public Vector2 PointerScreenPosition { get; private set; }
 
-        public event Action<Vector2> MoveChanged;
         public event Action DashPressed;
         public event Action ActiveSkillPressed;
         public event Action ActiveSkillReleased;
@@ -129,7 +128,6 @@ namespace FlatVenture.NUH.Player.Input
         private void SetMove(Vector2 value)
         {
             Move = Vector2.ClampMagnitude(value, 1f);
-            MoveChanged?.Invoke(Move);
         }
 
         private void OnDashPerformed(InputAction.CallbackContext context)
