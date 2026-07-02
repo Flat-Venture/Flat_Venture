@@ -54,11 +54,11 @@ namespace FlatVenture.NUH.Player.State
             ResetCompleted?.Invoke();
         }
 
-        public void ApplyDamage(float amount)
+        public bool ApplyDamage(float amount)
         {
             if (IsDead || IsInvincible || amount <= 0f)
             {
-                return;
+                return false;
             }
 
             CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
@@ -66,11 +66,12 @@ namespace FlatVenture.NUH.Player.State
 
             if (CurrentHealth > 0f)
             {
-                return;
+                return true;
             }
 
             IsDead = true;
             Died?.Invoke();
+            return true;
         }
 
         public void SetInvincibility(InvincibilityReason reason, bool active)
