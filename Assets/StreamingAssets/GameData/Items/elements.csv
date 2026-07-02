@@ -1,0 +1,18 @@
+﻿element_id,display_name,element_role,counts_for_bingo,advanced_element_id,description
+neutral,무,sub,FALSE,harmony,"부족한 속성 보정, 빙고 보조"
+fire,불,main,TRUE,lava,"화상, 폭발, 용암 장판"
+water,물,main,TRUE,ice,"보호막, 냉각, 빙결"
+nature,풀,main,TRUE,wind,"이동, 공격속도, 바람 추가타"
+earth,땅,main,TRUE,steel,"방어, 보호막, 슈퍼아머"
+dark,어둠,sub,FALSE,void,"체력 소모, 피흡, 공허"
+lightning,번개,sub,FALSE,light,"치명타, 감전, 연쇄"
+poison,독,sub,FALSE,chemical,"중독, 전염, 독 장판"
+curse,저주,sub,FALSE,,강한 패널티와 고위험 보상
+light,빛,advanced,FALSE,,조합 또는 고급 속성 후보
+harmony,조화,advanced,FALSE,,무 속성 고급 효과
+lava,용암,advanced,TRUE,,불 속성 고급 효과
+ice,얼음,advanced,TRUE,,물 속성 고급 효과
+wind,바람,advanced,TRUE,,풀 속성 고급 효과
+steel,강철,advanced,TRUE,,땅 속성 고급 효과
+void,공허,advanced,FALSE,,어둠 속성 고급 효과
+chemical,화학,advanced,FALSE,,독 속성 고급 효과

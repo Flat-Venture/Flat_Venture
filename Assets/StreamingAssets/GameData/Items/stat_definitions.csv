@@ -1,0 +1,35 @@
+﻿stat_id,display_name,stat_group,value_type,stack_rule,min_value,max_value,description
+attack,공격력,combat,flat,additive,,,기본 공격 및 일부 물리 계수에 사용
+skill_damage_percent,스킬 피해,combat,percent,additive,,,액티브/패시브 스킬 피해 증가율
+basic_attack_damage_percent,기본 공격 피해,combat,percent,additive,,,기본 공격 피해 증가율
+attack_speed_percent,공격 속도,combat,percent,additive,,,기본 공격 주기 감소 또는 공격 속도 증가
+move_speed_percent,이동 속도,movement,percent,additive,,,캐릭터 이동 속도 증가
+max_hp,최대 HP,survival,flat,additive,1,,최대 체력
+damage_taken_percent,받는 피해,survival,percent,additive,-90,,받는 피해 증감
+shield,보호막,survival,flat,additive,0,,전투 시작 또는 조건부 보호막
+defense,방어력,survival,flat,additive,0,,피해 감소 계산에 사용하는 방어 수치
+evasion,회피율,survival,flat,additive,0,100,공격 회피 확률
+cooldown_reduction_percent,쿨타임 감소,utility,percent,additive,0,80,스킬 또는 아이템 효과 쿨타임 감소
+proc_chance_percent,발동 확률 증가,utility,percent,additive,,,아이템 효과 발동 확률 보정
+crit_chance_percent,치명타 확률,combat,percent,additive,0,100,치명타 발생 확률
+crit_damage_percent,치명타 피해,combat,percent,additive,,,치명타 피해 증가율
+exp_gain_percent,경험치 획득,utility,percent,additive,,,경험치 획득량 증가
+gold_gain_percent,골드 획득,utility,percent,additive,,,골드 획득량 증가
+projectile_count,투사체 개수,projectile,flat,additive,0,,추가 투사체 수
+projectile_damage_percent,투사체 피해,projectile,percent,additive,,,발사 주체가 생성한 투사체 피해 증가율
+projectile_speed_percent,투사체 속도,projectile,percent,additive,,,투사체 이동 속도 증가
+projectile_size_percent,투사체 크기,projectile,percent,additive,,,투사체 크기 또는 판정 범위 증가
+item_effect_damage_percent,아이템 효과 피해,item_effect,percent,additive,,,아이템 효과로 발생하는 피해 증가율
+item_effect_area_percent,아이템 효과 범위,item_effect,percent,additive,,,아이템 효과 범위 증가율
+area_percent,스킬/공격 범위,combat,percent,additive,,,스킬 또는 기본 공격 범위 증가
+casting_speed_percent,시전 속도,combat,percent,additive,,,스킬 선딜/캐스팅 시간 보정
+dash_cooldown_reduction_percent,대시 쿨타임 감소,movement,percent,additive,0,80,대시 쿨타임 감소
+dash_count,대시 횟수,movement,flat,additive,0,,보유 가능한 대시 횟수 증가
+dash_distance_percent,대시 거리,movement,percent,additive,,,대시 이동 거리 증가
+life_steal_percent,피흡,survival,percent,additive,,,피해 또는 적중 기준 회복
+toughness,강인함,survival,flat,additive,0,,상태이상 지속시간 감소 등에 사용
+luck,행운,utility,flat,additive,,,보상/특수방/등급 관련 보정
+reroll_cost_percent,리롤 비용,utility,percent,additive,-100,,리롤 비용 증감
+all_damage_percent,모든 피해,combat,percent,additive,,,전체 피해 증가율
+final_damage_percent,최종 피해,combat,percent,multiplicative,,,최종 피해 배율 보정
+final_damage_multiplier,최종 피해 배율,combat,multiplier,multiplicative,,,최종 피해에 직접 곱하는 배율

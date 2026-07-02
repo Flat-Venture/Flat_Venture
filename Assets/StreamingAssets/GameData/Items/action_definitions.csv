@@ -1,0 +1,12 @@
+﻿action_id,display_name,required_ref,description
+apply_status,상태이상 부여,status_id,대상에게 화상/냉각/중독 등 상태이상을 부여
+apply_buff,버프 부여,buff_id,플레이어 또는 대상에게 임시 버프 부여
+spawn_projectile,투사체 생성,projectile_id,정의된 투사체를 생성
+area_damage,범위 피해,effect_parameters,범위 피해 또는 폭발을 발생. 반경/피해 계수는 effect_parameters에서 설정
+chain_damage,연쇄 피해,effect_parameters,가까운 대상에게 즉시 연쇄 피해를 발생. 연쇄 수/피해 계수는 effect_parameters에서 설정
+heal,회복,effect_parameters,회복량 또는 최대 체력 비례 회복량만큼 대상 회복
+gain_shield,보호막 획득,effect_parameters,보호막 수치만큼 대상에게 보호막 부여
+reduce_cooldown,쿨타임 감소,effect_parameters,스킬 또는 효과 쿨타임 감소량을 effect_parameters에서 설정
+modify_counter,카운터 조작,effect_parameters,효과 카운터 증가/감소/초기화 값을 effect_parameters에서 설정
+convert_stat,스탯 전환,effect_parameters,방어력 일부를 공격력으로 전환 같은 규칙을 effect_parameters에서 설정
+change_bingo_rule,빙고 규칙 변경,effect_parameters,빙고 판정 또는 속성 취급 규칙 변경 값을 effect_parameters에서 설정

@@ -1,0 +1,9 @@
+﻿table_id,rarity_id,weight,notes
+battle_reward_default,common,40,일반 전투 보상 기본 등급 비율
+battle_reward_default,rare,32,일반 전투 보상 기본 등급 비율
+battle_reward_default,epic,20,일반 전투 보상 기본 등급 비율
+battle_reward_default,legendary,8,일반 전투 보상 기본 등급 비율
+boss_reward_default,common,0,보스 보상 예시
+boss_reward_default,rare,30,보스 보상 예시
+boss_reward_default,epic,50,보스 보상 예시
+boss_reward_default,legendary,20,보스 보상 예시

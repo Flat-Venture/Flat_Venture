@@ -1,0 +1,26 @@
+﻿effect_id,param_id,value,notes
+fx_fire_common_01,status_stack,1,화상 중첩 수
+fx_fire_rare_01,projectile_count,1,추가타 발사 수
+fx_lightning_rare_01,chain_count,3,연쇄 대상 수
+fx_lightning_rare_01,damage_multiplier,0.6,연쇄 번개 피해 계수
+fx_poison_rare_04,damage_multiplier,1,독 폭발 피해 계수
+fx_poison_rare_04,radius,2,독 폭발 반경
+fx_water_epic_01,status_stack,1,냉각 중첩 수
+fx_example_split,projectile_count,3,분열 탄환 수
+fx_example_split,spread_angle,25,분열 각도
+fx_fire_pierce,projectile_count,1,관통탄 발사 수
+fx_explosive_fireball,projectile_count,1,화염구 발사 수
+fx_explosive_fireball,radius,3,적중 폭발 반경
+fx_explosive_fireball,damage_multiplier,1.2,적중 폭발 피해 계수
+fx_kill_burst,radius,4,처치 카운트 폭발 반경
+fx_kill_burst,damage_multiplier,1.5,처치 카운트 폭발 피해 계수
+fx_dash_wind,projectile_count,5,부채꼴 발사 수
+fx_dash_wind,spread_angle,60,전체 부채꼴 각도
+fx_heal_on_kill,heal_amount,20,고정 회복량
+fx_heal_on_kill,heal_percent_max_hp,0,최대 체력 비례 회복률. 사용하지 않으면 0
+fx_shield_on_battle_start,shield_amount,50,전투 시작 시 얻는 보호막 수치
+fx_harmony_substitute,target_element_id,fire,대체 판정에 사용할 속성 ID 예시
+fx_harmony_substitute,replace_count,1,대체 가능한 칸 수
+fx_harmony_substitute,affected_scope,bingo_board,적용 범위 예시
+fx_example_split,max_chain_depth,1,분열 반복 세대 제한. 1이면 한 번만 자식 투사체 생성
+fx_explosive_fireball,max_chain_depth,0,다음 투사체 분열 없음
