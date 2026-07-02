@@ -1,5 +1,6 @@
 using System.IO;
 using FlatVenture.NUH.Player;
+using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.Data;
 using FlatVenture.NUH.Player.Debugging;
 using FlatVenture.NUH.Player.Input;
@@ -26,6 +27,7 @@ namespace FlatVenture.NUH.Editor
         private const string Stage02ScenePath = SceneDirectory + "/Test_02_MovementCamera.unity";
         private const string Stage03ScenePath = SceneDirectory + "/Test_03_Dash.unity";
         private const string Stage04ScenePath = SceneDirectory + "/Test_04_HealthDeath.unity";
+        private const string Stage05ScenePath = SceneDirectory + "/Test_05_AimBasicAttack.unity";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
@@ -158,6 +160,113 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 4단계 테스트 씬 생성 완료: {Stage04ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/5단계 조준 기본공격 씬 생성")]
+        public static void BuildStage05FromMenu()
+        {
+            BuildStage05();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_05_AimBasicAttack 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage05()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureCombatInputActions();
+            if (!File.Exists(Path.GetFullPath(Stage04ScenePath)))
+                BuildStage04();
+
+            Scene scene = EditorSceneManager.OpenScene(Stage04ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            if (player == null)
+                throw new MissingReferenceException("4단계 씬에서 PlayerController를 찾을 수 없습니다.");
+
+            PlayerBasicAttackController attackController = player.GetComponent<PlayerBasicAttackController>();
+            if (attackController == null)
+                attackController = player.gameObject.AddComponent<PlayerBasicAttackController>();
+
+            CreateAttackDummies();
+            CreateAttackDebugView(player, attackController);
+            UpdateAttackTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage05ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 5단계 테스트 씬 생성 완료: {Stage05ScenePath}");
+        }
+
+        private static void EnsureCombatInputActions()
+        {
+            InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
+            if (inputActions == null)
+                throw new FileNotFoundException("공유 InputActionAsset을 찾을 수 없습니다.", InputActionsPath);
+
+            InputActionMap playerMap = inputActions.FindActionMap("Player", true);
+            bool changed = false;
+
+            if (playerMap.FindAction("AimPosition", false) == null)
+            {
+                InputAction aimPosition = playerMap.AddAction("AimPosition", InputActionType.PassThrough, expectedControlLayout: "Vector2");
+                aimPosition.AddBinding("<Mouse>/position", groups: "Keyboard&Mouse");
+                changed = true;
+            }
+
+            if (changed)
+            {
+                File.WriteAllText(Path.GetFullPath(InputActionsPath), inputActions.ToJson());
+                AssetDatabase.ImportAsset(InputActionsPath, ImportAssetOptions.ForceUpdate);
+            }
+        }
+
+        private static void CreateAttackDummies()
+        {
+            GameObject oldRoot = GameObject.Find("Targets_BasicAttackTest");
+            if (oldRoot != null)
+                Object.DestroyImmediate(oldRoot);
+
+            GameObject root = new GameObject("Targets_BasicAttackTest");
+            CreateAttackDummy(root.transform, "Dummy_01_Near", new Vector3(0f, 1f, 1.25f));
+            CreateAttackDummy(root.transform, "Dummy_02_Left", new Vector3(-1.1f, 1f, 0.6f));
+            CreateAttackDummy(root.transform, "Dummy_03_Right", new Vector3(1.1f, 1f, 0.6f));
+            CreateAttackDummy(root.transform, "Dummy_04_OutsideRange", new Vector3(0f, 1f, 3.5f));
+        }
+
+        private static void CreateAttackDummy(Transform parent, string name, Vector3 position)
+        {
+            GameObject dummy = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            dummy.name = name;
+            dummy.transform.SetParent(parent);
+            dummy.transform.position = position;
+            dummy.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
+            dummy.GetComponent<Collider>().isTrigger = true;
+            dummy.AddComponent<PlayerTargetDummy>();
+        }
+
+        private static void CreateAttackDebugView(PlayerController player, PlayerBasicAttackController attackController)
+        {
+            GameObject oldView = GameObject.Find("AttackDebugView");
+            if (oldView != null)
+                Object.DestroyImmediate(oldView);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            Text status = CreateUiText(canvas.transform, "Txt_AttackDebug", new Vector2(24f, -160f), new Vector2(520f, 120f), 22, TextAnchor.UpperLeft);
+
+            GameObject viewObject = new GameObject("AttackDebugView", typeof(LineRenderer), typeof(PlayerAttackDebugView));
+            PlayerAttackDebugView view = viewObject.GetComponent<PlayerAttackDebugView>();
+            SerializedObject serializedView = new SerializedObject(view);
+            serializedView.FindProperty("attackController").objectReferenceValue = attackController;
+            serializedView.FindProperty("player").objectReferenceValue = player;
+            serializedView.FindProperty("output").objectReferenceValue = status;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void UpdateAttackTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_05_AimBasicAttack\n자동: 1.5m 안의 가장 가까운 더미 공격\n좌클릭 유지: 마우스 방향 수동 공격 (대상 없어도 발동)";
         }
 
         private static void EnsureEventSystem()
