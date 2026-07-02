@@ -6,7 +6,7 @@ using UnityEngine;
 namespace FlatVenture.NUH.Player
 {
     /// <summary>
-    /// 플레이어 런타임 상태를 소유하고 CharacterController 이동과 대시를 실행합니다.
+    /// 플레이어 런타임 상태를 소유하고 이동, 대시, 피격과 사망을 처리합니다.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInputReader))]
@@ -23,7 +23,9 @@ namespace FlatVenture.NUH.Player
         private Vector3 dashDirection;
         private float dashTimeRemaining;
         private float dashRechargeRemaining;
+        private float hitInvincibilityRemaining;
         private int dashCharges;
+        private Vector3 spawnPosition;
 
         public PlayerRuntimeState RuntimeState => runtimeState;
         public bool IsDashing => dashTimeRemaining > 0f;
@@ -45,7 +47,9 @@ namespace FlatVenture.NUH.Player
 
             runtimeState = new PlayerRuntimeState();
             runtimeState.Initialize(baseStats);
+            runtimeState.Died += OnDied;
             dashCharges = baseStats.MaxDashCharges;
+            spawnPosition = transform.position;
 
             if (movementReference == null && Camera.main != null)
             {
@@ -66,12 +70,23 @@ namespace FlatVenture.NUH.Player
                 inputReader.DashPressed -= TryStartDash;
             }
 
-            runtimeState?.SetInvincibility(InvincibilityReason.Dash, false);
+            if (runtimeState != null)
+            {
+                runtimeState.Died -= OnDied;
+                runtimeState.SetInvincibility(InvincibilityReason.Dash, false);
+            }
         }
 
         private void Update()
         {
-            if (runtimeState == null || runtimeState.IsDead)
+            if (runtimeState == null)
+            {
+                return;
+            }
+
+            UpdateHitInvincibility();
+
+            if (runtimeState.IsDead)
             {
                 return;
             }
@@ -82,6 +97,38 @@ namespace FlatVenture.NUH.Player
                 MoveDash();
             else
                 MoveNormally();
+        }
+
+        public bool TakeDamage(float amount)
+        {
+            if (runtimeState == null || !runtimeState.ApplyDamage(amount))
+            {
+                return false;
+            }
+
+            if (!runtimeState.IsDead && baseStats.HitInvincibilityDuration > 0f)
+            {
+                hitInvincibilityRemaining = baseStats.HitInvincibilityDuration;
+                runtimeState.SetInvincibility(InvincibilityReason.HitGrace, true);
+            }
+
+            return true;
+        }
+
+        public void ResetPlayer()
+        {
+            dashTimeRemaining = 0f;
+            dashRechargeRemaining = 0f;
+            hitInvincibilityRemaining = 0f;
+            dashCharges = baseStats.MaxDashCharges;
+            verticalVelocity = 0f;
+
+            characterController.enabled = false;
+            transform.position = spawnPosition;
+            characterController.enabled = true;
+
+            runtimeState.Reset();
+            inputReader.enabled = true;
         }
 
         private void MoveNormally()
@@ -101,15 +148,11 @@ namespace FlatVenture.NUH.Player
         private void TryStartDash()
         {
             if (runtimeState == null || runtimeState.IsDead || IsDashing || dashCharges <= 0)
-            {
                 return;
-            }
 
             Vector3 requestedDirection = GetPlanarMoveDirection(inputReader.Move);
             if (requestedDirection.sqrMagnitude <= 0.0001f)
-            {
                 return;
-            }
 
             dashDirection = requestedDirection.normalized;
             dashTimeRemaining = baseStats.DashDuration;
@@ -117,9 +160,7 @@ namespace FlatVenture.NUH.Player
             runtimeState.SetInvincibility(InvincibilityReason.Dash, true);
 
             if (dashCharges == baseStats.MaxDashCharges - 1)
-            {
                 dashRechargeRemaining = baseStats.DashRechargeCooldown;
-            }
         }
 
         private void MoveDash()
@@ -129,9 +170,7 @@ namespace FlatVenture.NUH.Player
             dashTimeRemaining = Mathf.Max(0f, dashTimeRemaining - Time.deltaTime);
 
             if (dashTimeRemaining <= 0f)
-            {
                 runtimeState.SetInvincibility(InvincibilityReason.Dash, false);
-            }
         }
 
         private void UpdateDashRecharge()
@@ -144,9 +183,7 @@ namespace FlatVenture.NUH.Player
 
             dashRechargeRemaining -= Time.deltaTime;
             if (dashRechargeRemaining > 0f)
-            {
                 return;
-            }
 
             dashCharges++;
             dashRechargeRemaining = dashCharges < baseStats.MaxDashCharges
@@ -154,12 +191,27 @@ namespace FlatVenture.NUH.Player
                 : 0f;
         }
 
+        private void UpdateHitInvincibility()
+        {
+            if (hitInvincibilityRemaining <= 0f)
+                return;
+
+            hitInvincibilityRemaining = Mathf.Max(0f, hitInvincibilityRemaining - Time.deltaTime);
+            if (hitInvincibilityRemaining <= 0f)
+                runtimeState.SetInvincibility(InvincibilityReason.HitGrace, false);
+        }
+
+        private void OnDied()
+        {
+            dashTimeRemaining = 0f;
+            runtimeState.SetInvincibility(InvincibilityReason.Dash, false);
+            inputReader.enabled = false;
+        }
+
         private Vector3 GetPlanarMoveDirection(Vector2 input)
         {
             if (movementReference == null)
-            {
                 return new Vector3(input.x, 0f, input.y);
-            }
 
             Vector3 forward = movementReference.forward;
             forward.y = 0f;

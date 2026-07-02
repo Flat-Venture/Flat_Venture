@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Data.PlayerStatsData
   jobId: Warrior
   maxHealth: 50
-  hitInvincibilityDuration: 0.3
+  hitInvincibilityDuration: 0.1
   moveSpeed: 5
+  dashDuration: 0.25
+  dashDistance: 4
+  dashRechargeCooldown: 2
+  maxDashCharges: 2
   attackPower: 10
   attacksPerSecond: 1
   basicAttackRange: 1.5

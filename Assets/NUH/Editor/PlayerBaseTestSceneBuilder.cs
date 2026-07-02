@@ -4,10 +4,13 @@ using FlatVenture.NUH.Player.Data;
 using FlatVenture.NUH.Player.Debugging;
 using FlatVenture.NUH.Player.Input;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -22,6 +25,7 @@ namespace FlatVenture.NUH.Editor
         private const string ScenePath = SceneDirectory + "/Test_01_PlayerBase.unity";
         private const string Stage02ScenePath = SceneDirectory + "/Test_02_MovementCamera.unity";
         private const string Stage03ScenePath = SceneDirectory + "/Test_03_Dash.unity";
+        private const string Stage04ScenePath = SceneDirectory + "/Test_04_HealthDeath.unity";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
@@ -125,6 +129,152 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 3단계 테스트 씬 생성 완료: {Stage03ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/4단계 HP 피격 사망 씬 생성")]
+        public static void BuildStage04FromMenu()
+        {
+            BuildStage04();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_04_HealthDeath 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage04()
+        {
+            EnsureDirectory(SceneDirectory);
+            if (!File.Exists(Path.GetFullPath(Stage03ScenePath)))
+                BuildStage03();
+
+            Scene scene = EditorSceneManager.OpenScene(Stage03ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            if (player == null)
+                throw new MissingReferenceException("3단계 씬에서 PlayerController를 찾을 수 없습니다.");
+
+            EnsureEventSystem();
+            CreateHealthDebugUi(player);
+            CreateDamageZone();
+            UpdateHealthTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage04ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 4단계 테스트 씬 생성 완료: {Stage04ScenePath}");
+        }
+
+        private static void EnsureEventSystem()
+        {
+            EventSystem existing = Object.FindFirstObjectByType<EventSystem>();
+            if (existing != null)
+                return;
+
+            GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            eventSystemObject.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+        }
+
+        private static void CreateHealthDebugUi(PlayerController player)
+        {
+            GameObject oldPanel = GameObject.Find("Pnl_HealthDebug");
+            if (oldPanel != null)
+                Object.DestroyImmediate(oldPanel);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            GameObject panel = new GameObject("Pnl_HealthDebug", typeof(RectTransform), typeof(Image), typeof(PlayerHealthDebugView));
+            panel.transform.SetParent(canvas.transform, false);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0f, 0f);
+            panelRect.anchorMax = new Vector2(0f, 0f);
+            panelRect.pivot = new Vector2(0f, 0f);
+            panelRect.anchoredPosition = new Vector2(24f, 24f);
+            panelRect.sizeDelta = new Vector2(460f, 260f);
+            panel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.65f);
+
+            Text status = CreateUiText(panel.transform, "Txt_HealthStatus", new Vector2(20f, -20f), new Vector2(420f, 100f), 22, TextAnchor.UpperLeft);
+            Button damageButton = CreateUiButton(panel.transform, "Btn_Damage10", "피해 10", new Vector2(20f, 70f));
+            Button invincibleButton = CreateUiButton(panel.transform, "Btn_ToggleInvincible", "무적 토글", new Vector2(165f, 70f));
+            Button restartButton = CreateUiButton(panel.transform, "Btn_Restart", "재시작", new Vector2(310f, 70f));
+
+            PlayerHealthDebugView view = panel.GetComponent<PlayerHealthDebugView>();
+            SerializedObject viewObject = new SerializedObject(view);
+            viewObject.FindProperty("player").objectReferenceValue = player;
+            viewObject.FindProperty("output").objectReferenceValue = status;
+            viewObject.ApplyModifiedPropertiesWithoutUndo();
+
+            UnityEventTools.AddPersistentListener(damageButton.onClick, view.ApplyTestDamage);
+            UnityEventTools.AddPersistentListener(invincibleButton.onClick, view.ToggleDebugInvincibility);
+            UnityEventTools.AddPersistentListener(restartButton.onClick, view.ResetPlayer);
+        }
+
+        private static Text CreateUiText(Transform parent, string name, Vector2 anchoredPosition, Vector2 size, int fontSize, TextAnchor alignment)
+        {
+            GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
+            textObject.transform.SetParent(parent, false);
+            RectTransform rect = textObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = size;
+
+            Text text = textObject.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = fontSize;
+            text.color = Color.white;
+            text.alignment = alignment;
+            return text;
+        }
+
+        private static Button CreateUiButton(Transform parent, string name, string label, Vector2 anchoredPosition)
+        {
+            GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+            RectTransform rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(0f, 0f);
+            rect.pivot = new Vector2(0f, 0f);
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = new Vector2(130f, 48f);
+            buttonObject.GetComponent<Image>().color = new Color(0.2f, 0.25f, 0.3f, 1f);
+
+            Text labelText = CreateUiText(buttonObject.transform, "Txt_Label", Vector2.zero, new Vector2(130f, 48f), 19, TextAnchor.MiddleCenter);
+            RectTransform labelRect = labelText.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.anchoredPosition = Vector2.zero;
+            labelRect.sizeDelta = Vector2.zero;
+            labelText.text = label;
+            return buttonObject.GetComponent<Button>();
+        }
+
+        private static void CreateDamageZone()
+        {
+            GameObject existing = GameObject.Find("DamageZone_01");
+            if (existing != null)
+                Object.DestroyImmediate(existing);
+
+            GameObject zone = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            zone.name = "DamageZone_01";
+            zone.transform.position = new Vector3(0f, 0.1f, 5f);
+            zone.transform.localScale = new Vector3(5f, 0.2f, 3f);
+
+            BoxCollider collider = zone.GetComponent<BoxCollider>();
+            collider.isTrigger = true;
+            collider.size = new Vector3(1f, 10f, 1f);
+            Rigidbody body = zone.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            zone.AddComponent<PlayerDamageZone>();
+            zone.GetComponent<Renderer>().material.color = new Color(0.8f, 0.1f, 0.1f, 1f);
+        }
+
+        private static void UpdateHealthTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_04_HealthDeath\n빨간 구역: 0.5초마다 피해 10 / 피격 후 0.3초 무적\nHP 0: 즉시 사망 및 입력 정지";
         }
 
         private static void EnsureDashInputAction()
