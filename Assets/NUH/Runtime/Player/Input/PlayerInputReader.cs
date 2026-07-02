@@ -12,11 +12,17 @@ namespace FlatVenture.NUH.Player.Input
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string moveActionPath = "Player/Move";
         [SerializeField] private string dashActionPath = "Player/Dash";
+        [SerializeField] private string manualAimActionPath = "Player/Attack";
+        [SerializeField] private string pointerPositionActionPath = "Player/AimPosition";
 
         private InputAction moveAction;
         private InputAction dashAction;
+        private InputAction manualAimAction;
+        private InputAction pointerPositionAction;
 
         public Vector2 Move { get; private set; }
+        public bool IsManualAimHeld { get; private set; }
+        public Vector2 PointerScreenPosition { get; private set; }
 
         public event Action<Vector2> MoveChanged;
         public event Action DashPressed;
@@ -32,8 +38,13 @@ namespace FlatVenture.NUH.Player.Input
             moveAction.performed += OnMovePerformed;
             moveAction.canceled += OnMoveCanceled;
             dashAction.performed += OnDashPerformed;
+            manualAimAction.performed += OnManualAimPerformed;
+            manualAimAction.canceled += OnManualAimCanceled;
+            pointerPositionAction.performed += OnPointerPositionPerformed;
             moveAction.Enable();
             dashAction.Enable();
+            manualAimAction.Enable();
+            pointerPositionAction.Enable();
         }
 
         private void OnDisable()
@@ -51,7 +62,21 @@ namespace FlatVenture.NUH.Player.Input
                 dashAction.Disable();
             }
 
+            if (manualAimAction != null)
+            {
+                manualAimAction.performed -= OnManualAimPerformed;
+                manualAimAction.canceled -= OnManualAimCanceled;
+                manualAimAction.Disable();
+            }
+
+            if (pointerPositionAction != null)
+            {
+                pointerPositionAction.performed -= OnPointerPositionPerformed;
+                pointerPositionAction.Disable();
+            }
+
             Move = Vector2.zero;
+            IsManualAimHeld = false;
         }
 
         private bool TryResolveActions()
@@ -64,12 +89,14 @@ namespace FlatVenture.NUH.Player.Input
 
             moveAction = inputActions.FindAction(moveActionPath, false);
             dashAction = inputActions.FindAction(dashActionPath, false);
-            if (moveAction != null && dashAction != null)
+            manualAimAction = inputActions.FindAction(manualAimActionPath, false);
+            pointerPositionAction = inputActions.FindAction(pointerPositionActionPath, false);
+            if (moveAction != null && dashAction != null && manualAimAction != null && pointerPositionAction != null)
             {
                 return true;
             }
 
-            Debug.LogError($"입력 액션 '{moveActionPath}'을 찾을 수 없습니다.", this);
+            Debug.LogError("Move, Dash, Attack 또는 AimPosition 입력 액션을 찾을 수 없습니다.", this);
             return false;
         }
 
@@ -92,6 +119,21 @@ namespace FlatVenture.NUH.Player.Input
         private void OnDashPerformed(InputAction.CallbackContext context)
         {
             DashPressed?.Invoke();
+        }
+
+        private void OnManualAimPerformed(InputAction.CallbackContext context)
+        {
+            IsManualAimHeld = true;
+        }
+
+        private void OnManualAimCanceled(InputAction.CallbackContext context)
+        {
+            IsManualAimHeld = false;
+        }
+
+        private void OnPointerPositionPerformed(InputAction.CallbackContext context)
+        {
+            PointerScreenPosition = context.ReadValue<Vector2>();
         }
     }
 }

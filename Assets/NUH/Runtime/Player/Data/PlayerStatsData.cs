@@ -39,6 +39,9 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0f)]
         [SerializeField] private float basicAttackRange = 1.5f;
 
+        [Min(0.1f)]
+        [SerializeField] private float basicAttackWidth = 1f;
+
         [Header("액티브 스킬")]
         [Min(0f)]
         [SerializeField] private float activeSkillCooldown = 10f;
@@ -57,6 +60,7 @@ namespace FlatVenture.NUH.Player.Data
         public float AttackPower => attackPower;
         public float AttacksPerSecond => attacksPerSecond;
         public float BasicAttackRange => basicAttackRange;
+        public float BasicAttackWidth => basicAttackWidth;
         public float ActiveSkillCooldown => activeSkillCooldown;
         public float ActiveSkillCastTime => activeSkillCastTime;
 
@@ -72,6 +76,7 @@ namespace FlatVenture.NUH.Player.Data
             attackPower = Mathf.Max(0f, attackPower);
             attacksPerSecond = Mathf.Max(0.01f, attacksPerSecond);
             basicAttackRange = Mathf.Max(0f, basicAttackRange);
+            basicAttackWidth = Mathf.Max(0.1f, basicAttackWidth);
             activeSkillCooldown = Mathf.Max(0f, activeSkillCooldown);
             activeSkillCastTime = Mathf.Max(0f, activeSkillCastTime);
         }

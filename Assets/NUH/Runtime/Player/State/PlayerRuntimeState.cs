@@ -26,6 +26,10 @@ namespace FlatVenture.NUH.Player.State
 
         public float MaxHealth => Source != null ? Source.MaxHealth : 0f;
         public float MoveSpeed => Source != null ? Source.MoveSpeed : 0f;
+        public float AttackPower => Source != null ? Source.AttackPower : 0f;
+        public float AttacksPerSecond => Source != null ? Source.AttacksPerSecond : 0f;
+        public float BasicAttackRange => Source != null ? Source.BasicAttackRange : 0f;
+        public float BasicAttackWidth => Source != null ? Source.BasicAttackWidth : 0f;
 
         public event Action<float, float> HealthChanged;
         public event Action Died;
