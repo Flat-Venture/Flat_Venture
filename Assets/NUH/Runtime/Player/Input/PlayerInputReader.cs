@@ -14,11 +14,13 @@ namespace FlatVenture.NUH.Player.Input
         [SerializeField] private string dashActionPath = "Player/Dash";
         [SerializeField] private string manualAimActionPath = "Player/Attack";
         [SerializeField] private string pointerPositionActionPath = "Player/AimPosition";
+        [SerializeField] private string activeSkillActionPath = "Player/ActiveSkill";
 
         private InputAction moveAction;
         private InputAction dashAction;
         private InputAction manualAimAction;
         private InputAction pointerPositionAction;
+        private InputAction activeSkillAction;
 
         public Vector2 Move { get; private set; }
         public bool IsManualAimHeld { get; private set; }
@@ -26,6 +28,8 @@ namespace FlatVenture.NUH.Player.Input
 
         public event Action<Vector2> MoveChanged;
         public event Action DashPressed;
+        public event Action ActiveSkillPressed;
+        public event Action ActiveSkillReleased;
 
         private void OnEnable()
         {
@@ -41,10 +45,13 @@ namespace FlatVenture.NUH.Player.Input
             manualAimAction.performed += OnManualAimPerformed;
             manualAimAction.canceled += OnManualAimCanceled;
             pointerPositionAction.performed += OnPointerPositionPerformed;
+            activeSkillAction.performed += OnActiveSkillPerformed;
+            activeSkillAction.canceled += OnActiveSkillCanceled;
             moveAction.Enable();
             dashAction.Enable();
             manualAimAction.Enable();
             pointerPositionAction.Enable();
+            activeSkillAction.Enable();
         }
 
         private void OnDisable()
@@ -75,6 +82,13 @@ namespace FlatVenture.NUH.Player.Input
                 pointerPositionAction.Disable();
             }
 
+            if (activeSkillAction != null)
+            {
+                activeSkillAction.performed -= OnActiveSkillPerformed;
+                activeSkillAction.canceled -= OnActiveSkillCanceled;
+                activeSkillAction.Disable();
+            }
+
             Move = Vector2.zero;
             IsManualAimHeld = false;
         }
@@ -91,12 +105,14 @@ namespace FlatVenture.NUH.Player.Input
             dashAction = inputActions.FindAction(dashActionPath, false);
             manualAimAction = inputActions.FindAction(manualAimActionPath, false);
             pointerPositionAction = inputActions.FindAction(pointerPositionActionPath, false);
-            if (moveAction != null && dashAction != null && manualAimAction != null && pointerPositionAction != null)
+            activeSkillAction = inputActions.FindAction(activeSkillActionPath, false);
+            if (moveAction != null && dashAction != null && manualAimAction != null
+                && pointerPositionAction != null && activeSkillAction != null)
             {
                 return true;
             }
 
-            Debug.LogError("Move, Dash, Attack 또는 AimPosition 입력 액션을 찾을 수 없습니다.", this);
+            Debug.LogError("Move, Dash, Attack, AimPosition 또는 ActiveSkill 입력 액션을 찾을 수 없습니다.", this);
             return false;
         }
 
@@ -134,6 +150,16 @@ namespace FlatVenture.NUH.Player.Input
         private void OnPointerPositionPerformed(InputAction.CallbackContext context)
         {
             PointerScreenPosition = context.ReadValue<Vector2>();
+        }
+
+        private void OnActiveSkillPerformed(InputAction.CallbackContext context)
+        {
+            ActiveSkillPressed?.Invoke();
+        }
+
+        private void OnActiveSkillCanceled(InputAction.CallbackContext context)
+        {
+            ActiveSkillReleased?.Invoke();
         }
     }
 }
