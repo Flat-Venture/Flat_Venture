@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using FlatVenture.NUH.Common.Pooling;
+using FlatVenture.NUH.Player.Aiming;
 using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.Input;
 using UnityEngine;
@@ -16,6 +16,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
     /// <summary>우클릭 조준과 3연발 검기 스킬의 시전·쿨타임을 관리합니다.</summary>
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
+    [RequireComponent(typeof(PlayerAimResolver))]
     public sealed class WarriorSwordWaveController : MonoBehaviour
     {
         [SerializeField] private WarriorSwordWaveProjectile projectilePrefab;
@@ -24,7 +25,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
         private PlayerController player;
         private PlayerInputReader inputReader;
         private PlayerBasicAttackController basicAttack;
-        private Camera mainCamera;
+        private PlayerAimResolver aimResolver;
         private Vector3 aimDirection = Vector3.forward;
         private float cooldownRemaining;
         private bool isCasting;
@@ -32,25 +33,22 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
         private ComponentObjectPool<WarriorSwordWaveProjectile> projectilePool;
         private Transform poolContainer;
 
-        public Vector3 AimDirection => aimDirection;
-        public float CooldownRemaining => cooldownRemaining;
+        public Vector3 AimDirection { get { return aimDirection; } }
+        public float CooldownRemaining { get { return cooldownRemaining; } }
         public bool IsAiming { get; private set; }
-        public bool IsCasting => isCasting;
-        public bool IgnoreCooldown => ignoreCooldown;
-        public ActiveSkillInputMode InputMode => inputMode;
-        public int PoolActiveCount => projectilePool?.CountActive ?? 0;
-        public int PoolInactiveCount => projectilePool?.CountInactive ?? 0;
-        public int PoolTotalCount => projectilePool?.CountAll ?? 0;
-
-        public event Action<Vector3> CastStarted;
-        public event Action<int, Vector3> ProjectileFired;
+        public bool IsCasting { get { return isCasting; } }
+        public bool IgnoreCooldown { get { return ignoreCooldown; } }
+        public ActiveSkillInputMode InputMode { get { return inputMode; } }
+        public int PoolActiveCount { get { return projectilePool?.CountActive ?? 0; } }
+        public int PoolInactiveCount { get { return projectilePool?.CountInactive ?? 0; } }
+        public int PoolTotalCount { get { return projectilePool?.CountAll ?? 0; } }
 
         private void Awake()
         {
             player = GetComponent<PlayerController>();
             inputReader = GetComponent<PlayerInputReader>();
             basicAttack = GetComponent<PlayerBasicAttackController>();
-            mainCamera = Camera.main;
+            aimResolver = GetComponent<PlayerAimResolver>();
             InitializePool();
         }
 
@@ -141,7 +139,6 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
             if (!ignoreCooldown)
                 cooldownRemaining = player.RuntimeState.ActiveSkillCooldown;
 
-            CastStarted?.Invoke(lockedDirection);
             StartCoroutine(CastRoutine(lockedDirection));
         }
 
@@ -157,7 +154,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
                 if (player.RuntimeState.IsDead)
                     break;
 
-                FireProjectile(i + 1, lockedDirection);
+                FireProjectile(lockedDirection);
                 if (i < projectileCount - 1 && player.RuntimeState.ActiveSkillProjectileInterval > 0f)
                     yield return new WaitForSeconds(player.RuntimeState.ActiveSkillProjectileInterval);
             }
@@ -166,7 +163,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
             isCasting = false;
         }
 
-        private void FireProjectile(int sequence, Vector3 lockedDirection)
+        private void FireProjectile(Vector3 lockedDirection)
         {
             Vector3 spawnPosition = transform.position + (lockedDirection * 0.8f) + (Vector3.up * 0.1f);
             WarriorSwordWaveProjectile projectile = projectilePool.Get();
@@ -179,7 +176,6 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
                 player.RuntimeState.ActiveSkillProjectileWidth,
                 player.RuntimeState.ActiveSkillMaxHitTargets,
                 ReleaseProjectile);
-            ProjectileFired?.Invoke(sequence, lockedDirection);
         }
 
         private void InitializePool()
@@ -204,27 +200,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
 
         private void UpdateAimDirection()
         {
-            if (mainCamera == null)
-                mainCamera = Camera.main;
-            if (mainCamera == null)
-                return;
-
-            Ray ray = mainCamera.ScreenPointToRay(inputReader.PointerScreenPosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, Physics.AllLayers, QueryTriggerInteraction.Ignore))
-            {
-                SetAimDirection(hit.point - transform.position);
-                return;
-            }
-
-            Plane plane = new Plane(Vector3.up, transform.position);
-            if (plane.Raycast(ray, out float distance))
-                SetAimDirection(ray.GetPoint(distance) - transform.position);
-        }
-
-        private void SetAimDirection(Vector3 direction)
-        {
-            direction.y = 0f;
-            if (direction.sqrMagnitude > 0.0001f)
+            if (aimResolver.TryResolvePointerDirection(transform, Physics.AllLayers, out Vector3 direction))
                 aimDirection = direction.normalized;
         }
     }

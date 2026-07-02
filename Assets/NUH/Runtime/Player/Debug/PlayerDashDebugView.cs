@@ -1,3 +1,4 @@
+using FlatVenture.NUH.Player.Movement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,19 +10,20 @@ namespace FlatVenture.NUH.Player.Debugging
     public sealed class PlayerDashDebugView : MonoBehaviour
     {
         [SerializeField] private PlayerController player;
+        [SerializeField] private PlayerLocomotionController locomotion;
         [SerializeField] private Text output;
 
         private void Update()
         {
-            if (player == null || output == null || player.RuntimeState == null)
+            if (player == null || locomotion == null || output == null || player.RuntimeState == null)
             {
                 return;
             }
 
             output.text =
-                $"Dash: {player.DashCharges}/{player.MaxDashCharges}\n" +
-                $"Recharge: {player.DashRechargeRemaining:0.00}s\n" +
-                $"Dashing: {player.IsDashing}\n" +
+                $"Dash: {locomotion.DashCharges}/{locomotion.MaxDashCharges}\n" +
+                $"Recharge: {locomotion.DashRechargeRemaining:0.00}s\n" +
+                $"Dashing: {locomotion.IsDashing}\n" +
                 $"Invincible: {player.RuntimeState.IsInvincible}";
         }
     }

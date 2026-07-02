@@ -67,26 +67,26 @@ namespace FlatVenture.NUH.Player.Data
         [Min(1)]
         [SerializeField] private int activeSkillMaxHitTargets = 10;
 
-        public string JobId => jobId;
-        public float MaxHealth => maxHealth;
-        public float HitInvincibilityDuration => hitInvincibilityDuration;
-        public float MoveSpeed => moveSpeed;
-        public float DashDuration => dashDuration;
-        public float DashDistance => dashDistance;
-        public float DashRechargeCooldown => dashRechargeCooldown;
-        public int MaxDashCharges => maxDashCharges;
-        public float AttackPower => attackPower;
-        public float AttacksPerSecond => attacksPerSecond;
-        public float BasicAttackRange => basicAttackRange;
-        public float BasicAttackWidth => basicAttackWidth;
-        public float ActiveSkillCooldown => activeSkillCooldown;
-        public float ActiveSkillCastTime => activeSkillCastTime;
-        public float ActiveSkillDamage => activeSkillDamage;
-        public int ActiveSkillProjectileCount => activeSkillProjectileCount;
-        public float ActiveSkillProjectileInterval => activeSkillProjectileInterval;
-        public float ActiveSkillProjectileSpeed => activeSkillProjectileSpeed;
-        public float ActiveSkillProjectileWidth => activeSkillProjectileWidth;
-        public int ActiveSkillMaxHitTargets => activeSkillMaxHitTargets;
+        public string JobId { get { return jobId; } }
+        public float MaxHealth { get { return maxHealth; } }
+        public float HitInvincibilityDuration { get { return hitInvincibilityDuration; } }
+        public float MoveSpeed { get { return moveSpeed; } }
+        public float DashDuration { get { return dashDuration; } }
+        public float DashDistance { get { return dashDistance; } }
+        public float DashRechargeCooldown { get { return dashRechargeCooldown; } }
+        public int MaxDashCharges { get { return maxDashCharges; } }
+        public float AttackPower { get { return attackPower; } }
+        public float AttacksPerSecond { get { return attacksPerSecond; } }
+        public float BasicAttackRange { get { return basicAttackRange; } }
+        public float BasicAttackWidth { get { return basicAttackWidth; } }
+        public float ActiveSkillCooldown { get { return activeSkillCooldown; } }
+        public float ActiveSkillCastTime { get { return activeSkillCastTime; } }
+        public float ActiveSkillDamage { get { return activeSkillDamage; } }
+        public int ActiveSkillProjectileCount { get { return activeSkillProjectileCount; } }
+        public float ActiveSkillProjectileInterval { get { return activeSkillProjectileInterval; } }
+        public float ActiveSkillProjectileSpeed { get { return activeSkillProjectileSpeed; } }
+        public float ActiveSkillProjectileWidth { get { return activeSkillProjectileWidth; } }
+        public int ActiveSkillMaxHitTargets { get { return activeSkillMaxHitTargets; } }
 
         private void OnValidate()
         {

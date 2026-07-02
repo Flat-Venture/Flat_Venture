@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FlatVenture.NUH.Player.Aiming;
 using FlatVenture.NUH.Player.Input;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace FlatVenture.NUH.Player.Combat
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
+    [RequireComponent(typeof(PlayerAimResolver))]
     public sealed class PlayerBasicAttackController : MonoBehaviour
     {
         [SerializeField] private LayerMask targetMask = ~0;
@@ -19,17 +21,21 @@ namespace FlatVenture.NUH.Player.Combat
         private readonly HashSet<IPlayerAttackTarget> damagedTargets = new HashSet<IPlayerAttackTarget>();
         private PlayerController player;
         private PlayerInputReader inputReader;
-        private Camera mainCamera;
+        private PlayerAimResolver aimResolver;
         private IPlayerAttackTarget currentTarget;
         private float cooldownRemaining;
         private Vector3 aimDirection = Vector3.forward;
 
-        public Vector3 AimDirection => aimDirection;
-        public float CooldownRemaining => cooldownRemaining;
-        public bool IsManualAim => inputReader != null && inputReader.IsManualAimHeld;
-        public string CurrentTargetName => currentTarget?.TargetTransform != null
-            ? currentTarget.TargetTransform.name
-            : "None";
+        public Vector3 AimDirection { get { return aimDirection; } }
+        public float CooldownRemaining { get { return cooldownRemaining; } }
+        public bool IsManualAim { get { return inputReader != null && inputReader.IsManualAimHeld; } }
+        public string CurrentTargetName
+        {
+            get
+            {
+                return currentTarget?.TargetTransform != null ? currentTarget.TargetTransform.name : "None";
+            }
+        }
 
         public event Action<Vector3, bool, int> AttackPerformed;
 
@@ -46,7 +52,7 @@ namespace FlatVenture.NUH.Player.Combat
         {
             player = GetComponent<PlayerController>();
             inputReader = GetComponent<PlayerInputReader>();
-            mainCamera = Camera.main;
+            aimResolver = GetComponent<PlayerAimResolver>();
         }
 
         private void Update()
@@ -113,22 +119,8 @@ namespace FlatVenture.NUH.Player.Combat
 
         private void UpdateManualAimDirection()
         {
-            if (mainCamera == null)
-                mainCamera = Camera.main;
-
-            if (mainCamera == null)
-                return;
-
-            Ray ray = mainCamera.ScreenPointToRay(inputReader.PointerScreenPosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, aimSurfaceMask, QueryTriggerInteraction.Ignore))
-            {
-                SetAimDirection(hit.point - transform.position);
-                return;
-            }
-
-            Plane playerPlane = new Plane(Vector3.up, transform.position);
-            if (playerPlane.Raycast(ray, out float distance))
-                SetAimDirection(ray.GetPoint(distance) - transform.position);
+            if (aimResolver.TryResolvePointerDirection(transform, aimSurfaceMask, out Vector3 direction))
+                aimDirection = direction;
         }
 
         private void SetAimDirection(Vector3 direction)

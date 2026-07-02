@@ -13,9 +13,9 @@ namespace FlatVenture.NUH.Player.Debugging
         private Collider targetCollider;
         private float currentHealth;
 
-        public Transform TargetTransform => transform;
-        public bool IsAlive => currentHealth > 0f;
-        public float CurrentHealth => currentHealth;
+        public Transform TargetTransform { get { return transform; } }
+        public bool IsAlive { get { return currentHealth > 0f; } }
+        public float CurrentHealth { get { return currentHealth; } }
 
         private void Awake()
         {
