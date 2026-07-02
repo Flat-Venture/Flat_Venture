@@ -1,0 +1,21 @@
+﻿trigger_id,display_name,needs_counter,uses_chance,uses_cooldown,resets_on_floor_end,description
+on_basic_attack,기본 공격 시,FALSE,TRUE,TRUE,TRUE,기본 공격을 시도하거나 명중했을 때
+on_basic_attack_count,기본 공격 N회마다,TRUE,FALSE,FALSE,TRUE,기본 공격 횟수가 trigger_count에 도달하면 쿨타임 없이 발동
+on_basic_attack_count_cooldown,기본 공격 N회마다(쿨타임),TRUE,FALSE,TRUE,TRUE,기본 공격 횟수가 trigger_count에 도달하고 base_cooldown도 통과해야 발동
+on_hit,적중 시,FALSE,TRUE,TRUE,TRUE,공격 또는 스킬이 적에게 적중했을 때
+on_hit_count,적중 N회마다,TRUE,FALSE,FALSE,TRUE,적중 횟수가 trigger_count에 도달하면 쿨타임 없이 발동
+on_hit_count_cooldown,적중 N회마다(쿨타임),TRUE,FALSE,TRUE,TRUE,적중 횟수가 trigger_count에 도달하고 base_cooldown도 통과해야 발동
+on_crit,치명타 시,FALSE,TRUE,TRUE,TRUE,치명타가 발생했을 때
+on_kill,처치 시,FALSE,TRUE,TRUE,TRUE,적을 처치했을 때
+on_kill_count,처치 N회마다,TRUE,FALSE,FALSE,TRUE,적 처치 횟수가 trigger_count에 도달하면 쿨타임 없이 발동
+on_kill_count_cooldown,처치 N회마다(쿨타임),TRUE,FALSE,TRUE,TRUE,적 처치 횟수가 trigger_count에 도달하고 base_cooldown도 통과해야 발동
+on_run_kill_count,런 누적 처치 N회마다,TRUE,FALSE,FALSE,FALSE,층이 끝나도 누적되는 런 전체 처치 카운터가 trigger_count에 도달했을 때
+on_rooms_cleared_count,방/노드 클리어 N회마다,TRUE,FALSE,FALSE,FALSE,층이 끝나도 누적되는 클리어 카운터가 trigger_count에 도달했을 때
+on_damaged,피격 시,FALSE,TRUE,TRUE,TRUE,플레이어가 피해를 받았을 때
+on_damaged_count,피격 N회마다,TRUE,FALSE,FALSE,TRUE,피격 횟수가 trigger_count에 도달하면 쿨타임 없이 발동
+on_damaged_count_cooldown,피격 N회마다(쿨타임),TRUE,FALSE,TRUE,TRUE,피격 횟수가 trigger_count에 도달하고 base_cooldown도 통과해야 발동
+on_shield_break,보호막 파괴 시,FALSE,TRUE,TRUE,TRUE,보호막이 0이 되거나 깨졌을 때
+on_dash,대시 시,FALSE,TRUE,TRUE,TRUE,대시를 사용했을 때
+on_battle_start,전투 시작 시,FALSE,FALSE,FALSE,TRUE,전투가 시작될 때 1회
+on_battle_end,전투 종료 시,FALSE,FALSE,FALSE,TRUE,전투가 끝날 때 1회
+while_low_hp,낮은 체력일 때,FALSE,FALSE,FALSE,TRUE,체력 조건을 만족하는 동안 유지

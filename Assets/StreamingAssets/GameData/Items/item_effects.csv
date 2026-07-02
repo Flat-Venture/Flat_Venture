@@ -1,0 +1,14 @@
+﻿item_id,effect_id,trigger_id,condition_id,action_id,trigger_count,base_chance,base_cooldown,projectile_id,status_id,buff_id,target,aim_rule,notes
+item_fire_common_01,fx_fire_common_01,on_basic_attack,,apply_status,,8,0,,burn,,hit_enemy,current_attack_aim,기본 공격 시 8% 확률로 화상 1중첩
+item_fire_rare_01,fx_fire_rare_01,on_basic_attack_count,,spawn_projectile,5,100,0,proj_fire_extra_hit,burn,,aim_direction,current_attack_aim,기본 공격 5회마다 현재 공격 방향으로 불 추가타
+item_lightning_rare_01,fx_lightning_rare_01,on_crit,,chain_damage,,100,2,,shock,,near_enemy,,치명타 시 가까운 적에게 연쇄 번개 즉시 피해
+item_poison_rare_04,fx_poison_rare_04,on_hit_count,,area_damage,5,100,0,,poison,,hit_enemy,,적중 5회마다 맞은 적 주변에 독 폭발
+item_water_epic_01,fx_water_epic_01,on_shield_break,,apply_status,,100,8,,chill,,near_enemy,,보호막이 깨질 때 주변 적 냉각
+item_example_split,fx_example_split,on_hit,,spawn_projectile,,100,1,proj_split_on_hit,,,hit_enemy,current_attack_aim,적중 시 투사체가 3갈래로 분리
+item_fire_pierce_example,fx_fire_pierce,on_basic_attack_count,,spawn_projectile,3,100,0,proj_fire_pierce,burn,,aim_direction,current_attack_aim,기본 공격 3회마다 관통 화염탄
+item_explosive_example,fx_explosive_fireball,on_basic_attack_count_cooldown,,spawn_projectile,4,100,1,proj_explosive_fireball,burn,,aim_direction,current_attack_aim,기본 공격 4회마다 적중 시 폭발하는 화염구
+item_kill_burst_example,fx_kill_burst,on_kill_count,,area_damage,10,100,0,,burn,,area_around_self,,적 10마리 처치 시 플레이어 주변 폭발
+item_dash_wind_example,fx_dash_wind,on_dash,,spawn_projectile,,100,2,proj_wind_fan,,,aim_direction,current_attack_aim,대시 시 현재 방향으로 바람 부채꼴 투사체
+item_heal_example,fx_heal_on_kill,on_kill,,heal,,100,0,,,,self,,적 처치 시 자신을 고정 수치만큼 회복
+item_shield_example,fx_shield_on_battle_start,on_battle_start,,gain_shield,,100,0,,,,self,,전투 시작 시 자신에게 보호막 부여
+item_harmony_rule_example,fx_harmony_substitute,on_battle_start,,change_bingo_rule,,100,0,,,,self,,전투/빙고 계산 중 부족한 빙고 칸을 특정 속성으로 대체하는 예시

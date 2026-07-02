@@ -1,0 +1,17 @@
+﻿item_id,stat_id,operation,value,applies_to,condition_id,description
+item_fire_common_01,attack,add,3,player,,공격력 +3
+item_fire_common_02,skill_damage_percent,add,4,player,,스킬 피해 +4%
+item_fire_common_03,attack_speed_percent,add,4,player,,공격 속도 +4%
+item_fire_rare_07,max_hp,add,-15,player,,최대 HP -15
+item_fire_rare_07,attack,add,8,player,,공격력 +8
+item_water_rare_07,move_speed_percent,add,-3,player,,이동 속도 -3%
+item_water_rare_07,defense,add,10,player,,방어력 +10
+item_neutral_common_10,luck,add,3,player,,행운 +3
+item_lightning_epic_05,projectile_count,add,1,player,,투사체 개수 +1
+item_fire_pierce_example,projectile_speed_percent,add,15,player,,플레이어가 발사하는 투사체 속도 +15%
+item_fire_pierce_example,projectile_damage_percent,add,20,player,,플레이어가 발사하는 투사체 피해 +20%
+item_berserk_example,final_damage_multiplier,multiply,1.2,player,,최종 피해 1.2배
+item_heavy_curse_example,final_damage_multiplier,multiply,0.8,player,,최종 피해 0.8배
+item_effect_focus_example,item_effect_damage_percent,add,25,item_effect,,아이템 효과 피해 +25%
+item_effect_focus_example,item_effect_area_percent,add,15,item_effect,,아이템 효과 범위 +15%
+item_low_hp_example,attack,add,10,player,while_low_hp,체력이 낮을 때 공격력 +10
