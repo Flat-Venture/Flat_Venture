@@ -4,6 +4,7 @@ using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.Data;
 using FlatVenture.NUH.Player.Debugging;
 using FlatVenture.NUH.Player.Input;
+using FlatVenture.NUH.Player.Skills.Warrior;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -28,6 +29,11 @@ namespace FlatVenture.NUH.Editor
         private const string Stage03ScenePath = SceneDirectory + "/Test_03_Dash.unity";
         private const string Stage04ScenePath = SceneDirectory + "/Test_04_HealthDeath.unity";
         private const string Stage05ScenePath = SceneDirectory + "/Test_05_AimBasicAttack.unity";
+        private const string Stage06ScenePath = SceneDirectory + "/Test_06_SwordWave.unity";
+        private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
+        private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
+        private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
+        private const string SwordWaveMaterialPath = TestMaterialDirectory + "/Mat_SwordWave_Test.asset";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
@@ -193,6 +199,147 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 5단계 테스트 씬 생성 완료: {Stage05ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/6단계 전사 검기 씬 생성")]
+        public static void BuildStage06FromMenu()
+        {
+            BuildStage06();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_06_SwordWave 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage06()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(SkillPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureActiveSkillInputAction();
+
+            if (!File.Exists(Path.GetFullPath(Stage05ScenePath)))
+                BuildStage05();
+
+            WarriorSwordWaveProjectile projectilePrefab = CreateSwordWavePrefab();
+            Scene scene = EditorSceneManager.OpenScene(Stage05ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            if (player == null)
+                throw new MissingReferenceException("5단계 씬에서 PlayerController를 찾을 수 없습니다.");
+
+            PlayerBasicAttackController basicAttack = player.GetComponent<PlayerBasicAttackController>();
+            if (basicAttack != null)
+                basicAttack.enabled = false;
+
+            WarriorSwordWaveController skill = player.GetComponent<WarriorSwordWaveController>();
+            if (skill == null)
+                skill = player.gameObject.AddComponent<WarriorSwordWaveController>();
+
+            SerializedObject skillObject = new SerializedObject(skill);
+            skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            skillObject.ApplyModifiedPropertiesWithoutUndo();
+
+            CreateSwordWaveTargets();
+            CreateSwordWaveDebugView(player, skill);
+            UpdateSwordWaveTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage06ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 6단계 테스트 씬 생성 완료: {Stage06ScenePath}");
+        }
+
+        private static void EnsureActiveSkillInputAction()
+        {
+            InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
+            if (inputActions == null)
+                throw new FileNotFoundException("공유 InputActionAsset을 찾을 수 없습니다.", InputActionsPath);
+
+            InputActionMap playerMap = inputActions.FindActionMap("Player", true);
+            if (playerMap.FindAction("ActiveSkill", false) != null)
+                return;
+
+            InputAction activeSkill = playerMap.AddAction("ActiveSkill", InputActionType.Button);
+            activeSkill.AddBinding("<Mouse>/rightButton", groups: "Keyboard&Mouse");
+            File.WriteAllText(Path.GetFullPath(InputActionsPath), inputActions.ToJson());
+            AssetDatabase.ImportAsset(InputActionsPath, ImportAssetOptions.ForceUpdate);
+        }
+
+        private static WarriorSwordWaveProjectile CreateSwordWavePrefab()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(SwordWaveMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+                material = new Material(shader) { color = new Color(0.25f, 0.9f, 1f, 0.85f) };
+                AssetDatabase.CreateAsset(material, SwordWaveMaterialPath);
+            }
+
+            GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            projectileObject.name = "Pfb_WarriorSwordWave";
+            projectileObject.GetComponent<BoxCollider>().isTrigger = true;
+            projectileObject.GetComponent<Renderer>().sharedMaterial = material;
+            Rigidbody body = projectileObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            projectileObject.AddComponent<WarriorSwordWaveProjectile>();
+
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(projectileObject, SwordWavePrefabPath);
+            Object.DestroyImmediate(projectileObject);
+            return prefab.GetComponent<WarriorSwordWaveProjectile>();
+        }
+
+        private static void CreateSwordWaveTargets()
+        {
+            GameObject oldBasicTargets = GameObject.Find("Targets_BasicAttackTest");
+            if (oldBasicTargets != null)
+                Object.DestroyImmediate(oldBasicTargets);
+
+            GameObject oldTargets = GameObject.Find("Targets_SwordWaveTest");
+            if (oldTargets != null)
+                Object.DestroyImmediate(oldTargets);
+
+            GameObject root = new GameObject("Targets_SwordWaveTest");
+            for (int i = 0; i < 12; i++)
+            {
+                float z = 3f + (i * 1.1f);
+                CreateAttackDummy(root.transform, $"SwordWaveDummy_{i + 1:00}", new Vector3(0f, 1f, z));
+            }
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "SwordWaveWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(4f, 1.5f, 9f);
+            wall.transform.localScale = new Vector3(4f, 3f, 0.5f);
+        }
+
+        private static void CreateSwordWaveDebugView(PlayerController player, WarriorSwordWaveController skill)
+        {
+            GameObject oldView = GameObject.Find("SwordWaveDebugView");
+            if (oldView != null)
+                Object.DestroyImmediate(oldView);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            Text status = CreateUiText(canvas.transform, "Txt_SwordWaveDebug", new Vector2(24f, -300f), new Vector2(520f, 170f), 22, TextAnchor.UpperLeft);
+            GameObject viewObject = new GameObject("SwordWaveDebugView", typeof(LineRenderer), typeof(WarriorSwordWaveDebugView));
+            WarriorSwordWaveDebugView view = viewObject.GetComponent<WarriorSwordWaveDebugView>();
+            SerializedObject serializedView = new SerializedObject(view);
+            serializedView.FindProperty("skill").objectReferenceValue = skill;
+            serializedView.FindProperty("player").objectReferenceValue = player;
+            serializedView.FindProperty("output").objectReferenceValue = status;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+
+            Button noCooldownButton = CreateUiButton(canvas.transform, "Btn_SwordWaveNoCooldown", "검기 쿨타임 제거", new Vector2(24f, 300f));
+            RectTransform buttonRect = noCooldownButton.GetComponent<RectTransform>();
+            buttonRect.sizeDelta = new Vector2(190f, 48f);
+            UnityEventTools.AddPersistentListener(noCooldownButton.onClick, view.ToggleNoCooldown);
+        }
+
+        private static void UpdateSwordWaveTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_06_SwordWave\n우클릭 유지: 조준 / 우클릭 해제: 0.2초 후 검기 3연발\n관통 최대 10개 대상 / 벽 충돌 시 소멸";
         }
 
         private static void EnsureCombatInputActions()

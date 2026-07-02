@@ -33,6 +33,15 @@ namespace FlatVenture.NUH.Player.Combat
 
         public event Action<Vector3, bool, int> AttackPerformed;
 
+        public void ApplyPostSkillCooldown()
+        {
+            if (player?.RuntimeState == null)
+                return;
+
+            float attackInterval = 1f / Mathf.Max(0.01f, player.RuntimeState.AttacksPerSecond);
+            cooldownRemaining = Mathf.Max(cooldownRemaining, attackInterval);
+        }
+
         private void Awake()
         {
             player = GetComponent<PlayerController>();

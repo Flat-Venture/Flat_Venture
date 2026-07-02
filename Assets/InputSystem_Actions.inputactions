@@ -104,6 +104,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ActiveSkill",
+                    "type": "Button",
+                    "id": "1f7986b0-703c-4a43-83db-1db19ba48aa1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -511,6 +520,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "AimPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f46d12b8-cd63-4fb8-aec4-48e373803c09",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "ActiveSkill",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

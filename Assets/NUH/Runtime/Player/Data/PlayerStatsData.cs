@@ -49,6 +49,24 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0f)]
         [SerializeField] private float activeSkillCastTime = 0.2f;
 
+        [Min(0f)]
+        [SerializeField] private float activeSkillDamage = 20f;
+
+        [Min(1)]
+        [SerializeField] private int activeSkillProjectileCount = 3;
+
+        [Min(0f)]
+        [SerializeField] private float activeSkillProjectileInterval = 0.15f;
+
+        [Min(0.01f)]
+        [SerializeField] private float activeSkillProjectileSpeed = 15f;
+
+        [Min(0.1f)]
+        [SerializeField] private float activeSkillProjectileWidth = 2f;
+
+        [Min(1)]
+        [SerializeField] private int activeSkillMaxHitTargets = 10;
+
         public string JobId => jobId;
         public float MaxHealth => maxHealth;
         public float HitInvincibilityDuration => hitInvincibilityDuration;
@@ -63,6 +81,12 @@ namespace FlatVenture.NUH.Player.Data
         public float BasicAttackWidth => basicAttackWidth;
         public float ActiveSkillCooldown => activeSkillCooldown;
         public float ActiveSkillCastTime => activeSkillCastTime;
+        public float ActiveSkillDamage => activeSkillDamage;
+        public int ActiveSkillProjectileCount => activeSkillProjectileCount;
+        public float ActiveSkillProjectileInterval => activeSkillProjectileInterval;
+        public float ActiveSkillProjectileSpeed => activeSkillProjectileSpeed;
+        public float ActiveSkillProjectileWidth => activeSkillProjectileWidth;
+        public int ActiveSkillMaxHitTargets => activeSkillMaxHitTargets;
 
         private void OnValidate()
         {
@@ -79,6 +103,12 @@ namespace FlatVenture.NUH.Player.Data
             basicAttackWidth = Mathf.Max(0.1f, basicAttackWidth);
             activeSkillCooldown = Mathf.Max(0f, activeSkillCooldown);
             activeSkillCastTime = Mathf.Max(0f, activeSkillCastTime);
+            activeSkillDamage = Mathf.Max(0f, activeSkillDamage);
+            activeSkillProjectileCount = Mathf.Max(1, activeSkillProjectileCount);
+            activeSkillProjectileInterval = Mathf.Max(0f, activeSkillProjectileInterval);
+            activeSkillProjectileSpeed = Mathf.Max(0.01f, activeSkillProjectileSpeed);
+            activeSkillProjectileWidth = Mathf.Max(0.1f, activeSkillProjectileWidth);
+            activeSkillMaxHitTargets = Mathf.Max(1, activeSkillMaxHitTargets);
         }
     }
 }

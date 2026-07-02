@@ -30,6 +30,14 @@ namespace FlatVenture.NUH.Player.State
         public float AttacksPerSecond => Source != null ? Source.AttacksPerSecond : 0f;
         public float BasicAttackRange => Source != null ? Source.BasicAttackRange : 0f;
         public float BasicAttackWidth => Source != null ? Source.BasicAttackWidth : 0f;
+        public float ActiveSkillCooldown => Source != null ? Source.ActiveSkillCooldown : 0f;
+        public float ActiveSkillCastTime => Source != null ? Source.ActiveSkillCastTime : 0f;
+        public float ActiveSkillDamage => Source != null ? Source.ActiveSkillDamage : 0f;
+        public int ActiveSkillProjectileCount => Source != null ? Source.ActiveSkillProjectileCount : 0;
+        public float ActiveSkillProjectileInterval => Source != null ? Source.ActiveSkillProjectileInterval : 0f;
+        public float ActiveSkillProjectileSpeed => Source != null ? Source.ActiveSkillProjectileSpeed : 0f;
+        public float ActiveSkillProjectileWidth => Source != null ? Source.ActiveSkillProjectileWidth : 0f;
+        public int ActiveSkillMaxHitTargets => Source != null ? Source.ActiveSkillMaxHitTargets : 0;
 
         public event Action<float, float> HealthChanged;
         public event Action Died;
