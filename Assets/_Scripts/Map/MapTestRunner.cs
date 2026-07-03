@@ -7,6 +7,7 @@ using UnityEngine;
 public class MapTestRunner : MonoBehaviour
 {
     [SerializeField] private MapUIManager uiManager;
+    [SerializeField] private StageManager stageManager;
 
     private MapModel model;
     private MapGenerator generator;
@@ -18,6 +19,8 @@ public class MapTestRunner : MonoBehaviour
         model = new MapModel();
         generator = new MapGenerator();
         presenter = new MapPresenter(model, uiManager, HandleNodeEntered);
+
+        if (stageManager != null) stageManager.Init(presenter.OpenMapForSelection);
 
         //임시 시드로 데이터 생성
         int testSeed = 12345;
@@ -37,34 +40,6 @@ public class MapTestRunner : MonoBehaviour
 
     private void HandleNodeEntered(MapNode node)
     {
-        Debug.Log($"<color=yellow>[메인 시스템]</color> {node.RoomType} 방 진입 처리를 시작합니다 (ID: {node.NodeID})");
-
-        switch (node.RoomType)
-        {
-            case RoomType.Normal:
-            case RoomType.Elite:
-            case RoomType.Boss:
-                //TODO: 전투 씬 비동기 로드 및 몬스터 시폰 데이터 전달
-                //SceneManager.LoadeScene("BattleScene");
-                break;
-            case RoomType.Shop:
-                //TODO: 상점 UI 팝업 오픈
-                break;
-            case RoomType.Rest:
-                //TODO: 모닥불(휴식) UI 오픈
-                break;
-            case RoomType.Unknown:
-                //TODO: 랜덤 이벤트 로직 실행
-                break;
-        }
-
-        //2초 뒤에 전투를 클리어했다 가정 후 맵을 다시 오픈
-        Invoke(nameof(SimulateClearRoom), 2.0f);
-    }
-
-    private void SimulateClearRoom()
-    {
-        Debug.Log("<color=cyan>[메인 시스템]</color> 방을 클리어했습니다. 다시 지도를 엽니다.");
-        presenter.OpenMapForSelection();
+        if (stageManager != null) stageManager.EnterStage(node);
     }
 }
