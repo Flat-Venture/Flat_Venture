@@ -39,6 +39,7 @@ namespace FlatVenture.ItemData
         public string itemId;
         public string effectId;
         public string triggerId;
+        public string conditionId;
         public string actionId;
         public int triggerCount;
         public float baseChance;

@@ -121,6 +121,7 @@ namespace FlatVenture.ItemData
                     itemId = CsvValue.String(row, "item_id"),
                     effectId = CsvValue.String(row, "effect_id"),
                     triggerId = CsvValue.String(row, "trigger_id"),
+                    conditionId = CsvValue.String(row, "condition_id"),
                     actionId = CsvValue.String(row, "action_id"),
                     triggerCount = CsvValue.Int(row, "trigger_count"),
                     baseChance = CsvValue.Float(row, "base_chance"),
