@@ -94,11 +94,11 @@ public class MapNodeView : MonoBehaviour
         //O 표시 활성화 및 무작위 스프라이트 적용
         if (visitedMark != null)
         {
-            bool showMark = (state == NodeVisualState.Visited);
-            visitedMark.gameObject.SetActive(showMark);
+            bool isVisited = (state == NodeVisualState.Visited);
+            visitedMark.gameObject.SetActive(isVisited);
 
             //방문 흔적일 때만 마크 스프라이트 적용 (현재 위치는 기본 마크 유지)
-            if (showMark && markSprite != null) visitedMark.sprite = markSprite;
+            if (isVisited && markSprite != null) visitedMark.sprite = markSprite;
         }
 
         //플레이어 아이콘 켜기/끄기
