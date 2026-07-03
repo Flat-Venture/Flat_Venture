@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 /// <summary>
 /// MapModel과 MapUIManager를 연결하는 Presenter
@@ -7,12 +8,14 @@ public class MapPresenter
 {
     private readonly MapModel model;
     private readonly MapUIManager view;
+    private readonly Action<MapNode> onNodeEntered;
 
     //의존성 주입 (DI) 패턴을 활용하여 Model과 View를 생성자에서 주입받음
-    public MapPresenter(MapModel model, MapUIManager view)
+    public MapPresenter(MapModel model, MapUIManager view, Action<MapNode> onNodeEntered)
     {
         this.model = model;
         this.view = view;
+        this.onNodeEntered = onNodeEntered;
     }
 
     /// <summary>
@@ -62,8 +65,8 @@ public class MapPresenter
             //갱신된 상태를 바탕으로 맵 전체 시작적 피드백 업데이트
             UpdateMapState();
 
-            //TODO: 실제 던전 씬 로드, 몬스터 스폰 등 게임 시스템 호출
-            EnterNode();
+            //타겟 노드 정보를 넘겨주며 EnterNode 호출
+            EnterNode(targetNode);
         }
 
         else
@@ -95,6 +98,10 @@ public class MapPresenter
 
             //가시성만 켜고, 노드 클릭은 불가
             view.ShowMap(false);
+
+            //탭으로 지도를 열었을 대도 플레이어의 현재 위치를 포커싱
+            MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
+            if (currentNode != null) view.FocusCamera(currentNode.NormalizedY);
         }
     }
 
@@ -119,14 +126,22 @@ public class MapPresenter
 
         //가시성을 켜고, 노드 클릭 활성화
         view.ShowMap(true);
+
+        //현재 플레이어가 위치한 노드의 Y좌표를 찾아 카메라에게 이동 명령을 내림
+        MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
+
+        if (currentNode != null) view.FocusCamera(currentNode.NormalizedY);
     }
 
     /// <summary>
     /// 노드를 선택하고 던전으로 진입할 때 지도를 닫음
     /// </summary>
-    public void EnterNode()
+    public void EnterNode(MapNode targetNode)
     {
         model.isInDungeon = true;
         view.HideMap();
+
+        //어떤 씬을 불러울지 외부 시스템에게 위임
+        onNodeEntered?.Invoke(targetNode);
     }
 }

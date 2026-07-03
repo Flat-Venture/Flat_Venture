@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,12 +35,20 @@ public class MapUIManager : MonoBehaviour
     //View의 순수 UI 상태 변수
     public bool isMapOpendByTab = false;
 
+    private class LineConnection
+    {
+        public Image lineImage;
+        public int startNodeID;
+        public int endNodeID;
+    }
+
     //생성된 UI 추적용 (Object Pooling 적용 시 재사용)
-    private List<GameObject> spawnedLines = new List<GameObject>();
+    private List<LineConnection> lineConnections = new List<LineConnection>();
     private List<MapNodeView> spawnedNodes = new List<MapNodeView>();
 
     //실제 검색용 딕셔너리
     private Dictionary<RoomType, Sprite> roomIconDict = new Dictionary<RoomType, Sprite>();
+    private Coroutine scrollCoroutine;
 
     private void Awake()
     {
@@ -93,6 +102,7 @@ public class MapUIManager : MonoBehaviour
                 Sprite roomSprite = GetRoomIcon(node.RoomType);
                 nodeView.Init(node, roomSprite);
 
+                //보스방 아이콘 크기 조절
                 nodeView.SetBossScale(node.RoomType == RoomType.Boss);
 
                 nodeView.SetPosition(contentRect, node.NormalizedX, node.NormalizedY);
@@ -116,7 +126,7 @@ public class MapUIManager : MonoBehaviour
                     MapNode nextNode = node.NextNodes[j];
                     RectTransform endRect = nodeViewDict[nextNode.NodeID].GetComponent<RectTransform>();
 
-                    DrawLine(startRect.anchoredPosition, endRect.anchoredPosition);
+                    DrawLine(startRect, endRect, node.NodeID, nextNode.NodeID);
                 }
             }
         }
@@ -133,8 +143,11 @@ public class MapUIManager : MonoBehaviour
     /// <summary>
     /// 두 UI 좌표 사이의 거리와 각도를 계산해 선을 연결
     /// </summary>
-    private void DrawLine(Vector2 startPos, Vector2 endPos)
+    private void DrawLine(RectTransform startRect, RectTransform endRect, int startID, int endID)
     {
+        Vector2 startPos = startRect.anchoredPosition;
+        Vector2 endPos = endRect.anchoredPosition;
+        
         GameObject lineObject = Instantiate(linePrefab, lineContainer);
         RectTransform lineRect = lineObject.GetComponent<RectTransform>();
 
@@ -148,21 +161,39 @@ public class MapUIManager : MonoBehaviour
         float distance = direction.magnitude;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
+        //UI의 실제 가로 길이를 가져와 반지름 계산
+        float startRadius = startRect.rect.width / 2f;
+        float endRadius = endRect.rect.width / 2f;
+
+        //아이콘과 선이 너무 딱 붙지 않게 틈을 줌
+        float gapOffset = 10f;
+
+        //동적 여백 = 출발지 반지름 + 도착지 반지름 + 여백
+        float padding = startRadius + endRadius + gapOffset;
+        float finalLineLength = Mathf.Max(0, distance - padding);
+
         //선의 두께를 5f로 설정하고 길이를 두 노드 사이의 거리만큼 조정
-        lineRect.sizeDelta = new Vector2(distance, 5f);
+        lineRect.sizeDelta = new Vector2(finalLineLength, 5f);
         lineRect.anchoredPosition = startPos + direction / 2;   //두 지점의 중앙에 위치
         lineRect.localRotation = Quaternion.Euler(0, 0, angle); //목적지를 향해 회전
 
-        spawnedLines.Add(lineObject);
+        LineConnection connectrion =  new LineConnection
+        {
+            lineImage = lineObject.GetComponent<Image>(),
+            startNodeID = startID,
+            endNodeID = endID
+        };
+        
+        lineConnections.Add(connectrion);
     }
 
     private void ClearMap()
     {
         for (int i = 0; i < spawnedNodes.Count; i++) Destroy(spawnedNodes[i].gameObject);
-        for (int i = 0; i < spawnedLines.Count; i++) Destroy(spawnedLines[i]);
+        for (int i = 0; i < lineConnections.Count; i++) Destroy(lineConnections[i].lineImage.gameObject);
 
         spawnedNodes.Clear();
-        spawnedLines.Clear();
+        lineConnections.Clear();
     }
 
     /// <summary>
@@ -196,6 +227,7 @@ public class MapUIManager : MonoBehaviour
             for (int i = 0; i < nextNodes.Count; i++) attainableIDs.Add(nextNodes[i].NodeID);
         }
 
+        //노드 시각적 업데이트
         for (int i = 0; i < spawnedNodes.Count; i++)
         {
             MapNodeView nodeView = spawnedNodes[i];
@@ -218,5 +250,48 @@ public class MapUIManager : MonoBehaviour
             else if (attainableIDs.Contains(id)) nodeView.SetVisualState(NodeVisualState.Attainable);
             else nodeView.SetVisualState(NodeVisualState.Locked);
         }
+
+        //선 시각적 업데이트
+        for (int i = 0; i < lineConnections.Count; i++)
+        {
+            LineConnection connection = lineConnections[i];
+            Color lineColor = connection.lineImage.color;
+
+            bool isStartVisited = visitedNodeIDs.Contains(connection.startNodeID) || connection.startNodeID == currentNodeID;
+            bool isEndVisited = visitedNodeIDs.Contains(connection.endNodeID) || connection.endNodeID == currentNodeID;
+            bool isNextPath = (connection.startNodeID == currentNodeID) && attainableIDs.Contains(connection.endNodeID);
+
+            if (isStartVisited && isEndVisited) lineColor.a = 1.0f; //지나온 길 (밝게)
+            else if (isNextPath) lineColor.a = 0.5f;                //갈 수 있는 길 (중간)
+            else lineColor.a = 0.15f;                               //버려진 길 / 잠긴 길 (어둡게)
+
+            connection.lineImage.color = lineColor; 
+        }
+    }
+
+    /// <summary>
+    /// 카메라 부드러운 스크롤 이동
+    /// </summary>
+    public void FocusCamera(float targetNormalizedY)
+    {
+        if (mapScrollRect == null) return;
+        if (scrollCoroutine != null) StopCoroutine(scrollCoroutine);
+        scrollCoroutine = StartCoroutine(ScrollToRoutine(targetNormalizedY));
+    }
+
+    private IEnumerator ScrollToRoutine(float targetY)
+    {
+        float startY = mapScrollRect.verticalNormalizedPosition;
+        float elapsed = 0f;
+        float duration = 0.4f;  //이동 시간
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            mapScrollRect.verticalNormalizedPosition = Mathf.Lerp(startY, targetY, elapsed / duration);
+            yield return null;
+        }
+        
+        mapScrollRect.verticalNormalizedPosition = targetY;
     }
 }
