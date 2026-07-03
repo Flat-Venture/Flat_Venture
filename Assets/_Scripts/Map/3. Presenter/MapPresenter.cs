@@ -8,13 +8,15 @@ public class MapPresenter
 {
     private readonly MapModel model;
     private readonly MapUIManager view;
+    private readonly MapGenerator generator;
     private readonly Action<MapNode> onNodeEntered;
 
     //의존성 주입 (DI) 패턴을 활용하여 Model과 View를 생성자에서 주입받음
-    public MapPresenter(MapModel model, MapUIManager view, Action<MapNode> onNodeEntered)
+    public MapPresenter(MapModel model, MapUIManager view, MapGenerator generator, Action<MapNode> onNodeEntered = null)
     {
         this.model = model;
         this.view = view;
+        this.generator = generator;
         this.onNodeEntered = onNodeEntered;
     }
 
@@ -143,5 +145,47 @@ public class MapPresenter
 
         //어떤 씬을 불러울지 외부 시스템에게 위임
         onNodeEntered?.Invoke(targetNode);
+    }
+    
+    /// <summary>
+    /// 마을에서 던전 입구를 밟아 새로운 던전 맵을 생성할 때 호출
+    /// </summary>
+    public void GenerateNewDungeonMap()
+    {
+        //무작위 시드값 생성
+        int newSeed = UnityEngine.Random.Range(1, int.MaxValue);
+
+        Debug.Log($"<color=magenta>[MapSystem]</color> 새로운 시드({newSeed})로 던전을 생성합니다.");
+
+        //새롭게 생성된 시드를 Generateor에 넘김
+        var mapData = generator.GenerateMap(newSeed);
+
+        //모델에 새 시드와 맵 데이터를 젖당
+        model.SetMapData(newSeed, mapData);
+
+        //View를 통해 화면에 렌더링
+        view.DrawMap(model.EntireMap, OnNodeClicked);
+
+        //그린 직후 노드들의 잠금/개방 상태와 선 투명도 업데이트
+        UpdateMapState();
+
+        //최초 생성 직후 맵 열기
+        OpenMapForSelection();
+    }
+
+    public void ResetMapSystem()
+    {
+        //지도 닫기
+        view.HideMap();
+
+        //UI 파괴
+        view.ClearMap();
+
+        //모델 데이터 초기화
+        model.VisitedNodeIDs.Clear();
+        model.CurrentNodeID = -1;
+        model.isInDungeon = false;
+
+        Debug.Log("<color=yellow>[MapSystem]</color> 지도 시스템이 초기화되었습니다.");
     }
 }

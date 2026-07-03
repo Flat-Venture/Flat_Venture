@@ -187,7 +187,7 @@ public class MapUIManager : MonoBehaviour
         lineConnections.Add(connectrion);
     }
 
-    private void ClearMap()
+    public void ClearMap()
     {
         for (int i = 0; i < spawnedNodes.Count; i++) Destroy(spawnedNodes[i].gameObject);
         for (int i = 0; i < lineConnections.Count; i++) Destroy(lineConnections[i].lineImage.gameObject);
