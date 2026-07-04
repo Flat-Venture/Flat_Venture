@@ -23,5 +23,12 @@ MonoBehaviour:
   attackPower: 10
   attacksPerSecond: 1
   basicAttackRange: 1.5
+  basicAttackWidth: 1
   activeSkillCooldown: 10
   activeSkillCastTime: 0.2
+  activeSkillDamage: 20
+  activeSkillProjectileCount: 3
+  activeSkillProjectileInterval: 0.15
+  activeSkillProjectileSpeed: 15
+  activeSkillProjectileWidth: 2
+  activeSkillMaxHitTargets: 10
