@@ -5,9 +5,7 @@ using UnityEngine.InputSystem;
 namespace FlatVenture.SaveLoad
 {
     // 게임 씬 입장 시 타이틀에서 선택한 세이브 데이터를 받는 진입점입니다.
-    // 이 컴포넌트 자체는 씬 오브젝트라서 씬이 바뀌면 사라집니다.
     // 실제로 마을/던전 씬 전환 사이에서 세이브 데이터를 들고 있는 것은 SaveGameSession입니다.
-    // 나중에 게임 매니저가 생기면 여기서 받은 SaveData를 각 시스템에 전달하면 됩니다.
     public sealed class GameSceneSaveEntryBehaviour : MonoBehaviour
     {
         [SerializeField] private bool logOnStart = true;
@@ -15,23 +13,23 @@ namespace FlatVenture.SaveLoad
         [SerializeField] private bool enableDebugSaveKeys = true;
         [SerializeField] private Key saveKey = Key.F5;
         [SerializeField] private Key printKey = Key.F9;
-        [SerializeField] private int debugGoldAddAmount = 10;
+        [SerializeField] private int debugDungeonGoldAddAmount = 10;
 
-        // 게임 씬의 다른 시스템이 세이브 데이터를 받을 수 있게 Inspector나 코드에서 연결합니다.
-        // Start에서 SaveGameSession.CurrentSaveData를 읽은 뒤 Invoke합니다.
+        // Start에서 SaveGameSession.CurrentSaveData를 읽은 뒤 호출됩니다.
+        // 다른 임시 테스트 컴포넌트가 현재 세이브 데이터를 받아야 할 때 Inspector나 코드에서 연결합니다.
         public UnityEvent<SaveData> onSaveDataReady = new UnityEvent<SaveData>();
 
         public SaveData CurrentSaveData { get; private set; }
         public int CurrentSlotIndex { get; private set; }
         public SaveGameSession.StartReason StartReason { get; private set; }
 
-        // 게임 씬이 시작되면 TitleMenuBehaviour가 SaveGameSession에 넣어둔 세이브 세션을 읽습니다.
+        // 씬이 시작되면 현재 활성화된 세이브 세션을 읽습니다.
         private void Start()
         {
             if (!SaveGameSession.HasActiveSave)
             {
                 if (warnIfNoActiveSave)
-                    Debug.LogWarning("[GameSceneSaveEntry] 활성 세이브 없이 게임 씬에 진입했습니다.");
+                    Debug.LogWarning("[GameSceneSaveEntry] Active save does not exist.");
 
                 return;
             }
@@ -67,26 +65,26 @@ namespace FlatVenture.SaveLoad
         {
             if (CurrentSaveData == null)
             {
-                Debug.LogWarning("[GameSceneSaveEntry] 저장할 세이브 데이터가 없습니다.");
+                Debug.LogWarning("[GameSceneSaveEntry] Save data does not exist.");
                 return;
             }
 
             SaveLoadService.Save(CurrentSlotIndex, CurrentSaveData);
-            Debug.Log("[GameSceneSaveEntry] 슬롯 " + CurrentSlotIndex + " 저장 완료");
+            Debug.Log("[GameSceneSaveEntry] Save complete. Slot " + CurrentSlotIndex);
         }
 
-        // 테스트 확인용으로 골드를 조금 바꾼 뒤 저장합니다.
+        // 테스트 확인용으로 던전 골드를 조금 올린 뒤 저장합니다.
         public void SaveCurrentSessionWithDebugProgress()
         {
             if (CurrentSaveData == null)
             {
-                Debug.LogWarning("[GameSceneSaveEntry] 저장할 세이브 데이터가 없습니다.");
+                Debug.LogWarning("[GameSceneSaveEntry] Save data does not exist.");
                 return;
             }
 
-            CurrentSaveData.user.gold += debugGoldAddAmount;
+            CurrentSaveData.dungeon.gold += debugDungeonGoldAddAmount;
             SaveCurrentSession();
-            Debug.Log("[GameSceneSaveEntry] 테스트 진행값 반영: +" + debugGoldAddAmount + "골드");
+            Debug.Log("[GameSceneSaveEntry] Debug dungeon gold added: +" + debugDungeonGoldAddAmount);
         }
 
         // 게임 씬 입장 로그를 만듭니다.
@@ -94,15 +92,17 @@ namespace FlatVenture.SaveLoad
         {
             var user = CurrentSaveData.user;
             var dungeon = CurrentSaveData.dungeon;
-            return "[GameSceneSaveEntry] 세이브 데이터 수신"
-                + "\n시작 방식: " + StartReason
-                + "\n슬롯: " + CurrentSlotIndex
-                + "\n프로필: " + user.profileName
-                + "\n플레이 시간: " + CurrentSaveData.playTimeSeconds.ToString("0.##") + "초"
-                + "\n레벨: " + user.userLevel
-                + "\n선택 캐릭터: " + user.selectedCharacterId
-                + "\n던전 여부: " + dungeon.isInDungeon
-                + "\n던전 상태: " + dungeon.dungeonState;
+            return "[GameSceneSaveEntry] Save data received"
+                + "\nStart Reason: " + StartReason
+                + "\nSlot: " + CurrentSlotIndex
+                + "\nProfile: " + user.profileName
+                + "\nPlay Time: " + CurrentSaveData.playTimeSeconds.ToString("0.##") + " sec"
+                + "\nUser Level: " + user.userLevel
+                + "\nJewel: " + user.jewel
+                + "\nSelected Character: " + user.selectedCharacterId
+                + "\nIn Dungeon: " + dungeon.isInDungeon
+                + "\nDungeon Gold: " + dungeon.gold
+                + "\nDungeon State: " + dungeon.dungeonState;
         }
     }
 }

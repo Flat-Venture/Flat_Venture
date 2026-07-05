@@ -32,6 +32,7 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.isInDungeon = false;
             saveData.dungeon.dungeonSeed = 0;
             saveData.dungeon.currentFloor = 0;
+            saveData.dungeon.gold = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             EnsureLists(saveData.dungeon);
             saveData.dungeon.clearedNodeIds.Clear();

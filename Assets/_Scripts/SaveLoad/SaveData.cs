@@ -37,7 +37,7 @@ namespace FlatVenture.SaveLoad
         public int userLevel = 1;
         public int userExp;
         public string selectedCharacterId = "character_warrior";
-        public int gold;
+        public int jewel;
     }
 
     // 사용할 수 있게 열린 콘텐츠 목록을 저장합니다.
@@ -60,7 +60,26 @@ namespace FlatVenture.SaveLoad
     [Serializable]
     public sealed class TraitSaveData
     {
-        public List<string> selectedTraitIds = new List<string>();
+        public List<TraitLevelSaveData> selectedUserTraits = new List<TraitLevelSaveData>();
+        public List<JobTraitSelectionSaveData> jobTraitSelections = new List<JobTraitSelectionSaveData>();
+    }
+
+    // 선택한 특성 하나의 ID와 현재 레벨을 저장합니다.
+    // 최대 레벨, 선행 조건, 효과 수치 같은 정의 정보는 CSV에서 읽고, 세이브에는 실제 찍은 결과만 남깁니다.
+    [Serializable]
+    public sealed class TraitLevelSaveData
+    {
+        public string traitId;
+        public int level;
+    }
+
+    // 직업별로 선택한 특성 ID 목록을 저장합니다.
+    // 직업을 바꿨다가 다시 돌아와도 이전에 찍은 직업 특성을 복원하기 위한 데이터입니다.
+    [Serializable]
+    public sealed class JobTraitSelectionSaveData
+    {
+        public string jobId;
+        public List<TraitLevelSaveData> selectedTraits = new List<TraitLevelSaveData>();
     }
 
     // 던전 진행 상황과 시드 정보를 저장합니다.
@@ -70,6 +89,7 @@ namespace FlatVenture.SaveLoad
         public bool isInDungeon;
         public int dungeonSeed;
         public int currentFloor;
+        public int gold;
         public string currentNodeId;
         public List<string> clearedNodeIds = new List<string>();
         public List<string> availableNextNodeIds = new List<string>();
