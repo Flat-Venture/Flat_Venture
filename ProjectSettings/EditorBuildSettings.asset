@@ -6,8 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/_Scenes/LRH/Test_LRH_Town.unity
+    guid: fe25d8ff73117614cb86e4e756873145
+  - enabled: 1
+    path: Assets/_Scenes/LRH/Test_LRH_Dungeon.unity
+    guid: b30024484595b0f4bb68c000a1d178a0
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
