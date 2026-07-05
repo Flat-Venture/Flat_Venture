@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FlatVenture.SaveLoad;
 
 namespace FlatVenture.ItemData
 {
@@ -64,6 +65,7 @@ namespace FlatVenture.ItemData
 
             var acquiredItem = new DebugAcquiredItem(item);
             acquiredItems.Add(acquiredItem);
+            DungeonRunSaveUtility.TryAddAcquiredItem(acquiredItem.itemId, acquiredItem.displayName);
             message = acquiredItem.displayName + " 획득";
             return true;
         }
