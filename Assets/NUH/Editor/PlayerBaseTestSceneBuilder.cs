@@ -8,6 +8,7 @@ using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Input;
 using FlatVenture.NUH.Player.Movement;
 using FlatVenture.NUH.Player.Skills.Warrior;
+using FlatVenture.NUH.Seed.Debugging;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
@@ -35,6 +36,7 @@ namespace FlatVenture.NUH.Editor
         private const string Stage05ScenePath = SceneDirectory + "/Test_05_AimBasicAttack.unity";
         private const string Stage06ScenePath = SceneDirectory + "/Test_06_SwordWave.unity";
         private const string Stage07ScenePath = SceneDirectory + "/Test_07_IntegratedDebugUI.unity";
+        private const string Stage08ScenePath = SceneDirectory + "/Test_08_SeedDebug.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
@@ -47,7 +49,7 @@ namespace FlatVenture.NUH.Editor
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~7단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~8단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         public static void RebuildAllStages()
@@ -59,7 +61,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage05();
             BuildStage06();
             BuildStage07();
-            Debug.Log("[NUH] 1~7단계 테스트 씬 전체 재생성 완료");
+            BuildStage08();
+            Debug.Log("[NUH] 1~8단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -313,6 +316,28 @@ namespace FlatVenture.NUH.Editor
             Debug.Log($"[NUH] 7단계 테스트 씬 생성 완료: {Stage07ScenePath}");
         }
 
+        [MenuItem("Flat Venture/NUH/8단계 시드 디버그 씬 생성")]
+        public static void BuildStage08FromMenu()
+        {
+            BuildStage08();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_08_SeedDebug 씬 생성을 완료했습니다.", "확인");
+        }
+
+        public static void BuildStage08()
+        {
+            EnsureDirectory(SceneDirectory);
+
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            scene.name = "Test_08_SeedDebug";
+            EnsureEventSystem();
+            CreateSeedDebugUi();
+
+            EditorSceneManager.SaveScene(scene, Stage08ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 8단계 테스트 씬 생성 완료: {Stage08ScenePath}");
+        }
+
         private static void EnsurePlayerCoreComponents(GameObject player)
         {
             if (player.GetComponent<PlayerLocomotionController>() == null)
@@ -423,6 +448,154 @@ namespace FlatVenture.NUH.Editor
                 return;
 
             guide.text = "Test_07_IntegratedDebugUI\n오른쪽 패널: 런타임 수치 조절\n원본 초기화: SO 기본값 복원 (SO 에셋은 변경되지 않음)";
+        }
+
+        private static void CreateSeedDebugUi()
+        {
+            GameObject canvasObject = new GameObject("Pnl_SeedTestUI", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            Canvas canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+
+            GameObject background = new GameObject("Pnl_Background", typeof(RectTransform), typeof(Image));
+            background.transform.SetParent(canvasObject.transform, false);
+            RectTransform backgroundRect = background.GetComponent<RectTransform>();
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = Vector2.zero;
+            background.GetComponent<Image>().color = new Color(0.035f, 0.045f, 0.065f, 1f);
+
+            GameObject panel = new GameObject("Pnl_SeedDebug", typeof(RectTransform), typeof(Image), typeof(SeedDebugPanel));
+            panel.transform.SetParent(background.transform, false);
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = Vector2.zero;
+            panelRect.sizeDelta = new Vector2(1240f, 900f);
+            panel.GetComponent<Image>().color = new Color(0.07f, 0.09f, 0.13f, 0.98f);
+
+            Text title = CreateUiText(panel.transform, "Txt_Title", new Vector2(30f, -24f), new Vector2(1180f, 50f), 30, TextAnchor.UpperLeft);
+            title.text = "Test_08_SeedDebug — MT19937 시드·스트림 재현 테스트";
+
+            Text status = CreateUiText(panel.transform, "Txt_SeedStatus", new Vector2(30f, -82f), new Vector2(1180f, 86f), 23, TextAnchor.UpperLeft);
+            status.text = "실행하면 무작위 6자리 RunSeed가 생성됩니다.";
+
+            Text seedLabel = CreateUiText(panel.transform, "Txt_SeedInputLabel", new Vector2(30f, -190f), new Vector2(260f, 42f), 21, TextAnchor.MiddleLeft);
+            seedLabel.text = "RunSeed (숫자 6자리)";
+            InputField seedInput = CreateUiInputField(panel.transform, "Inp_RunSeed", "예: 123456", new Vector2(30f, 615f), new Vector2(260f, 52f));
+
+            Button applySeed = CreateUiButton(panel.transform, "Btn_ApplySeed", "시드 적용", new Vector2(310f, 615f));
+            Button randomSeed = CreateUiButton(panel.transform, "Btn_RandomSeed", "새 시드", new Vector2(455f, 615f));
+            Button copySeed = CreateUiButton(panel.transform, "Btn_CopySeed", "시드 복사", new Vector2(600f, 615f));
+            Button replaySeed = CreateUiButton(panel.transform, "Btn_ReplaySeed", "동일 시드 재실행", new Vector2(745f, 615f));
+            replaySeed.GetComponent<RectTransform>().sizeDelta = new Vector2(190f, 48f);
+
+            Text streamLabel = CreateUiText(panel.transform, "Txt_StreamInputLabel", new Vector2(30f, -315f), new Vector2(350f, 42f), 21, TextAnchor.MiddleLeft);
+            streamLabel.text = "스트림 이름 (직접 입력 가능)";
+            InputField streamInput = CreateUiInputField(panel.transform, "Inp_StreamName", "Shop", new Vector2(30f, 490f), new Vector2(260f, 52f));
+            streamInput.text = "Shop";
+
+            string[] presetLabels = { "Map", "Monster", "Item", "Shop", "Forge", "Event" };
+            Button[] presetButtons = new Button[presetLabels.Length];
+            for (int i = 0; i < presetLabels.Length; i++)
+            {
+                presetButtons[i] = CreateUiButton(
+                    panel.transform,
+                    $"Btn_Stream{presetLabels[i]}",
+                    presetLabels[i],
+                    new Vector2(310f + (i * 145f), 490f));
+            }
+
+            Button nextValues = CreateUiButton(panel.transform, "Btn_NextSeedValues", "다음 값 5개", new Vector2(30f, 410f));
+            nextValues.GetComponent<RectTransform>().sizeDelta = new Vector2(190f, 52f);
+            Button clearOutput = CreateUiButton(panel.transform, "Btn_ClearSeedOutput", "출력 지우기", new Vector2(240f, 410f));
+            clearOutput.GetComponent<RectTransform>().sizeDelta = new Vector2(190f, 52f);
+
+            Text guide = CreateUiText(panel.transform, "Txt_SeedGuide", new Vector2(480f, -432f), new Vector2(720f, 82f), 19, TextAnchor.UpperLeft);
+            guide.text = "같은 RunSeed + 같은 스트림 + 같은 호출 순서 = 같은 결과\n한 스트림의 호출은 다른 스트림 결과에 영향을 주지 않습니다.";
+
+            GameObject outputBackground = new GameObject("Pnl_StreamOutput", typeof(RectTransform), typeof(Image));
+            outputBackground.transform.SetParent(panel.transform, false);
+            RectTransform outputBackgroundRect = outputBackground.GetComponent<RectTransform>();
+            outputBackgroundRect.anchorMin = Vector2.zero;
+            outputBackgroundRect.anchorMax = Vector2.zero;
+            outputBackgroundRect.pivot = Vector2.zero;
+            outputBackgroundRect.anchoredPosition = new Vector2(30f, 30f);
+            outputBackgroundRect.sizeDelta = new Vector2(1180f, 350f);
+            outputBackground.GetComponent<Image>().color = new Color(0.02f, 0.025f, 0.04f, 1f);
+
+            Text output = CreateUiText(outputBackground.transform, "Txt_StreamOutput", new Vector2(20f, -18f), new Vector2(1140f, 315f), 18, TextAnchor.UpperLeft);
+            output.horizontalOverflow = HorizontalWrapMode.Wrap;
+            output.verticalOverflow = VerticalWrapMode.Truncate;
+
+            SeedDebugPanel debugPanel = panel.GetComponent<SeedDebugPanel>();
+            SerializedObject serializedPanel = new SerializedObject(debugPanel);
+            serializedPanel.FindProperty("seedInput").objectReferenceValue = seedInput;
+            serializedPanel.FindProperty("streamNameInput").objectReferenceValue = streamInput;
+            serializedPanel.FindProperty("statusOutput").objectReferenceValue = status;
+            serializedPanel.FindProperty("streamOutput").objectReferenceValue = output;
+            serializedPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            UnityEventTools.AddPersistentListener(applySeed.onClick, debugPanel.ApplyInputSeed);
+            UnityEventTools.AddPersistentListener(randomSeed.onClick, debugPanel.GenerateRandomSeed);
+            UnityEventTools.AddPersistentListener(copySeed.onClick, debugPanel.CopyCurrentSeed);
+            UnityEventTools.AddPersistentListener(replaySeed.onClick, debugPanel.ReplayCurrentSeed);
+            UnityEventTools.AddPersistentListener(nextValues.onClick, debugPanel.DrawNextValues);
+            UnityEventTools.AddPersistentListener(clearOutput.onClick, debugPanel.ClearOutput);
+            UnityEventTools.AddPersistentListener(presetButtons[0].onClick, debugPanel.SelectMapStream);
+            UnityEventTools.AddPersistentListener(presetButtons[1].onClick, debugPanel.SelectMonsterStream);
+            UnityEventTools.AddPersistentListener(presetButtons[2].onClick, debugPanel.SelectItemStream);
+            UnityEventTools.AddPersistentListener(presetButtons[3].onClick, debugPanel.SelectShopStream);
+            UnityEventTools.AddPersistentListener(presetButtons[4].onClick, debugPanel.SelectForgeStream);
+            UnityEventTools.AddPersistentListener(presetButtons[5].onClick, debugPanel.SelectEventStream);
+        }
+
+        private static InputField CreateUiInputField(
+            Transform parent,
+            string name,
+            string placeholderText,
+            Vector2 anchoredPosition,
+            Vector2 size)
+        {
+            GameObject inputObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(InputField));
+            inputObject.transform.SetParent(parent, false);
+            RectTransform rect = inputObject.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.zero;
+            rect.pivot = Vector2.zero;
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = size;
+            inputObject.GetComponent<Image>().color = new Color(0.14f, 0.17f, 0.22f, 1f);
+
+            Text valueText = CreateUiText(inputObject.transform, "Txt_Value", Vector2.zero, Vector2.zero, 22, TextAnchor.MiddleLeft);
+            StretchInputText(valueText.rectTransform);
+
+            Text placeholder = CreateUiText(inputObject.transform, "Txt_Placeholder", Vector2.zero, Vector2.zero, 20, TextAnchor.MiddleLeft);
+            StretchInputText(placeholder.rectTransform);
+            placeholder.text = placeholderText;
+            placeholder.color = new Color(0.65f, 0.68f, 0.72f, 0.75f);
+            placeholder.fontStyle = FontStyle.Italic;
+
+            InputField input = inputObject.GetComponent<InputField>();
+            input.textComponent = valueText;
+            input.placeholder = placeholder;
+            input.characterLimit = 32;
+            input.lineType = InputField.LineType.SingleLine;
+            return input;
+        }
+
+        private static void StretchInputText(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(14f, 6f);
+            rect.offsetMax = new Vector2(-14f, -6f);
         }
 
         private static void EnsureActiveSkillInputAction()
