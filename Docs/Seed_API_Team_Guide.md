@@ -1,113 +1,153 @@
 # 팀원용 시드 API 적용 가이드
 
-> 목적: 각 담당자가 의현의 시드 모듈을 자신의 콘텐츠에 일관되게 적용하기 위한 규칙
+## 적용 범위
 
-## 핵심 규칙
+이 모듈은 런 콘텐츠를 재현하기 위한 MT19937 난수만 제공합니다. 맵, 몬스터, 아이템, 상점, 제련, 이벤트 담당자는 자신의 생성 코드에서 API를 호출합니다.
 
-1. `UnityEngine.Random`이나 `System.Random`을 시드 적용 콘텐츠에 사용하지 않는다.
-2. 자신이 담당한 시스템 이름으로 독립 스트림을 얻는다.
-3. 스트림은 콘텐츠 생성 시점에만 순서대로 사용한다.
-4. Update, LateUpdate, 물리 프레임 안에서 콘텐츠 스트림을 소비하지 않는다.
-5. 스트림 이름은 배포 후 함부로 바꾸지 않는다.
-6. 치명타·회피 등 실시간 전투 확률에는 이 모듈을 사용하지 않는다.
-7. 후보 목록은 안정적인 콘텐츠 ID로 정렬한 뒤 난수를 적용한다.
+치명타, 회피, 화상 부여처럼 전투 도중 매번 판정하는 확률과 장식용 이펙트·사운드 난수에는 이 모듈을 사용하지 않습니다.
 
-## 담당별 권장 스트림
+## 런 시작 시 서비스 만들기
 
-| 담당 영역 | 스트림 이름 | 주요 용도 |
+마을에서는 다음 런에 사용할 6자리 문자열을 준비합니다.
+
+```csharp
+int nextSeed;
+if (!SeedValue.TryParse(seedInputText, out nextSeed))
+    nextSeed = SeedValue.Generate();
+
+string displayedSeed = SeedValue.Format(nextSeed);
+```
+
+던전 입장 시 시드를 확정하고 서비스 인스턴스를 한 번 만듭니다.
+
+```csharp
+ISeedService seedService = new SeedService(nextSeed);
+```
+
+던전 진행 중에는 이 인스턴스를 교체하지 않습니다. 성공 또는 실패 후 마을로 돌아오면 다음 런용 새 시드를 준비합니다.
+
+## 스트림 가져오기
+
+담당 영역에 맞는 이름으로 스트림을 가져옵니다. 같은 서비스에서 같은 이름을 요청하면 소비 상태가 이어지는 같은 인스턴스가 반환됩니다.
+
+```csharp
+IRandomStream mapRandom = seedService.GetStream(SeedStreamNames.Map);
+IRandomStream shopRandom = seedService.GetStream(SeedStreamNames.Shop);
+IRandomStream secretRoomRandom = seedService.GetStream("SecretRoom");
+```
+
+기본 이름은 다음과 같습니다.
+
+| 담당 영역 | 상수 | 실제 이름 |
 |---|---|---|
-| 지도 | `Map` | 테마, 노드, 방 종류와 연결 |
-| 몬스터 | `Monster` | 종류, 등급, 수량, 위치, 엘리트 특성 |
-| 아이템 | `Item` | 보상 후보, 등급, 옵션, 속성, 리롤 |
-| 상점 | `Shop` | 판매 품목, 가격 변동 후보 |
-| 제련소 | `Forge` | 강화·승급 성공 여부와 결과 |
-| 이벤트 | `Event` | 이벤트 종류와 선택 결과 |
+| 지도 | `SeedStreamNames.Map` | `Map` |
+| 몬스터 | `SeedStreamNames.Monster` | `Monster` |
+| 아이템 | `SeedStreamNames.Item` | `Item` |
+| 상점 | `SeedStreamNames.Shop` | `Shop` |
+| 제련 | `SeedStreamNames.Forge` | `Forge` |
+| 이벤트 | `SeedStreamNames.Event` | `Event` |
 
-새 시스템은 의미가 명확하고 변하지 않을 영문 이름을 사용한다. 예: `PotionDrop`, `SecretRoom`.
+새 스트림 이름은 영문 PascalCase를 권장합니다. 이름은 대소문자를 구분하며 배포 후에는 변경하지 않습니다.
 
-## 기본 사용 흐름
-
-아래 코드는 최종 클래스명이 확정되기 전의 개념 예시다.
+## 기본 API
 
 ```csharp
-// 현재 런에 이미 확정된 시드 서비스에서 담당 스트림을 가져온다.
-IRandomStream stream = seedService.GetStream("Shop");
+// uint 전체 범위
+uint rawValue = shopRandom.NextUInt32();
 
-// 정수 범위: 최소 포함, 최대 제외
-int index = stream.Range(0, candidates.Count);
+// 정수: 0 포함, candidates.Count 제외
+int index = shopRandom.Range(0, candidates.Count);
 
-// 확률은 0~1
-bool success = stream.Chance(0.25f);
+// 실수: 0.5 포함, 1.5 제외
+float scale = shopRandom.Range(0.5f, 1.5f);
 
-// 목록 선택과 셔플은 공통 API 사용
-ItemData selected = stream.Pick(candidates);
-stream.Shuffle(candidates);
+// 25% 확률
+bool success = shopRandom.Chance(0.25f);
 
-// 가중치 선택
-ItemData weighted = stream.WeightedPick(candidates, item => item.Weight);
+// 목록에서 하나 선택
+ItemData selected = shopRandom.Pick(candidates);
+
+// 전달한 목록 자체의 순서를 섞음
+shopRandom.Shuffle(candidates);
 ```
 
-## 올바른 사용 예
+`Chance(0)`과 `Chance(1)`도 호출 순서를 명확히 유지하기 위해 난수를 한 번 소비합니다.
+
+## 가중치 선택
+
+후보와 가중치를 같은 인덱스 순서로 전달합니다. 가중치가 0인 후보는 선택되지 않습니다.
 
 ```csharp
-public void GenerateShopInventory()
+List<ItemData> candidates = new List<ItemData>();
+List<float> weights = new List<float>();
+
+for (int i = 0; i < sortedItemData.Count; i++)
 {
-    IRandomStream random = seedService.GetStream("Shop");
-
-    for (int i = 0; i < slotCount; i++)
-    {
-        inventory[i] = random.WeightedPick(itemPool, item => item.ShopWeight);
-    }
+    ItemData item = sortedItemData[i];
+    candidates.Add(item);
+    weights.Add(item.ShopWeight);
 }
+
+ItemData selected = shopRandom.WeightedPick(candidates, weights);
 ```
 
-상점 생성 함수가 한 번 호출될 때 필요한 값을 순서대로 뽑는다.
-
-## 피해야 할 사용 예
+후보 목록을 직접 관리해야 한다면 인덱스만 받을 수 있습니다.
 
 ```csharp
-private void Update()
-{
-    if (seedService.GetStream("Shop").Chance(0.1f))
-    {
-        // 프레임 수에 따라 호출 횟수가 달라져 재현되지 않는다.
-    }
-}
+int selectedIndex = shopRandom.WeightedIndex(weights);
 ```
+
+## 호출 순서 규칙
+
+한 스트림 내부에서는 호출 순서가 결과를 결정합니다. 생성 함수가 호출될 때 필요한 값을 정해진 순서로 한 번에 소비합니다.
+
+`Update`, `LateUpdate`, 물리 프레임처럼 실행 횟수가 달라질 수 있는 위치에서는 런 콘텐츠 스트림을 소비하지 않습니다.
+
+기능 하나의 호출 추가가 다른 콘텐츠 결과를 바꾸면 안 되는 경우 새 스트림으로 분리합니다. 예를 들어 상점과 비밀방은 각각 `Shop`, `SecretRoom` 스트림을 사용할 수 있습니다.
+
+후보는 재현 가능한 고유 ID로 먼저 정렬한 뒤 난수를 적용합니다. 같은 난수여도 후보 순서가 달라지면 선택 결과가 바뀝니다.
+
+## 상태 저장과 복원
+
+시드만 다시 넣으면 스트림의 처음으로 돌아갑니다. 런 중간부터 이어야 할 때는 상태도 함께 저장합니다.
 
 ```csharp
-int index = UnityEngine.Random.Range(0, candidates.Count);
-// 시드 서비스와 무관하므로 같은 RunSeed를 재현할 수 없다.
+RandomStreamState shopState = shopRandom.CaptureState();
+shopRandom.RestoreState(shopState);
 ```
 
-## 스트림 호출 순서 규칙
+현재까지 생성된 모든 스트림 상태를 다룰 수도 있습니다.
 
-같은 스트림 내부에서는 호출 순서가 결과의 일부다. 이미 출시 또는 테스트 기준으로 사용된 생성 코드 중간에 새 호출을 넣으면 이후 결과가 달라질 수 있다.
-
-변경 영향이 큰 기능은 별도 스트림으로 분리한다.
-
-```text
-권장
-Shop
-Forge
-Event
-
-비권장
-Content 하나에 상점·제련·이벤트를 모두 넣기
+```csharp
+IReadOnlyList<RandomStreamState> states = seedService.CaptureAllStreamStates();
+seedService.RestoreStreamStates(states);
 ```
 
-## 저장과 복원
+이 모듈은 상태 DTO까지만 제공합니다. 파일에 기록하고 불러오는 작업은 세이브 담당자가 수행합니다. 복원할 때는 저장 당시와 같은 RunSeed로 `SeedService`를 만들어야 합니다.
 
-런 중 같은 스트림을 이어서 사용해야 한다면 시드만 다시 넣지 말고 모듈이 제공하는 스트림 상태를 저장한다. 상태 DTO 생성과 복원은 시드 API가 담당하고, 파일에 기록하는 작업은 세이브 담당자가 수행한다.
+## 버그 제보 시 필요한 정보
 
-## 디버깅 절차
-
-버그를 전달할 때 다음 정보를 함께 기록한다.
-
-- RunSeed
-- SeedAlgorithmVersion
+- RunSeed 6자리 값
+- `SeedService.SeedAlgorithmVersion`
 - 스트림 이름
 - 문제가 발생한 막·방·노드
-- 해당 스트림의 가능하면 호출 순번 또는 저장 상태
+- 가능하면 `CallCount` 또는 저장된 `RandomStreamState`
 
-기준 시드 `123456`으로 먼저 재현한 뒤 다른 시드에서도 확인한다.
+팀 공통 재현 확인 시드는 `123456`입니다.
+
+## 제공되는 검증 씬
+
+`Assets/_Scenes/NUH/Test_08_SeedDebug.unity`에서 다음 항목을 콘텐츠 연결 없이 확인할 수 있습니다.
+
+- 무작위 6자리 시드 생성
+- 숫자 6자리 직접 입력과 적용
+- 현재 시드 복사
+- 기본 스트림 또는 임의 이름 스트림 선택
+- 스트림의 다음 MT19937 값 5개와 호출 횟수 확인
+- 동일 시드로 모든 스트림을 초기화한 뒤 첫 결과 재현
+
+기준 시드 `123456`, `Shop` 스트림의 첫 5개 값은 다음과 같습니다.
+
+```text
+2857546384, 4238085333, 2201865542, 2819321446, 3862857544
+```
