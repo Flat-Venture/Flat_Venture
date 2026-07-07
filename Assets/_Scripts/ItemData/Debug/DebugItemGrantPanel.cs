@@ -4,15 +4,27 @@ using UnityEngine.InputSystem;
 
 namespace FlatVenture.ItemData
 {
-    // 키 입력으로 여닫는 아이템 지급 테스트 패널입니다.
-    // 모든 아이템을 버튼으로 보여주고, 클릭한 아이템의 한글 이름만 임시 보관함에 저장합니다.
+    // F2 입력으로 열리는 아이템 지급 테스트 패널입니다.
+    // 아이템 목록과 임시 인벤토리에 아이콘을 표시해서 ItemAssetDatabaseSO 연결 상태를 확인할 수 있습니다.
     public sealed class DebugItemGrantPanel : MonoBehaviour
     {
+        private const string WindowTitle = "\uC544\uC774\uD15C \uCE58\uD2B8 \uC9C0\uAE09";
+        private const string ItemListTitle = "\uC804\uCCB4 \uC544\uC774\uD15C";
+        private const string InventoryTitle = "\uC784\uC2DC \uC778\uBCA4\uD1A0\uB9AC ";
+        private const string ClearButtonText = "\uBE44\uC6B0\uAE30";
+        private const string CloseButtonText = "\uB2EB\uAE30";
+        private const string EmptyCatalogMessage = "GameDataLoaderBehaviour\uB97C \uCC3E\uC9C0 \uBABB\uD588\uAC70\uB098 Catalog\uAC00 \uC544\uC9C1 \uB85C\uB4DC\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4.";
+        private const string CheckLoaderMessage = "\uC2EC\uC5D0 GameDataLoaderBehaviour\uB97C \uBD99\uC778 \uC624\uBE0C\uC81D\uD2B8\uAC00 \uC788\uB294\uC9C0 \uD655\uC778\uD558\uC138\uC694.";
+        private const string InitialMessage = "F2\uB85C \uC544\uC774\uD15C \uCE58\uD2B8 \uD328\uB110\uC744 \uC5F4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.";
+        private const string ClearedMessage = "\uC784\uC2DC \uC778\uBCA4\uD1A0\uB9AC\uB97C \uBE44\uC6E0\uC2B5\uB2C8\uB2E4.";
+
         [SerializeField] private GameDataLoaderBehaviour dataLoader;
+        [SerializeField] private ItemAssetDatabaseSO itemAssetDatabase;
         [SerializeField] private Key toggleKey = Key.F2;
         [SerializeField] private int inventoryCapacity = 25;
         [SerializeField] private int panelWidth = 1280;
         [SerializeField] private int panelHeight = 720;
+        [SerializeField] private int iconSize = 28;
 
         private DebugItemGrantInventory inventory;
         private GameDataCatalog catalog;
@@ -21,9 +33,11 @@ namespace FlatVenture.ItemData
         private ItemRecord hoveredInventoryItem;
         private Rect hoveredTooltipRect;
         private bool isOpen;
-        private string lastMessage = "F2 키로 아이템 치트 패널을 열 수 있습니다.";
+        private string lastMessage = InitialMessage;
+        private GUIStyle itemButtonStyle;
+        private GUIStyle inventoryRowStyle;
 
-        // 임시 보관함을 만들고 씬에 있는 데이터 로더를 찾습니다.
+        // 임시 인벤토리를 만들고 씬에 있는 데이터 로더를 찾습니다.
         private void Awake()
         {
             inventory = new DebugItemGrantInventory(inventoryCapacity);
@@ -32,14 +46,14 @@ namespace FlatVenture.ItemData
                 dataLoader = FindFirstObjectByType<GameDataLoaderBehaviour>();
         }
 
-        // 토글 키 입력을 감지하고 카탈로그 참조를 갱신합니다.
+        // 토글 키 입력을 감지하고 Catalog 참조를 갱신합니다.
         private void Update()
         {
-            if (WasToggleKeyPressed())
-            {
-                isOpen = !isOpen;
-                RefreshCatalog();
-            }
+            if (!WasToggleKeyPressed())
+                return;
+
+            isOpen = !isOpen;
+            RefreshCatalog();
         }
 
         // Input System에서 토글 키가 이번 프레임에 눌렸는지 확인합니다.
@@ -54,11 +68,12 @@ namespace FlatVenture.ItemData
             if (!isOpen)
                 return;
 
+            EnsureStyles();
             var rect = new Rect(20f, 20f, panelWidth, panelHeight);
-            GUILayout.Window(GetInstanceID(), rect, DrawWindow, "아이템 치트 지급");
+            GUILayout.Window(GetInstanceID(), rect, DrawWindow, WindowTitle);
         }
 
-        // 데이터 로더에서 최신 카탈로그를 가져옵니다.
+        // 데이터 로더에서 최신 Catalog를 가져옵니다.
         private void RefreshCatalog()
         {
             if (dataLoader == null)
@@ -74,8 +89,8 @@ namespace FlatVenture.ItemData
 
             if (catalog == null)
             {
-                GUILayout.Label("GameDataLoaderBehaviour를 찾지 못했거나 아직 Catalog가 로드되지 않았습니다.");
-                GUILayout.Label("씬에 GameDataLoaderBehaviour를 붙인 오브젝트가 있는지 확인하세요.");
+                GUILayout.Label(EmptyCatalogMessage);
+                GUILayout.Label(CheckLoaderMessage);
                 DrawFooter();
                 return;
             }
@@ -93,8 +108,9 @@ namespace FlatVenture.ItemData
         // 상단 상태 정보를 출력합니다.
         private void DrawHeader()
         {
-            GUILayout.Label("토글 키: " + toggleKey);
-            GUILayout.Label("상태: " + lastMessage);
+            GUILayout.Label("\uD1A0\uAE00 \uD0A4: " + toggleKey);
+            GUILayout.Label("ItemAssetDatabase: " + BuildDatabaseStatusText());
+            GUILayout.Label("\uC0C1\uD0DC: " + lastMessage);
             GUILayout.Space(6f);
         }
 
@@ -102,7 +118,7 @@ namespace FlatVenture.ItemData
         private void DrawItemList()
         {
             GUILayout.BeginVertical(GUILayout.Width(panelWidth * 0.58f));
-            GUILayout.Label("전체 아이템");
+            GUILayout.Label(ItemListTitle);
 
             itemScroll = GUILayout.BeginScrollView(itemScroll, GUILayout.Height(panelHeight - 125f));
             foreach (var item in GetSortedItems())
@@ -112,18 +128,26 @@ namespace FlatVenture.ItemData
             GUILayout.EndVertical();
         }
 
-        // 아이템 하나를 지급 버튼으로 출력합니다.
+        // 아이콘이 포함된 아이템 지급 버튼을 출력합니다.
         private void DrawItemButton(ItemRecord item)
         {
             if (item == null || item.definition == null)
                 return;
 
-            var label = item.definition.itemId + " / " + item.definition.displayName;
-            if (GUILayout.Button(label, GUILayout.Height(26f)))
+            var itemId = item.definition.itemId;
+            var label = itemId + " / " + item.definition.displayName;
+            var rect = GUILayoutUtility.GetRect(1f, iconSize + 8f, GUILayout.ExpandWidth(true));
+
+            if (GUI.Button(rect, GUIContent.none, itemButtonStyle))
                 GrantItem(item);
+
+            var iconRect = new Rect(rect.x + 6f, rect.y + 4f, iconSize, iconSize);
+            var labelRect = new Rect(iconRect.xMax + 8f, rect.y, rect.width - iconSize - 18f, rect.height);
+            DrawSprite(iconRect, GetIconSprite(itemId));
+            GUI.Label(labelRect, label);
         }
 
-        // 클릭한 아이템을 임시 보관함에 추가합니다.
+        // 클릭한 아이템을 임시 인벤토리에 추가합니다.
         private void GrantItem(ItemRecord item)
         {
             if (inventory.TryAdd(item, out lastMessage))
@@ -132,42 +156,48 @@ namespace FlatVenture.ItemData
                 Debug.LogWarning("[DebugItemGrantPanel] " + lastMessage);
         }
 
-        // 현재 보유 중인 임시 아이템 이름 목록을 출력합니다.
+        // 현재 보유 중인 임시 아이템 목록을 출력합니다.
         private void DrawInventory()
         {
             GUILayout.BeginVertical(GUILayout.Width(panelWidth * 0.36f));
-            GUILayout.Label("임시 인벤토리 " + inventory.Count + "/" + inventory.Capacity);
+            GUILayout.Label(InventoryTitle + inventory.Count + "/" + inventory.Capacity);
 
             hoveredInventoryItem = null;
             inventoryScroll = GUILayout.BeginScrollView(inventoryScroll, GUILayout.Height(panelHeight - 155f));
             var acquiredItems = inventory.AcquiredItems;
             for (var i = 0; i < acquiredItems.Count; i++)
-                DrawInventoryItemLabel(i, acquiredItems[i]);
+                DrawInventoryItemRow(i, acquiredItems[i]);
             GUILayout.EndScrollView();
 
-            if (GUILayout.Button("비우기", GUILayout.Height(28f)))
+            if (GUILayout.Button(ClearButtonText, GUILayout.Height(28f)))
             {
                 inventory.Clear();
-                lastMessage = "임시 인벤토리를 비웠습니다.";
+                lastMessage = ClearedMessage;
             }
 
             GUILayout.EndVertical();
         }
 
-        // 임시 인벤토리 안의 아이템 이름을 출력하고 마우스 오버를 감지합니다.
-        private void DrawInventoryItemLabel(int index, DebugAcquiredItem acquiredItem)
+        // 임시 인벤토리 한 줄을 아이콘과 함께 출력하고 마우스 오버를 감지합니다.
+        private void DrawInventoryItemRow(int index, DebugAcquiredItem acquiredItem)
         {
             if (acquiredItem == null)
                 return;
 
-            GUILayout.Label((index + 1) + ". " + acquiredItem.displayName, GUILayout.Height(24f));
-            var itemRect = GUILayoutUtility.GetLastRect();
+            var rowHeight = iconSize + 8f;
+            var rowRect = GUILayoutUtility.GetRect(1f, rowHeight, GUILayout.ExpandWidth(true));
+            GUI.Box(rowRect, GUIContent.none, inventoryRowStyle);
 
-            if (!itemRect.Contains(Event.current.mousePosition))
+            var iconRect = new Rect(rowRect.x + 4f, rowRect.y + 4f, iconSize, iconSize);
+            var labelRect = new Rect(iconRect.xMax + 8f, rowRect.y, rowRect.width - iconSize - 16f, rowHeight);
+            DrawSprite(iconRect, GetIconSprite(acquiredItem.itemId));
+            GUI.Label(labelRect, (index + 1) + ". " + acquiredItem.displayName);
+
+            if (!rowRect.Contains(Event.current.mousePosition))
                 return;
 
             hoveredInventoryItem = acquiredItem.itemRecord;
-            hoveredTooltipRect = new Rect(itemRect.xMax + 12f, itemRect.y, 360f, 260f);
+            hoveredTooltipRect = new Rect(rowRect.xMax + 12f, rowRect.y, 360f, 260f);
         }
 
         // 마우스를 올린 인벤토리 아이템의 상세 정보를 오른쪽에 출력합니다.
@@ -184,8 +214,8 @@ namespace FlatVenture.ItemData
         {
             var text = item.definition.displayName + "\n";
             text += "ID: " + item.definition.itemId + "\n";
-            text += "희귀도: " + item.definition.rarityId + "\n";
-            text += "고유: " + item.definition.isUnique + " / 저주: " + item.definition.isCursed + "\n\n";
+            text += "\uD76C\uADC0\uB3C4: " + item.definition.rarityId + "\n";
+            text += "\uACE0\uC720: " + item.definition.isUnique + " / \uC800\uC8FC: " + item.definition.isCursed + "\n\n";
             text += BuildElementText(item);
             text += BuildStatText(item);
             text += BuildEffectText(item);
@@ -196,9 +226,9 @@ namespace FlatVenture.ItemData
         private static string BuildElementText(ItemRecord item)
         {
             if (item.elements.Count == 0)
-                return "속성: 없음\n";
+                return "\uC18D\uC131: \uC5C6\uC74C\n";
 
-            var text = "속성:\n";
+            var text = "\uC18D\uC131:\n";
             for (var i = 0; i < item.elements.Count; i++)
                 text += "- " + item.elements[i].elementId + " +" + item.elements[i].elementValue + "\n";
 
@@ -209,9 +239,9 @@ namespace FlatVenture.ItemData
         private static string BuildStatText(ItemRecord item)
         {
             if (item.stats.Count == 0)
-                return "스탯: 없음\n";
+                return "\uC2A4\uD0EF: \uC5C6\uC74C\n";
 
-            var text = "스탯:\n";
+            var text = "\uC2A4\uD0EF:\n";
             for (var i = 0; i < item.stats.Count; i++)
             {
                 var stat = item.stats[i];
@@ -225,9 +255,9 @@ namespace FlatVenture.ItemData
         private static string BuildEffectText(ItemRecord item)
         {
             if (item.effects.Count == 0)
-                return "효과: 없음";
+                return "\uD6A8\uACFC: \uC5C6\uC74C";
 
-            var text = "효과:\n";
+            var text = "\uD6A8\uACFC:\n";
             for (var i = 0; i < item.effects.Count; i++)
             {
                 var effect = item.effects[i];
@@ -241,7 +271,7 @@ namespace FlatVenture.ItemData
         private void DrawFooter()
         {
             GUILayout.Space(6f);
-            if (GUILayout.Button("닫기", GUILayout.Height(28f)))
+            if (GUILayout.Button(CloseButtonText, GUILayout.Height(28f)))
                 isOpen = false;
         }
 
@@ -251,6 +281,63 @@ namespace FlatVenture.ItemData
             var items = new List<ItemRecord>(catalog.items.Values);
             items.Sort(CompareItemId);
             return items;
+        }
+
+        // item_id로 아이콘 Texture를 가져옵니다.
+        private Sprite GetIconSprite(string itemId)
+        {
+            return ItemIconResolver.ResolveIcon(itemId, itemAssetDatabase);
+        }
+
+        // Sprite의 textureRect를 반영해서 IMGUI 영역에 그립니다.
+        private static void DrawSprite(Rect rect, Sprite sprite)
+        {
+            if (sprite == null || sprite.texture == null)
+            {
+                GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.ScaleToFit);
+                return;
+            }
+
+            var texture = sprite.texture;
+            var textureRect = sprite.textureRect;
+            var texCoords = new Rect(
+                textureRect.x / texture.width,
+                textureRect.y / texture.height,
+                textureRect.width / texture.width,
+                textureRect.height / texture.height);
+
+            GUI.DrawTextureWithTexCoords(rect, texture, texCoords, true);
+        }
+
+        // 패널 상단에 보여줄 Database 연결 상태 문자열을 만듭니다.
+        private string BuildDatabaseStatusText()
+        {
+            if (itemAssetDatabase == null)
+                return "None - Inspector\uC5D0 ItemAssetDatabase.asset\uC744 \uC5F0\uACB0\uD574\uC57C \uC2E4\uC81C \uC544\uC774\uCF58\uC774 \uB098\uC635\uB2C8\uB2E4.";
+
+            return itemAssetDatabase.ItemAssets.Count + " assets";
+        }
+
+        // IMGUI 스타일을 준비합니다.
+        private void EnsureStyles()
+        {
+            if (itemButtonStyle == null)
+            {
+                itemButtonStyle = new GUIStyle(GUI.skin.button)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    imagePosition = ImagePosition.ImageLeft,
+                    fixedHeight = iconSize + 8f
+                };
+            }
+
+            if (inventoryRowStyle == null)
+            {
+                inventoryRowStyle = new GUIStyle(GUI.skin.box)
+                {
+                    alignment = TextAnchor.MiddleLeft
+                };
+            }
         }
 
         // 아이템 ID를 기준으로 정렬합니다.

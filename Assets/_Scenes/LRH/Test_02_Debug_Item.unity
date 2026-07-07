@@ -150,10 +150,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.ItemData.DebugItemGrantPanel
   dataLoader: {fileID: 0}
+  itemAssetDatabase: {fileID: 11400000, guid: c58a97b8daee3ab438fe198c6e35d16d, type: 2}
   toggleKey: 95
   inventoryCapacity: 25
   panelWidth: 1280
   panelHeight: 720
+  iconSize: 28
 --- !u!114 &4778408
 MonoBehaviour:
   m_ObjectHideFlags: 0

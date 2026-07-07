@@ -56,7 +56,6 @@ namespace FlatVenture.ItemData
                     itemId = CsvValue.String(row, "item_id"),
                     displayName = CsvValue.String(row, "display_name"),
                     rarityId = CsvValue.String(row, "rarity"),
-                    iconPath = CsvValue.String(row, "icon_path"),
                     isCursed = CsvValue.Bool(row, "is_cursed"),
                     isUnique = CsvValue.Bool(row, "is_unique"),
                     dropPool = CsvValue.String(row, "drop_pool"),
