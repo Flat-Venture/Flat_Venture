@@ -28,6 +28,8 @@ namespace FlatVenture.NUH.Editor
     /// </summary>
     public static class PlayerBaseTestSceneBuilder
     {
+        // 테스트 씬을 단계별로 복사·확장할 때 사용하는 고정 에셋 경로입니다.
+        // 문자열을 한곳에 모아 씬 이름이나 폴더 변경 시 누락을 막습니다.
         private const string SceneDirectory = "Assets/_Scenes/NUH";
         private const string ScenePath = SceneDirectory + "/Test_01_PlayerBase.unity";
         private const string Stage02ScenePath = SceneDirectory + "/Test_02_MovementCamera.unity";
@@ -37,6 +39,7 @@ namespace FlatVenture.NUH.Editor
         private const string Stage06ScenePath = SceneDirectory + "/Test_06_SwordWave.unity";
         private const string Stage07ScenePath = SceneDirectory + "/Test_07_IntegratedDebugUI.unity";
         private const string Stage08ScenePath = SceneDirectory + "/Test_08_SeedDebug.unity";
+        private const string Stage09ScenePath = SceneDirectory + "/Test_09_PlayerValidation.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
@@ -45,13 +48,18 @@ namespace FlatVenture.NUH.Editor
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
+        /// <summary>Unity 메뉴에서 1~9단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~8단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~9단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
+        /// <summary>
+        /// 앞 단계 결과를 다음 단계가 기반으로 사용하도록 1단계부터 순서대로 생성합니다.
+        /// 테스트 씬 직렬화 참조가 깨졌을 때도 이 함수 하나로 복구할 수 있습니다.
+        /// </summary>
         public static void RebuildAllStages()
         {
             Build();
@@ -62,7 +70,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage06();
             BuildStage07();
             BuildStage08();
-            Debug.Log("[NUH] 1~8단계 테스트 씬 전체 재생성 완료");
+            BuildStage09();
+            Debug.Log("[NUH] 1~9단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -72,6 +81,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_01_PlayerBase 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>1단계 플레이어 데이터·입력·기본 환경 씬을 생성합니다.</summary>
         public static void Build()
         {
             EnsureDirectory(SceneDirectory);
@@ -90,6 +100,7 @@ namespace FlatVenture.NUH.Editor
             CreateEnvironment();
             CreatePlayer(stats, inputActions);
             CreateCamera();
+            AssignMovementReference(Object.FindFirstObjectByType<PlayerLocomotionController>());
             CreateLight();
             CreateTestUi();
 
@@ -106,6 +117,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_02_MovementCamera 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>1단계 씬에 Cinemachine Orbit 카메라와 경사 지형을 추가합니다.</summary>
         public static void BuildStage02()
         {
             EnsureDirectory(SceneDirectory);
@@ -141,6 +153,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_03_Dash 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>2단계 씬에 대시 입력·상태 표시·벽 충돌 테스트를 추가합니다.</summary>
         public static void BuildStage03()
         {
             EnsureDirectory(SceneDirectory);
@@ -177,6 +190,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_04_HealthDeath 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>3단계 씬에 HP·피격 무적·사망 UI와 피해 구역을 추가합니다.</summary>
         public static void BuildStage04()
         {
             EnsureDirectory(SceneDirectory);
@@ -208,6 +222,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_05_AimBasicAttack 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>4단계 씬에 자동/수동 조준 기본 공격과 더미 타깃을 추가합니다.</summary>
         public static void BuildStage05()
         {
             EnsureDirectory(SceneDirectory);
@@ -243,6 +258,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_06_SwordWave 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>5단계 씬에 검기 프리팹·오브젝트 풀·액티브 스킬 테스트를 추가합니다.</summary>
         public static void BuildStage06()
         {
             EnsureDirectory(SceneDirectory);
@@ -253,13 +269,18 @@ namespace FlatVenture.NUH.Editor
             if (!File.Exists(Path.GetFullPath(Stage05ScenePath)))
                 BuildStage05();
 
-            WarriorSwordWaveProjectile projectilePrefab = CreateSwordWavePrefab();
+            CreateSwordWavePrefab();
             Scene scene = EditorSceneManager.OpenScene(Stage05ScenePath, OpenSceneMode.Single);
             PlayerController player = Object.FindFirstObjectByType<PlayerController>();
             if (player == null)
                 throw new MissingReferenceException("5단계 씬에서 PlayerController를 찾을 수 없습니다.");
 
             EnsurePlayerCoreComponents(player.gameObject);
+
+            WarriorSwordWaveProjectile projectilePrefab =
+                AssetDatabase.LoadAssetAtPath<WarriorSwordWaveProjectile>(SwordWavePrefabPath);
+            if (projectilePrefab == null)
+                throw new MissingReferenceException("검기 프리팹을 찾을 수 없습니다.");
 
             PlayerBasicAttackController basicAttack = player.GetComponent<PlayerBasicAttackController>();
             if (basicAttack != null)
@@ -290,6 +311,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_07_IntegratedDebugUI 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>플레이어 기능을 한 화면에서 조절할 통합 디버그 패널을 추가합니다.</summary>
         public static void BuildStage07()
         {
             EnsureDirectory(SceneDirectory);
@@ -301,10 +323,14 @@ namespace FlatVenture.NUH.Editor
             if (player != null)
                 EnsurePlayerCoreComponents(player.gameObject);
             WarriorSwordWaveController swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
             PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
             PlayerHealthController health = Object.FindFirstObjectByType<PlayerHealthController>();
-            if (player == null || locomotion == null || health == null || swordWave == null)
+            if (player == null || locomotion == null || health == null || basicAttack == null || swordWave == null)
                 throw new MissingReferenceException("6단계 씬에서 플레이어 또는 검기 컨트롤러를 찾을 수 없습니다.");
+
+            basicAttack.enabled = true;
+            AssignPlayerInspectorReferences(player, locomotion, swordWave);
 
             RemoveLegacyDebugUi();
             CreateIntegratedDebugPanel(player, locomotion, health, swordWave);
@@ -323,6 +349,7 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.DisplayDialog("Flat Venture", "Test_08_SeedDebug 씬 생성을 완료했습니다.", "확인");
         }
 
+        /// <summary>플레이어와 분리된 시드 생성·스트림 재현 전용 씬을 생성합니다.</summary>
         public static void BuildStage08()
         {
             EnsureDirectory(SceneDirectory);
@@ -338,16 +365,104 @@ namespace FlatVenture.NUH.Editor
             Debug.Log($"[NUH] 8단계 테스트 씬 생성 완료: {Stage08ScenePath}");
         }
 
+        [MenuItem("Flat Venture/NUH/9단계 플레이어 모듈 검증 씬 생성")]
+        public static void BuildStage09FromMenu()
+        {
+            BuildStage09();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_09_PlayerValidation 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>통합 플레이어 씬에 자동 검증 패널과 수동 테스트 안내를 추가합니다.</summary>
+        public static void BuildStage09()
+        {
+            EnsureDirectory(SceneDirectory);
+            if (!File.Exists(Path.GetFullPath(Stage07ScenePath)))
+                BuildStage07();
+
+            Scene scene = EditorSceneManager.OpenScene(Stage07ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerInputReader inputReader = Object.FindFirstObjectByType<PlayerInputReader>();
+            PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
+            PlayerHealthController health = Object.FindFirstObjectByType<PlayerHealthController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            WarriorSwordWaveController swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            if (player == null || inputReader == null || locomotion == null || health == null
+                || basicAttack == null || swordWave == null)
+            {
+                throw new MissingReferenceException("7단계 씬에서 플레이어 모듈 구성요소를 찾을 수 없습니다.");
+            }
+
+            basicAttack.enabled = true;
+            AssignPlayerInspectorReferences(player, locomotion, swordWave);
+            CreatePlayerValidationPanel(player, inputReader, locomotion, health, basicAttack, swordWave);
+            UpdatePlayerValidationGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage09ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 9단계 테스트 씬 생성 완료: {Stage09ScenePath}");
+        }
+
+        /// <summary>
+        /// 단계가 올라가도 플레이어 핵심 컴포넌트와 SO·카메라 참조가 빠지지 않도록 보장합니다.
+        /// </summary>
         private static void EnsurePlayerCoreComponents(GameObject player)
         {
+            PlayerController playerController = player.GetComponent<PlayerController>();
+            if (playerController == null)
+                playerController = player.AddComponent<PlayerController>();
+            AssignPlayerStats(playerController, LoadOrCreateStats());
+
             if (player.GetComponent<PlayerLocomotionController>() == null)
                 player.AddComponent<PlayerLocomotionController>();
             if (player.GetComponent<PlayerHealthController>() == null)
                 player.AddComponent<PlayerHealthController>();
             if (player.GetComponent<PlayerAimResolver>() == null)
                 player.AddComponent<PlayerAimResolver>();
+
+            AssignMovementReference(player.GetComponent<PlayerLocomotionController>());
         }
 
+        /// <summary>
+        /// 플레이어 인스펙터에서 확인할 수 있도록 씬 오브젝트와 프리팹 참조를 명시적으로 연결합니다.
+        /// 런타임 자동 탐색에만 의존하지 않아 누락된 참조를 에디터에서 바로 발견할 수 있습니다.
+        /// </summary>
+        private static void AssignPlayerInspectorReferences(
+            PlayerController player,
+            PlayerLocomotionController locomotion,
+            WarriorSwordWaveController swordWave)
+        {
+            AssignPlayerStats(player, LoadOrCreateStats());
+            AssignMovementReference(locomotion);
+
+            WarriorSwordWaveProjectile projectilePrefab =
+                AssetDatabase.LoadAssetAtPath<WarriorSwordWaveProjectile>(SwordWavePrefabPath);
+            if (projectilePrefab == null)
+                throw new MissingReferenceException("검기 프리팹을 찾을 수 없습니다.");
+
+            SerializedObject skillObject = new SerializedObject(swordWave);
+            skillObject.Update();
+            skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            skillObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(swordWave);
+        }
+
+        /// <summary>
+        /// 이동 방향 계산의 기준이 되는 Main Camera Transform을 Locomotion 인스펙터에 연결합니다.
+        /// </summary>
+        private static void AssignMovementReference(PlayerLocomotionController locomotion)
+        {
+            if (locomotion == null || Camera.main == null)
+                return;
+
+            SerializedObject locomotionObject = new SerializedObject(locomotion);
+            locomotionObject.Update();
+            locomotionObject.FindProperty("movementReference").objectReferenceValue = Camera.main.transform;
+            locomotionObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(locomotion);
+        }
+
+        /// <summary>이전 단계의 개별 디버그 UI를 제거해 통합 패널과 겹치지 않게 합니다.</summary>
         private static void RemoveLegacyDebugUi()
         {
             string[] names =
@@ -368,6 +483,7 @@ namespace FlatVenture.NUH.Editor
             }
         }
 
+        /// <summary>오른쪽에 능력치 조절·피해·초기화 버튼을 가진 통합 패널을 만듭니다.</summary>
         private static void CreateIntegratedDebugPanel(
             PlayerController player,
             PlayerLocomotionController locomotion,
@@ -423,6 +539,7 @@ namespace FlatVenture.NUH.Editor
             UnityEventTools.AddPersistentListener(noCooldown.onClick, debugPanel.ToggleSwordWaveNoCooldown);
         }
 
+        /// <summary>능력치 한 항목의 이름과 -/+ 버튼을 같은 행에 생성합니다.</summary>
         private static void CreateDebugButtonPair(Transform parent, string label, float y, UnityAction downAction, UnityAction upAction)
         {
             Text rowLabel = CreateUiText(parent, $"Txt_{label}", Vector2.zero, new Vector2(250f, 44f), 20, TextAnchor.MiddleLeft);
@@ -441,6 +558,7 @@ namespace FlatVenture.NUH.Editor
             UnityEventTools.AddPersistentListener(up.onClick, upAction);
         }
 
+        /// <summary>Test_07 상단 안내 문구를 통합 UI 사용법으로 바꿉니다.</summary>
         private static void UpdateIntegratedUiGuide()
         {
             GameObject guideObject = GameObject.Find("Txt_TestGuide");
@@ -450,6 +568,98 @@ namespace FlatVenture.NUH.Editor
             guide.text = "Test_07_IntegratedDebugUI\n오른쪽 패널: 런타임 수치 조절\n원본 초기화: SO 기본값 복원 (SO 에셋은 변경되지 않음)";
         }
 
+        /// <summary>Test_09 왼쪽에 실시간 상태와 자동 검증 버튼을 가진 패널을 만듭니다.</summary>
+        private static void CreatePlayerValidationPanel(
+            PlayerController player,
+            PlayerInputReader inputReader,
+            PlayerLocomotionController locomotion,
+            PlayerHealthController health,
+            PlayerBasicAttackController basicAttack,
+            WarriorSwordWaveController swordWave)
+        {
+            GameObject oldPanel = GameObject.Find("Pnl_PlayerValidation");
+            if (oldPanel != null)
+                Object.DestroyImmediate(oldPanel);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            GameObject panel = new GameObject(
+                "Pnl_PlayerValidation",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(PlayerModuleValidationPanel));
+            panel.transform.SetParent(canvas.transform, false);
+
+            RectTransform panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = Vector2.zero;
+            panelRect.anchorMax = Vector2.zero;
+            panelRect.pivot = Vector2.zero;
+            panelRect.anchoredPosition = new Vector2(20f, 20f);
+            panelRect.sizeDelta = new Vector2(740f, 820f);
+            panel.GetComponent<Image>().color = new Color(0.025f, 0.04f, 0.06f, 0.93f);
+
+            Text title = CreateUiText(panel.transform, "Txt_ValidationTitle", new Vector2(20f, -16f), new Vector2(700f, 42f), 26, TextAnchor.UpperLeft);
+            title.text = "플레이어 모듈 검증";
+
+            Text liveStatus = CreateUiText(panel.transform, "Txt_ValidationLiveStatus", new Vector2(20f, -64f), new Vector2(700f, 145f), 18, TextAnchor.UpperLeft);
+            Text results = CreateUiText(panel.transform, "Txt_ValidationResults", new Vector2(20f, -215f), new Vector2(700f, 150f), 18, TextAnchor.UpperLeft);
+            results.text = "아래 자동 검증 버튼을 실행하세요.";
+
+            Text manualGuide = CreateUiText(panel.transform, "Txt_ValidationManualGuide", new Vector2(20f, -375f), new Vector2(700f, 250f), 18, TextAnchor.UpperLeft);
+            manualGuide.text =
+                "[직접 조작 검증]\n" +
+                "1. WASD 이동 중 좌클릭 조준·우클릭 검기·Space 대시\n" +
+                "2. 이동 입력 없이 Space: 대시가 발생하지 않아야 함\n" +
+                "3. 대시 중 공격·검기 가능, 방향은 처음 입력으로 고정\n" +
+                "4. 타깃이 없을 때 자동 공격 정지, 좌클릭은 빈 공간 공격\n" +
+                "5. 검기 3발 발사·관통·벽 반환 후 Pool Active가 0\n" +
+                "6. 원본 초기화 후 HP·대시·쿨타임·무적 상태 확인";
+
+            Button damageGrace = CreateUiButton(panel.transform, "Btn_CheckDamageGrace", "피격 무적", new Vector2(20f, 82f));
+            Button overlap = CreateUiButton(panel.transform, "Btn_CheckInvincibility", "무적 중첩", new Vector2(195f, 82f));
+            Button deathReset = CreateUiButton(panel.transform, "Btn_CheckDeathReset", "사망·초기화", new Vector2(370f, 82f));
+            Button boundaries = CreateUiButton(panel.transform, "Btn_CheckBoundaries", "경계값", new Vector2(545f, 82f));
+            foreach (Button button in new[] { damageGrace, overlap, deathReset, boundaries })
+                button.GetComponent<RectTransform>().sizeDelta = new Vector2(155f, 48f);
+
+            Button runAll = CreateUiButton(panel.transform, "Btn_RunAllPlayerChecks", "자동 검증 전체 실행", new Vector2(20f, 20f));
+            runAll.GetComponent<RectTransform>().sizeDelta = new Vector2(220f, 48f);
+            Button clear = CreateUiButton(panel.transform, "Btn_ClearPlayerChecks", "결과 지우기", new Vector2(260f, 20f));
+            clear.GetComponent<RectTransform>().sizeDelta = new Vector2(155f, 48f);
+
+            PlayerModuleValidationPanel validationPanel = panel.GetComponent<PlayerModuleValidationPanel>();
+            SerializedObject serializedPanel = new SerializedObject(validationPanel);
+            serializedPanel.FindProperty("player").objectReferenceValue = player;
+            serializedPanel.FindProperty("inputReader").objectReferenceValue = inputReader;
+            serializedPanel.FindProperty("locomotion").objectReferenceValue = locomotion;
+            serializedPanel.FindProperty("health").objectReferenceValue = health;
+            serializedPanel.FindProperty("basicAttack").objectReferenceValue = basicAttack;
+            serializedPanel.FindProperty("swordWave").objectReferenceValue = swordWave;
+            serializedPanel.FindProperty("liveStatusOutput").objectReferenceValue = liveStatus;
+            serializedPanel.FindProperty("validationResultOutput").objectReferenceValue = results;
+            serializedPanel.ApplyModifiedPropertiesWithoutUndo();
+
+            UnityEventTools.AddPersistentListener(damageGrace.onClick, validationPanel.RunDamageGraceCheck);
+            UnityEventTools.AddPersistentListener(overlap.onClick, validationPanel.RunInvincibilityOverlapCheck);
+            UnityEventTools.AddPersistentListener(deathReset.onClick, validationPanel.RunDeathResetCheck);
+            UnityEventTools.AddPersistentListener(boundaries.onClick, validationPanel.RunBoundaryCheck);
+            UnityEventTools.AddPersistentListener(runAll.onClick, validationPanel.RunAllChecks);
+            UnityEventTools.AddPersistentListener(clear.onClick, validationPanel.ClearResults);
+        }
+
+        /// <summary>Test_09 상단 안내 문구를 검증 씬 사용법으로 바꿉니다.</summary>
+        private static void UpdatePlayerValidationGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text =
+                "Test_09_PlayerValidation\n" +
+                "왼쪽: 자동 검증·실시간 상태 | 오른쪽: 능력치 조절\n" +
+                "중앙 플레이 영역에서 이동·대시·조준·공격·검기를 함께 확인";
+        }
+
+        /// <summary>시드 입력·복사·스트림 선택·난수 출력을 한 화면에 구성합니다.</summary>
         private static void CreateSeedDebugUi()
         {
             GameObject canvasObject = new GameObject("Pnl_SeedTestUI", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -555,6 +765,7 @@ namespace FlatVenture.NUH.Editor
             UnityEventTools.AddPersistentListener(presetButtons[5].onClick, debugPanel.SelectEventStream);
         }
 
+        /// <summary>레거시 UGUI InputField와 값 Text·Placeholder를 함께 생성합니다.</summary>
         private static InputField CreateUiInputField(
             Transform parent,
             string name,
@@ -589,6 +800,7 @@ namespace FlatVenture.NUH.Editor
             return input;
         }
 
+        /// <summary>InputField 내부 Text가 부모 Rect 안쪽 여백을 제외하고 늘어나게 설정합니다.</summary>
         private static void StretchInputText(RectTransform rect)
         {
             rect.anchorMin = Vector2.zero;
@@ -598,6 +810,7 @@ namespace FlatVenture.NUH.Editor
             rect.offsetMax = new Vector2(-14f, -6f);
         }
 
+        /// <summary>공유 InputActions에 ActiveSkill 액션이 없다면 우클릭 바인딩과 함께 추가합니다.</summary>
         private static void EnsureActiveSkillInputAction()
         {
             InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
@@ -614,6 +827,7 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.ImportAsset(InputActionsPath, ImportAssetOptions.ForceUpdate);
         }
 
+        /// <summary>검기 테스트 재질과 프리팹을 생성하거나 기존 에셋을 다시 사용합니다.</summary>
         private static WarriorSwordWaveProjectile CreateSwordWavePrefab()
         {
             Material material = AssetDatabase.LoadAssetAtPath<Material>(SwordWaveMaterialPath);
@@ -768,14 +982,14 @@ namespace FlatVenture.NUH.Editor
             guide.text = "Test_05_AimBasicAttack\n자동: 1.5m 안의 가장 가까운 더미 공격\n좌클릭 유지: 마우스 방향 수동 공격 (대상 없어도 발동)";
         }
 
+        /// <summary>EventSystem이 없다면 Input System UI 모듈과 함께 생성합니다.</summary>
         private static void EnsureEventSystem()
         {
             EventSystem existing = Object.FindFirstObjectByType<EventSystem>();
             if (existing != null)
                 return;
 
-            GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            eventSystemObject.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         }
 
         private static void CreateHealthDebugUi(PlayerController player)
@@ -813,6 +1027,7 @@ namespace FlatVenture.NUH.Editor
             UnityEventTools.AddPersistentListener(restartButton.onClick, view.ResetPlayer);
         }
 
+        /// <summary>공통 스타일의 UGUI Text를 지정 부모와 위치에 생성합니다.</summary>
         private static Text CreateUiText(Transform parent, string name, Vector2 anchoredPosition, Vector2 size, int fontSize, TextAnchor alignment)
         {
             GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
@@ -832,6 +1047,7 @@ namespace FlatVenture.NUH.Editor
             return text;
         }
 
+        /// <summary>공통 스타일의 UGUI Button과 가운데 Label Text를 생성합니다.</summary>
         private static Button CreateUiButton(Transform parent, string name, string label, Vector2 anchoredPosition)
         {
             GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
@@ -965,6 +1181,7 @@ namespace FlatVenture.NUH.Editor
             guide.text = "Test_03_Dash\nWASD: 이동 / Space: 이동 입력 방향 대시\n2회 충전, 순차 회복, 대시 중 무적";
         }
 
+        /// <summary>PlayerStats_Warrior SO를 로드하고 없을 때만 새로 생성합니다.</summary>
         private static PlayerStatsData LoadOrCreateStats()
         {
             PlayerStatsData stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(StatsPath);
@@ -978,6 +1195,7 @@ namespace FlatVenture.NUH.Editor
             return stats;
         }
 
+        /// <summary>바닥과 네 방향 벽으로 기본 테스트 공간을 만듭니다.</summary>
         private static void CreateEnvironment()
         {
             GameObject environment = new GameObject("Environment_Test");
@@ -1003,6 +1221,7 @@ namespace FlatVenture.NUH.Editor
             wall.transform.localScale = scale;
         }
 
+        /// <summary>Capsule 플레이어에 입력·상태·이동·체력·조준 컴포넌트를 구성합니다.</summary>
         private static void CreatePlayer(PlayerStatsData stats, InputActionAsset inputActions)
         {
             GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -1028,14 +1247,32 @@ namespace FlatVenture.NUH.Editor
             inputReaderObject.ApplyModifiedPropertiesWithoutUndo();
 
             PlayerController playerController = player.AddComponent<PlayerController>();
-            SerializedObject controllerObject = new SerializedObject(playerController);
-            controllerObject.FindProperty("baseStats").objectReferenceValue = stats;
-            controllerObject.ApplyModifiedPropertiesWithoutUndo();
+            AssignPlayerStats(playerController, stats);
             player.AddComponent<PlayerLocomotionController>();
             player.AddComponent<PlayerHealthController>();
             player.AddComponent<PlayerAimResolver>();
         }
 
+        private static void AssignPlayerStats(PlayerController playerController, PlayerStatsData stats)
+        {
+            if (stats == null)
+                stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(StatsPath);
+
+            if (playerController == null || stats == null)
+                throw new MissingReferenceException("PlayerController 또는 PlayerStatsData를 찾을 수 없습니다.");
+
+            SerializedObject controllerObject = new SerializedObject(playerController);
+            controllerObject.Update();
+            SerializedProperty baseStatsProperty = controllerObject.FindProperty("baseStats");
+            if (baseStatsProperty == null)
+                throw new MissingReferenceException("PlayerController의 baseStats 필드를 찾을 수 없습니다.");
+
+            baseStatsProperty.objectReferenceValue = stats;
+            controllerObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(playerController);
+        }
+
+        /// <summary>1단계에서 사용할 단순 Main Camera를 생성합니다.</summary>
         private static void CreateCamera()
         {
             GameObject cameraObject = new GameObject("Main Camera");
@@ -1046,6 +1283,9 @@ namespace FlatVenture.NUH.Editor
             camera.clearFlags = CameraClearFlags.Skybox;
         }
 
+        /// <summary>
+        /// 기존 카메라를 제거하고 Orbital Follow + Hard Look At 조합의 Cinemachine 카메라를 만듭니다.
+        /// </summary>
         private static void ReplaceWithCinemachineCamera(Transform player)
         {
             Camera existingCamera = Object.FindFirstObjectByType<Camera>();
@@ -1086,7 +1326,8 @@ namespace FlatVenture.NUH.Editor
             radialAxis.Range = new Vector2(1f, 1f);
             orbitalFollow.RadialAxis = radialAxis;
 
-            cinemachineObject.AddComponent<CinemachineRotationComposer>();
+            cinemachineObject.AddComponent<CinemachineHardLookAt>();
+            AssignMovementReference(player.GetComponent<PlayerLocomotionController>());
         }
 
         private static void CreateSlopeTestArea()
@@ -1160,6 +1401,7 @@ namespace FlatVenture.NUH.Editor
             text.text = "Test_01_PlayerBase\nWASD: 이동\n1단계: 플레이어 데이터 / 런타임 상태 / 입력 구조";
         }
 
+        /// <summary>에셋 경로에 대응하는 실제 폴더가 없으면 생성합니다.</summary>
         private static void EnsureDirectory(string assetPath)
         {
             string systemPath = Path.GetFullPath(assetPath);

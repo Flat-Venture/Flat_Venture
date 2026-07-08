@@ -8,16 +8,20 @@ namespace FlatVenture.NUH.Seed
     /// </summary>
     public sealed class RandomStream : IRandomStream
     {
+        // uint 전체 경우의 수와 실수 변환에 사용할 정확한 2의 거듭제곱 상수입니다.
         private const ulong UInt32ValueCount = 4294967296UL;
         private const double UInt32ValueCountAsDouble = 4294967296.0;
         private const float UInt24ValueCountAsFloat = 16777216f;
 
+        // 이 스트림만 사용하는 독립 MT19937 인스턴스입니다.
         private readonly MersenneTwister19937 generator;
+        // 다른 RunSeed 상태 복원을 막기 위해 스트림에도 원본 RunSeed를 보관합니다.
         private readonly int runSeed;
 
         public string Name { get; private set; }
         public ulong CallCount { get; private set; }
 
+        /// <summary>파생 시드로 독립 MT19937을 만들고 스트림 이름을 고정합니다.</summary>
         internal RandomStream(string name, uint seed, int runSeed)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -28,12 +32,17 @@ namespace FlatVenture.NUH.Seed
             generator = new MersenneTwister19937(seed);
         }
 
+        /// <summary>호출 횟수를 증가시키고 다음 원본 난수를 반환합니다.</summary>
         public uint NextUInt32()
         {
             CallCount++;
             return generator.NextUInt32();
         }
 
+        /// <summary>
+        /// Modulo 편향을 제거하기 위해 나머지 구간의 값을 거부하고 정수 범위로 변환합니다.
+        /// 최솟값은 포함하고 최댓값은 제외합니다.
+        /// </summary>
         public int Range(int minimumInclusive, int maximumExclusive)
         {
             if (minimumInclusive >= maximumExclusive)
@@ -63,6 +72,7 @@ namespace FlatVenture.NUH.Seed
             return (int)result;
         }
 
+        /// <summary>상위 24비트로 [0,1) 값을 만든 뒤 요청한 실수 범위로 변환합니다.</summary>
         public float Range(float minimumInclusive, float maximumExclusive)
         {
             if (float.IsNaN(minimumInclusive) || float.IsInfinity(minimumInclusive))
@@ -83,6 +93,10 @@ namespace FlatVenture.NUH.Seed
             return result;
         }
 
+        /// <summary>
+        /// 다음 난수를 [0,1)로 변환해 probability보다 작은지 판정합니다.
+        /// 확률 0과 1도 호출 순서를 유지하기 위해 난수 하나를 소비합니다.
+        /// </summary>
         public bool Chance(float probability)
         {
             if (float.IsNaN(probability) || probability < 0f || probability > 1f)
@@ -92,6 +106,7 @@ namespace FlatVenture.NUH.Seed
             return normalized < probability;
         }
 
+        /// <summary>누적 가중치 구간 중 난수가 들어간 후보 인덱스를 반환합니다.</summary>
         public int WeightedIndex(IReadOnlyList<float> weights)
         {
             if (weights == null)
@@ -132,12 +147,14 @@ namespace FlatVenture.NUH.Seed
             return lastPositiveIndex;
         }
 
+        /// <summary>균등한 정수 인덱스를 뽑아 후보 하나를 반환합니다.</summary>
         public T Pick<T>(IReadOnlyList<T> candidates)
         {
             ValidateCandidates(candidates);
             return candidates[Range(0, candidates.Count)];
         }
 
+        /// <summary>WeightedIndex 결과와 같은 위치의 후보를 반환합니다.</summary>
         public T WeightedPick<T>(IReadOnlyList<T> candidates, IReadOnlyList<float> weights)
         {
             ValidateCandidates(candidates);
@@ -150,6 +167,7 @@ namespace FlatVenture.NUH.Seed
             return candidates[WeightedIndex(weights)];
         }
 
+        /// <summary>마지막 원소부터 무작위 위치와 바꾸는 Fisher-Yates 셔플입니다.</summary>
         public void Shuffle<T>(IList<T> values)
         {
             if (values == null)
@@ -164,6 +182,7 @@ namespace FlatVenture.NUH.Seed
             }
         }
 
+        /// <summary>현재 스트림을 정확한 위치에서 이어가기 위한 모든 상태를 복사합니다.</summary>
         public RandomStreamState CaptureState()
         {
             return new RandomStreamState
@@ -177,6 +196,7 @@ namespace FlatVenture.NUH.Seed
             };
         }
 
+        /// <summary>버전·RunSeed·이름을 검증한 뒤 MT 내부 상태와 호출 횟수를 복원합니다.</summary>
         public void RestoreState(RandomStreamState savedState)
         {
             if (savedState == null)
@@ -195,6 +215,7 @@ namespace FlatVenture.NUH.Seed
             CallCount = savedState.CallCount;
         }
 
+        /// <summary>Pick 계열 API가 null 또는 빈 후보로 호출되지 않게 공통 검사합니다.</summary>
         private static void ValidateCandidates<T>(IReadOnlyList<T> candidates)
         {
             if (candidates == null)

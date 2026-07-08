@@ -7,15 +7,23 @@ namespace FlatVenture.NUH.Player.Aiming
     [RequireComponent(typeof(PlayerInputReader))]
     public sealed class PlayerAimResolver : MonoBehaviour
     {
+        // 화면 마우스 좌표를 읽는 입력 모듈입니다.
         private PlayerInputReader inputReader;
+        // ScreenPointToRay를 만들 카메라입니다. 사라졌다면 호출 시 다시 찾습니다.
         private Camera mainCamera;
 
+        /// <summary>입력 모듈과 현재 Main Camera를 캐시합니다.</summary>
         private void Awake()
         {
             inputReader = GetComponent<PlayerInputReader>();
             mainCamera = Camera.main;
         }
 
+        /// <summary>
+        /// 마우스 화면 좌표에서 Ray를 발사해 플레이어 기준 XZ 조준 방향을 계산합니다.
+        /// 우선 지정 레이어의 지형을 사용하고, 맞지 않으면 플레이어 높이의 가상 평면을 사용합니다.
+        /// </summary>
+        /// <returns>유효한 방향을 계산했으면 true입니다.</returns>
         public bool TryResolvePointerDirection(Transform origin, LayerMask surfaceMask, out Vector3 direction)
         {
             direction = Vector3.zero;

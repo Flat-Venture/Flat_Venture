@@ -4,8 +4,10 @@ using FlatVenture.NUH.Seed;
 
 namespace FlatVenture.NUH.Tests.EditMode
 {
+    /// <summary>정수·실수·확률·선택·셔플·가중치 공개 API의 경계 규칙을 검증합니다.</summary>
     public sealed class RandomStreamApiTests
     {
+        // 정수 Range가 최솟값을 포함하고 최댓값을 제외하는지 확인합니다.
         [Test]
         public void Range_Int_UsesInclusiveMinimumAndExclusiveMaximum()
         {
@@ -19,6 +21,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             }
         }
 
+        // 실수 Range도 같은 포함/제외 규칙을 지키는지 확인합니다.
         [Test]
         public void Range_Float_UsesInclusiveMinimumAndExclusiveMaximum()
         {
@@ -32,6 +35,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             }
         }
 
+        // 확률 0과 1이 고정 결과를 내면서 호출 수는 각각 소비하는지 확인합니다.
         [Test]
         public void Chance_ZeroAndOne_ReturnExpectedResultAndConsumeCalls()
         {
@@ -42,6 +46,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(stream.CallCount, Is.EqualTo(2));
         }
 
+        // 같은 시드의 Pick 결과가 호출 순서별로 재현되는지 확인합니다.
         [Test]
         public void Pick_SameSeed_ReproducesSelection()
         {
@@ -53,6 +58,7 @@ namespace FlatVenture.NUH.Tests.EditMode
                 Assert.That(first.Pick(candidates), Is.EqualTo(second.Pick(candidates)));
         }
 
+        // Fisher-Yates 셔플이 같은 시드에서 같은 순서를 만드는지 확인합니다.
         [Test]
         public void Shuffle_SameSeed_ReproducesOrder()
         {
@@ -68,6 +74,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             CollectionAssert.AreNotEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, firstValues);
         }
 
+        // 가중치 0인 후보가 반복 실행에서도 선택되지 않는지 확인합니다.
         [Test]
         public void WeightedIndex_ZeroWeightCandidate_IsNeverSelected()
         {
@@ -78,6 +85,7 @@ namespace FlatVenture.NUH.Tests.EditMode
                 Assert.That(stream.WeightedIndex(weights), Is.Not.EqualTo(1));
         }
 
+        // WeightedPick이 가중치로 선택한 인덱스의 후보를 반환하는지 확인합니다.
         [Test]
         public void WeightedPick_ReturnsCandidateAtWeightedIndex()
         {

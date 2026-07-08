@@ -8,21 +8,26 @@ namespace FlatVenture.NUH.Seed
     /// </summary>
     internal sealed class MersenneTwister19937
     {
+        // MT19937이 다음 값을 만들기 위해 기억하는 32비트 상태 개수입니다.
         internal const int StateLength = 624;
 
+        // 아래 상수는 MT19937 공식 알고리즘 값이며 변경하면 기존 시드 결과가 전부 달라집니다.
         private const int MiddleWord = 397;
         private const uint MatrixA = 0x9908B0DFu;
         private const uint UpperMask = 0x80000000u;
         private const uint LowerMask = 0x7FFFFFFFu;
 
+        // 624개의 내부 상태와 다음에 읽을 배열 위치입니다.
         private readonly uint[] state = new uint[StateLength];
         private int index;
 
+        /// <summary>정수 시드 하나로 624개 내부 상태를 초기화합니다.</summary>
         internal MersenneTwister19937(uint seed)
         {
             Initialize(seed);
         }
 
+        /// <summary>필요하면 상태를 Twist한 뒤 Tempering을 적용한 다음 32비트 값을 반환합니다.</summary>
         internal uint NextUInt32()
         {
             if (index >= StateLength)
@@ -38,6 +43,7 @@ namespace FlatVenture.NUH.Seed
             return value;
         }
 
+        /// <summary>외부에서 내부 배열을 바꾸지 못하도록 상태 배열을 새 배열로 복사합니다.</summary>
         internal uint[] CaptureState()
         {
             uint[] copy = new uint[StateLength];
@@ -45,6 +51,7 @@ namespace FlatVenture.NUH.Seed
             return copy;
         }
 
+        /// <summary>저장된 624개 상태와 다음 인덱스를 검증해 복원합니다.</summary>
         internal void RestoreState(uint[] savedState, int savedIndex)
         {
             if (savedState == null)
@@ -60,11 +67,13 @@ namespace FlatVenture.NUH.Seed
             index = savedIndex;
         }
 
+        /// <summary>다음에 읽을 상태 배열 인덱스를 반환합니다.</summary>
         internal int CaptureIndex()
         {
             return index;
         }
 
+        /// <summary>공식 MT19937 초기화 점화식으로 상태 배열을 채웁니다.</summary>
         private void Initialize(uint seed)
         {
             state[0] = seed;
@@ -77,6 +86,7 @@ namespace FlatVenture.NUH.Seed
             index = StateLength;
         }
 
+        /// <summary>624개 상태를 서로 섞어 다음 624개 난수의 기반 상태를 생성합니다.</summary>
         private void Twist()
         {
             for (int i = 0; i < StateLength; i++)

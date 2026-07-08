@@ -6,6 +6,8 @@ namespace FlatVenture.NUH.Seed
     /// </summary>
     public static class SeedStreamNames
     {
+        // 팀 공통 이름은 오타와 대소문자 차이를 막기 위해 상수로 사용합니다.
+        // 각 스트림은 같은 RunSeed에서도 서로 독립적인 MT19937 상태를 가집니다.
         public const string Map = "Map";
         public const string Monster = "Monster";
         public const string Item = "Item";
