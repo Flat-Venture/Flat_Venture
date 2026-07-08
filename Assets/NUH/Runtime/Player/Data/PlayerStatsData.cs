@@ -1,3 +1,4 @@
+using FlatVenture.NUH.Player.Combat;
 using UnityEngine;
 
 namespace FlatVenture.NUH.Player.Data
@@ -35,6 +36,8 @@ namespace FlatVenture.NUH.Player.Data
 
         // 자동/수동 근접 기본 공격의 피해·주기·판정 크기입니다.
         [Header("기본 공격")]
+        [SerializeField] private BasicAttackType basicAttackType = BasicAttackType.Melee;
+
         [Min(0f)]
         [SerializeField] private float attackPower = 10f;
 
@@ -46,6 +49,9 @@ namespace FlatVenture.NUH.Player.Data
 
         [Min(0.1f)]
         [SerializeField] private float basicAttackWidth = 1f;
+
+        [Min(0.01f)]
+        [SerializeField] private float basicAttackProjectileSpeed = 18f;
 
         // 전사 검기의 쿨타임, 선딜레이, 연발 수, 투사체 수치입니다.
         [Header("액티브 스킬")]
@@ -84,8 +90,10 @@ namespace FlatVenture.NUH.Player.Data
         public int MaxDashCharges { get { return maxDashCharges; } }
         public float AttackPower { get { return attackPower; } }
         public float AttacksPerSecond { get { return attacksPerSecond; } }
+        public BasicAttackType BasicAttackType { get { return basicAttackType; } }
         public float BasicAttackRange { get { return basicAttackRange; } }
         public float BasicAttackWidth { get { return basicAttackWidth; } }
+        public float BasicAttackProjectileSpeed { get { return basicAttackProjectileSpeed; } }
         public float ActiveSkillCooldown { get { return activeSkillCooldown; } }
         public float ActiveSkillCastTime { get { return activeSkillCastTime; } }
         public float ActiveSkillDamage { get { return activeSkillDamage; } }
@@ -112,6 +120,7 @@ namespace FlatVenture.NUH.Player.Data
             attacksPerSecond = Mathf.Max(0.01f, attacksPerSecond);
             basicAttackRange = Mathf.Max(0f, basicAttackRange);
             basicAttackWidth = Mathf.Max(0.1f, basicAttackWidth);
+            basicAttackProjectileSpeed = Mathf.Max(0.01f, basicAttackProjectileSpeed);
             activeSkillCooldown = Mathf.Max(0f, activeSkillCooldown);
             activeSkillCastTime = Mathf.Max(0f, activeSkillCastTime);
             activeSkillDamage = Mathf.Max(0f, activeSkillDamage);

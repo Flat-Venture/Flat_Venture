@@ -1,4 +1,5 @@
 using FlatVenture.NUH.Player.Data;
+using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.State;
 using NUnit.Framework;
 using UnityEngine;
@@ -19,6 +20,9 @@ namespace FlatVenture.NUH.Tests.EditMode
         [SetUp]
         public void SetUp()
         {
+            diedCount = 0;
+            resetCount = 0;
+            healthChangedCount = 0;
             source = ScriptableObject.CreateInstance<PlayerStatsData>();
             state = new PlayerRuntimeState();
             state.Initialize(source);
@@ -52,6 +56,21 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(source.AttackPower, Is.EqualTo(originalAttackPower));
             Assert.That(state.MoveSpeed, Is.Not.EqualTo(source.MoveSpeed));
             Assert.That(state.AttackPower, Is.Not.EqualTo(source.AttackPower));
+        }
+
+        // 궁수 기본 공격 방식과 투사체 속도가 SO에서 런타임 복사본으로 전달되는지 확인합니다.
+        [Test]
+        public void Initialize_CopiesProjectileBasicAttackSettings()
+        {
+            UnityEditor.SerializedObject sourceObject = new UnityEditor.SerializedObject(source);
+            sourceObject.FindProperty("basicAttackType").enumValueIndex = (int)BasicAttackType.Projectile;
+            sourceObject.FindProperty("basicAttackProjectileSpeed").floatValue = 21f;
+            sourceObject.ApplyModifiedPropertiesWithoutUndo();
+
+            state.Initialize(source);
+
+            Assert.That(state.BasicAttackType, Is.EqualTo(BasicAttackType.Projectile));
+            Assert.That(state.BasicAttackProjectileSpeed, Is.EqualTo(21f));
         }
 
         // 어떤 무적 사유든 켜져 있으면 피해가 거부되는지 확인합니다.
@@ -147,6 +166,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             state.SetDashDistance(-1f);
             state.SetMaxDashCharges(100);
             state.SetAttackPower(-1f);
+            state.SetBasicAttackProjectileSpeed(-1f);
             state.SetActiveSkillDamage(-1f);
             state.SetActiveSkillProjectileSpeed(-1f);
             state.SetActiveSkillProjectileWidth(-1f);
@@ -156,6 +176,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(state.DashDistance, Is.EqualTo(0f));
             Assert.That(state.MaxDashCharges, Is.EqualTo(10));
             Assert.That(state.AttackPower, Is.EqualTo(0f));
+            Assert.That(state.BasicAttackProjectileSpeed, Is.EqualTo(0.01f));
             Assert.That(state.ActiveSkillDamage, Is.EqualTo(0f));
             Assert.That(state.ActiveSkillProjectileSpeed, Is.EqualTo(0.01f));
             Assert.That(state.ActiveSkillProjectileWidth, Is.EqualTo(0.1f));

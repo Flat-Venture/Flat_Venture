@@ -1,5 +1,6 @@
 using System;
 using FlatVenture.NUH.Player.Data;
+using FlatVenture.NUH.Player.Combat;
 using UnityEngine;
 
 namespace FlatVenture.NUH.Player.State
@@ -38,8 +39,10 @@ namespace FlatVenture.NUH.Player.State
         public int MaxDashCharges { get; private set; }
         public float AttackPower { get; private set; }
         public float AttacksPerSecond { get; private set; }
+        public BasicAttackType BasicAttackType { get; private set; }
         public float BasicAttackRange { get; private set; }
         public float BasicAttackWidth { get; private set; }
+        public float BasicAttackProjectileSpeed { get; private set; }
         public float ActiveSkillCooldown { get; private set; }
         public float ActiveSkillCastTime { get; private set; }
         public float ActiveSkillDamage { get; private set; }
@@ -79,8 +82,10 @@ namespace FlatVenture.NUH.Player.State
             MaxDashCharges = Source.MaxDashCharges;
             AttackPower = Source.AttackPower;
             AttacksPerSecond = Source.AttacksPerSecond;
+            BasicAttackType = Source.BasicAttackType;
             BasicAttackRange = Source.BasicAttackRange;
             BasicAttackWidth = Source.BasicAttackWidth;
+            BasicAttackProjectileSpeed = Source.BasicAttackProjectileSpeed;
             ActiveSkillCooldown = Source.ActiveSkillCooldown;
             ActiveSkillCastTime = Source.ActiveSkillCastTime;
             ActiveSkillDamage = Source.ActiveSkillDamage;
@@ -149,6 +154,7 @@ namespace FlatVenture.NUH.Player.State
         public void SetDashDistance(float value) { DashDistance = Mathf.Max(0f, value); }
         public void SetMaxDashCharges(int value) { MaxDashCharges = Mathf.Clamp(value, 1, 10); }
         public void SetAttackPower(float value) { AttackPower = Mathf.Max(0f, value); }
+        public void SetBasicAttackProjectileSpeed(float value) { BasicAttackProjectileSpeed = Mathf.Max(0.01f, value); }
 
         /// <summary>공격속도를 원본의 30%~170% 범위로 제한합니다.</summary>
         public void SetAttacksPerSecond(float value)

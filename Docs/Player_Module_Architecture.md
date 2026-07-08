@@ -10,7 +10,8 @@
 | `PlayerLocomotionController` | 카메라 기준 이동, 대시, 대시 충전 |
 | `PlayerHealthController` | 피해, 피격 무적, 사망 시 입력 차단 |
 | `PlayerAimResolver` | 마우스 화면 좌표를 XZ 평면 조준 방향으로 변환 |
-| `PlayerBasicAttackController` | 자동 대상 탐색, 수동 조준, 근접 공격 판정과 쿨타임 |
+| `PlayerBasicAttackController` | 자동 대상 탐색, 수동 조준, 직업별 근접/투사체 기본 공격과 쿨타임 |
+| `PlayerBasicAttackProjectile` | 궁수 등 원거리 기본 공격의 이동, 단일 적중, 벽·사거리 반환 |
 | `WarriorSwordWaveController` | 검기 조준, 시전, 연속 발사, 쿨타임과 투사체 풀 관리 |
 | `WarriorSwordWaveProjectile` | 검기 이동, 지형 보정, 관통 타격, 벽 충돌과 풀 반환 |
 | `ComponentObjectPool<T>` | 검기·화살·마법 투사체에 공통으로 사용할 Component 풀 |
@@ -25,6 +26,7 @@ PlayerStatsData (SO 원본)
 PlayerInputReader
   ├─ PlayerLocomotionController
   ├─ PlayerBasicAttackController
+  │    └─ ComponentObjectPool<PlayerBasicAttackProjectile> (원거리 직업)
   └─ WarriorSwordWaveController
 
 PlayerAimResolver

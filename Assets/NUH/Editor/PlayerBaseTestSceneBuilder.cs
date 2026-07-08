@@ -40,20 +40,25 @@ namespace FlatVenture.NUH.Editor
         private const string Stage07ScenePath = SceneDirectory + "/Test_07_IntegratedDebugUI.unity";
         private const string Stage08ScenePath = SceneDirectory + "/Test_08_SeedDebug.unity";
         private const string Stage09ScenePath = SceneDirectory + "/Test_09_PlayerValidation.unity";
+        private const string Stage10ScenePath = SceneDirectory + "/Test_10_ArcherBasicAttack.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
+        private const string BasicAttackPrefabDirectory = "Assets/NUH/Prefabs/Player/BasicAttacks";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
+        private const string ArcherArrowPrefabPath = BasicAttackPrefabDirectory + "/Pfb_ArcherArrow.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
         private const string SwordWaveMaterialPath = TestMaterialDirectory + "/Mat_SwordWave_Test.asset";
+        private const string ArcherArrowMaterialPath = TestMaterialDirectory + "/Mat_ArcherArrow_Test.asset";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
+        private const string ArcherStatsPath = DataDirectory + "/PlayerStats_Archer.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
-        /// <summary>Unity 메뉴에서 1~9단계 테스트 씬 전체 재생성을 실행합니다.</summary>
+        /// <summary>Unity 메뉴에서 1~10단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~9단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~10단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         /// <summary>
@@ -71,7 +76,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage07();
             BuildStage08();
             BuildStage09();
-            Debug.Log("[NUH] 1~9단계 테스트 씬 전체 재생성 완료");
+            BuildStage10();
+            Debug.Log("[NUH] 1~10단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -401,6 +407,47 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 9단계 테스트 씬 생성 완료: {Stage09ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/10단계 궁수 원거리 기본공격 씬 생성")]
+        public static void BuildStage10FromMenu()
+        {
+            BuildStage10();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_10_ArcherBasicAttack 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>공통 조준·공격 주기에 궁수 화살 프리팹과 원거리용 SO를 연결한 테스트 씬을 만듭니다.</summary>
+        public static void BuildStage10()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(BasicAttackPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureDirectory(DataDirectory);
+
+            if (!File.Exists(Path.GetFullPath(Stage05ScenePath)))
+                BuildStage05();
+
+            LoadOrCreateArcherStats();
+            CreateArcherArrowPrefab();
+            Scene scene = EditorSceneManager.OpenScene(Stage05ScenePath, OpenSceneMode.Single);
+            PlayerStatsData archerStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(ArcherStatsPath);
+            PlayerBasicAttackProjectile arrowPrefab =
+                AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(ArcherArrowPrefabPath);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            if (player == null || basicAttack == null || archerStats == null || arrowPrefab == null)
+                throw new MissingReferenceException("5단계 씬에서 플레이어 기본 공격 모듈을 찾을 수 없습니다.");
+
+            player.name = "Player_Archer_Test";
+            AssignPlayerStats(player, archerStats);
+            AssignBasicAttackProjectile(basicAttack, arrowPrefab);
+            CreateArcherAttackTargets();
+            UpdateArcherAttackTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage10ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 10단계 궁수 원거리 기본공격 씬 생성 완료: {Stage10ScenePath}");
         }
 
         /// <summary>
@@ -851,6 +898,97 @@ namespace FlatVenture.NUH.Editor
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(projectileObject, SwordWavePrefabPath);
             Object.DestroyImmediate(projectileObject);
             return prefab.GetComponent<WarriorSwordWaveProjectile>();
+        }
+
+        /// <summary>궁수 테스트용 단색 화살 재질과 풀링 가능한 투사체 프리팹을 생성합니다.</summary>
+        private static PlayerBasicAttackProjectile CreateArcherArrowPrefab()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(ArcherArrowMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+                material = new Material(shader) { color = new Color(0.95f, 0.8f, 0.2f, 1f) };
+                AssetDatabase.CreateAsset(material, ArcherArrowMaterialPath);
+            }
+
+            GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            projectileObject.name = "Pfb_ArcherArrow";
+            projectileObject.GetComponent<BoxCollider>().isTrigger = true;
+            projectileObject.GetComponent<Renderer>().sharedMaterial = material;
+            Rigidbody body = projectileObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            projectileObject.AddComponent<PlayerBasicAttackProjectile>();
+
+            PrefabUtility.SaveAsPrefabAsset(projectileObject, ArcherArrowPrefabPath);
+            Object.DestroyImmediate(projectileObject);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(ArcherArrowPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(ArcherArrowPrefabPath);
+        }
+
+        /// <summary>궁수 원거리 기본 공격이 사용할 SO를 만들고 임시 테스트 수치를 기록합니다.</summary>
+        private static PlayerStatsData LoadOrCreateArcherStats()
+        {
+            PlayerStatsData stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(ArcherStatsPath);
+            if (stats != null)
+                return stats;
+
+            stats = ScriptableObject.CreateInstance<PlayerStatsData>();
+            AssetDatabase.CreateAsset(stats, ArcherStatsPath);
+
+            SerializedObject statsObject = new SerializedObject(stats);
+            statsObject.FindProperty("jobId").stringValue = "Archer";
+            statsObject.FindProperty("basicAttackType").enumValueIndex = (int)BasicAttackType.Projectile;
+            statsObject.FindProperty("basicAttackRange").floatValue = 8f;
+            statsObject.FindProperty("basicAttackWidth").floatValue = 0.25f;
+            statsObject.FindProperty("basicAttackProjectileSpeed").floatValue = 18f;
+            statsObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(stats);
+            return stats;
+        }
+
+        /// <summary>궁수 기본 공격 컨트롤러의 직렬화 필드에 화살 프리팹을 연결합니다.</summary>
+        private static void AssignBasicAttackProjectile(
+            PlayerBasicAttackController basicAttack,
+            PlayerBasicAttackProjectile projectilePrefab)
+        {
+            SerializedObject attackObject = new SerializedObject(basicAttack);
+            attackObject.Update();
+            attackObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            attackObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(basicAttack);
+        }
+
+        /// <summary>자동 조준·수동 빈 공간 발사·벽 반환을 한 씬에서 확인할 궁수용 배치를 만듭니다.</summary>
+        private static void CreateArcherAttackTargets()
+        {
+            GameObject oldRoot = GameObject.Find("Targets_BasicAttackTest");
+            if (oldRoot != null)
+                Object.DestroyImmediate(oldRoot);
+
+            GameObject root = new GameObject("Targets_ArcherBasicAttackTest");
+            CreateAttackDummy(root.transform, "ArcherDummy_01_Near", new Vector3(0f, 1f, 4f));
+            CreateAttackDummy(root.transform, "ArcherDummy_02_Left", new Vector3(-4f, 1f, 5f));
+            CreateAttackDummy(root.transform, "ArcherDummy_03_Right", new Vector3(4f, 1f, 5f));
+            CreateAttackDummy(root.transform, "ArcherDummy_04_OutsideRange", new Vector3(0f, 1f, 9.5f));
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "ArcherArrowWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(6f, 1.5f, 2f);
+            wall.transform.localScale = new Vector3(0.5f, 3f, 4f);
+        }
+
+        /// <summary>10단계 테스트 씬의 조작법과 기대 결과를 화면 안내에 기록합니다.</summary>
+        private static void UpdateArcherAttackTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_10_ArcherBasicAttack\n자동: 8m 안의 가장 가까운 적에게 화살 발사\n좌클릭 유지: 빈 공간에도 수동 발사 / 적·벽·사거리 끝에서 풀 반환";
         }
 
         private static void CreateSwordWaveTargets()
