@@ -9,9 +9,11 @@ namespace FlatVenture.NUH.Player.Data
     [CreateAssetMenu(fileName = "PlayerStats_", menuName = "Flat Venture/NUH/Player Stats")]
     public sealed class PlayerStatsData : ScriptableObject
     {
+        // 저장·직업 선택에서 사용할 안정적인 직업 식별자입니다.
         [Header("식별 정보")]
         [SerializeField] private string jobId = "Warrior";
 
+        // 생존 관련 원본값: 최대 체력과 일반 피격 후 무적시간입니다.
         [Header("생존")]
         [Min(1f)]
         [SerializeField] private float maxHealth = 50f;
@@ -19,16 +21,19 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0f)]
         [SerializeField] private float hitInvincibilityDuration = 0.3f;
 
+        // CharacterController가 초당 이동할 월드 거리입니다.
         [Header("이동")]
         [Min(0f)]
         [SerializeField] private float moveSpeed = 5f;
 
+        // 대시 1회의 시간·거리와 순차 충전 규칙에 필요한 원본값입니다.
         [Header("대시")]
         [Min(0.01f)] [SerializeField] private float dashDuration = 0.25f;
         [Min(0f)] [SerializeField] private float dashDistance = 4f;
         [Min(0.01f)] [SerializeField] private float dashRechargeCooldown = 2f;
         [Min(1)] [SerializeField] private int maxDashCharges = 2;
 
+        // 자동/수동 근접 기본 공격의 피해·주기·판정 크기입니다.
         [Header("기본 공격")]
         [Min(0f)]
         [SerializeField] private float attackPower = 10f;
@@ -42,6 +47,7 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0.1f)]
         [SerializeField] private float basicAttackWidth = 1f;
 
+        // 전사 검기의 쿨타임, 선딜레이, 연발 수, 투사체 수치입니다.
         [Header("액티브 스킬")]
         [Min(0f)]
         [SerializeField] private float activeSkillCooldown = 10f;
@@ -67,6 +73,7 @@ namespace FlatVenture.NUH.Player.Data
         [Min(1)]
         [SerializeField] private int activeSkillMaxHitTargets = 10;
 
+        // 외부에서는 읽기만 가능하게 공개해 SO 원본이 플레이 도중 바뀌지 않도록 합니다.
         public string JobId { get { return jobId; } }
         public float MaxHealth { get { return maxHealth; } }
         public float HitInvincibilityDuration { get { return hitInvincibilityDuration; } }
@@ -88,6 +95,10 @@ namespace FlatVenture.NUH.Player.Data
         public float ActiveSkillProjectileWidth { get { return activeSkillProjectileWidth; } }
         public int ActiveSkillMaxHitTargets { get { return activeSkillMaxHitTargets; } }
 
+        /// <summary>
+        /// 인스펙터에서 잘못된 음수나 0을 입력했을 때 안전한 최솟값으로 보정합니다.
+        /// 에디터에서 값이 바뀔 때만 실행되며 런타임 강화 계산은 PlayerRuntimeState가 담당합니다.
+        /// </summary>
         private void OnValidate()
         {
             maxHealth = Mathf.Max(1f, maxHealth);

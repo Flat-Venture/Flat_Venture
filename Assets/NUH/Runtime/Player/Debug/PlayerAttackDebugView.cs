@@ -8,13 +8,16 @@ namespace FlatVenture.NUH.Player.Debugging
     [RequireComponent(typeof(LineRenderer))]
     public sealed class PlayerAttackDebugView : MonoBehaviour
     {
+        // 상태를 읽을 실제 기본 공격 모듈, 플레이어, 출력 Text입니다.
         [SerializeField] private PlayerBasicAttackController attackController;
         [SerializeField] private PlayerController player;
         [SerializeField] private Text output;
 
+        // 조준 방향을 월드에 선으로 표시하고 공격 순간 잠깐 색을 바꾸기 위한 상태입니다.
         private LineRenderer aimLine;
         private float attackFlashRemaining;
 
+        /// <summary>LineRenderer의 점 수, 두께와 테스트 재질을 준비합니다.</summary>
         private void Awake()
         {
             aimLine = GetComponent<LineRenderer>();
@@ -24,18 +27,21 @@ namespace FlatVenture.NUH.Player.Debugging
             aimLine.material = new Material(Shader.Find("Sprites/Default"));
         }
 
+        /// <summary>공격 실행 이벤트를 구독합니다.</summary>
         private void OnEnable()
         {
             if (attackController != null)
                 attackController.AttackPerformed += OnAttackPerformed;
         }
 
+        /// <summary>중복 구독을 막기 위해 이벤트를 해제합니다.</summary>
         private void OnDisable()
         {
             if (attackController != null)
                 attackController.AttackPerformed -= OnAttackPerformed;
         }
 
+        /// <summary>매 프레임 조준선 위치·색상과 공격 상태 Text를 갱신합니다.</summary>
         private void Update()
         {
             if (attackController == null || player?.RuntimeState == null)
@@ -60,6 +66,7 @@ namespace FlatVenture.NUH.Player.Debugging
             }
         }
 
+        /// <summary>공격이 발생했음을 짧은 빨간 조준선으로 표시합니다.</summary>
         private void OnAttackPerformed(Vector3 direction, bool manual, int hitCount)
         {
             attackFlashRemaining = 0.12f;

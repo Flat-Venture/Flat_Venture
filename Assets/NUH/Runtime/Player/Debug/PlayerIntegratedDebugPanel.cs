@@ -10,12 +10,14 @@ namespace FlatVenture.NUH.Player.Debugging
     /// <summary>플레이어 상태 확인과 런타임 능력치 조절을 한곳에서 수행하는 테스트 전용 패널입니다.</summary>
     public sealed class PlayerIntegratedDebugPanel : MonoBehaviour
     {
+        // 플레이어 상태와 각 기능을 읽거나 테스트 버튼으로 조절하기 위한 참조입니다.
         [SerializeField] private PlayerController player;
         [SerializeField] private PlayerLocomotionController locomotion;
         [SerializeField] private PlayerHealthController health;
         [SerializeField] private WarriorSwordWaveController swordWave;
         [SerializeField] private Text output;
 
+        /// <summary>PlayerController가 준비한 현재 런타임 상태에 안전하게 접근합니다.</summary>
         private PlayerRuntimeState State
         {
             get
@@ -26,6 +28,7 @@ namespace FlatVenture.NUH.Player.Debugging
             }
         }
 
+        /// <summary>HP·능력치·대시·검기·풀 상태를 한 패널에 매 프레임 표시합니다.</summary>
         private void Update()
         {
             PlayerRuntimeState state = State;
@@ -45,18 +48,22 @@ namespace FlatVenture.NUH.Player.Debugging
                 $"풀 {GetPoolActiveCount()} active / {GetPoolInactiveCount()} inactive";
         }
 
+        // 아래 public 함수들은 씬의 UI Button Persistent Listener에 직접 연결됩니다.
+        /// <summary>플레이어에게 테스트 피해 10을 줍니다.</summary>
         public void Damage10()
         {
             if (health != null)
                 health.TakeDamage(10f);
         }
 
+        /// <summary>현재 HP를 최대치까지 회복합니다.</summary>
         public void HealFull()
         {
             if (State != null)
                 State.RestoreHealth();
         }
 
+        /// <summary>Debug 사유의 무적만 독립적으로 전환합니다.</summary>
         public void ToggleInvincibility()
         {
             PlayerRuntimeState state = State;
@@ -67,18 +74,21 @@ namespace FlatVenture.NUH.Player.Debugging
             state.SetInvincibility(InvincibilityReason.Debug, enable);
         }
 
+        /// <summary>플레이어 위치와 모든 런타임 상태를 원본으로 초기화합니다.</summary>
         public void ResetPlayer()
         {
             if (player != null)
                 player.ResetPlayer();
         }
 
+        /// <summary>검기 쿨타임 무시 상태를 전환합니다.</summary>
         public void ToggleSwordWaveNoCooldown()
         {
             if (swordWave != null)
                 swordWave.ToggleIgnoreCooldown();
         }
 
+        // 증감 버튼은 같은 변경 함수를 재사용하며, 실제 안전 범위 제한은 PlayerRuntimeState가 담당합니다.
         public void MoveSpeedDown() { ChangeMoveSpeed(-1f); }
         public void MoveSpeedUp() { ChangeMoveSpeed(1f); }
         public void AttackPowerDown() { ChangeAttackPower(-5f); }
@@ -151,6 +161,7 @@ namespace FlatVenture.NUH.Player.Debugging
             if (State != null) State.SetActiveSkillCastTime(State.ActiveSkillCastTime + delta);
         }
 
+        /// <summary>검기 컨트롤러가 없을 때도 UI가 안전하게 0을 표시하도록 값을 읽습니다.</summary>
         private float GetSwordWaveCooldown()
         {
             return swordWave != null ? swordWave.CooldownRemaining : 0f;

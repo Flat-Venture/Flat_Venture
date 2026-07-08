@@ -3,8 +3,10 @@ using FlatVenture.NUH.Seed;
 
 namespace FlatVenture.NUH.Tests.EditMode
 {
+    /// <summary>MT19937 핵심 구현이 공식 기준 난수열과 일치하는지 검증합니다.</summary>
     public sealed class MersenneTwister19937Tests
     {
+        // 공식 기준 시드 5489의 첫 10개 값이 바뀌면 알고리즘 호환성이 깨진 것입니다.
         [Test]
         public void NextUInt32_OfficialReferenceSeed_MatchesReferenceValues()
         {

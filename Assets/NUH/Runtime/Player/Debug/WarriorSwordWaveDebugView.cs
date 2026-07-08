@@ -8,12 +8,15 @@ namespace FlatVenture.NUH.Player.Debugging
     [RequireComponent(typeof(LineRenderer))]
     public sealed class WarriorSwordWaveDebugView : MonoBehaviour
     {
+        // 검기 상태와 플레이어 위치를 읽고 UI에 출력할 참조입니다.
         [SerializeField] private WarriorSwordWaveController skill;
         [SerializeField] private PlayerController player;
         [SerializeField] private Text output;
 
+        // 우클릭 조준 중인 검기 방향을 표시할 선입니다.
         private LineRenderer aimLine;
 
+        /// <summary>검기 조준선의 모양과 테스트 재질을 준비합니다.</summary>
         private void Awake()
         {
             aimLine = GetComponent<LineRenderer>();
@@ -23,6 +26,7 @@ namespace FlatVenture.NUH.Player.Debugging
             aimLine.material = new Material(Shader.Find("Sprites/Default"));
         }
 
+        /// <summary>조준선과 시전·쿨타임·풀 상태 Text를 매 프레임 갱신합니다.</summary>
         private void Update()
         {
             if (skill == null || player?.RuntimeState == null)
@@ -49,6 +53,7 @@ namespace FlatVenture.NUH.Player.Debugging
             }
         }
 
+        /// <summary>UI 버튼에서 검기 쿨타임 무시 상태를 전환합니다.</summary>
         public void ToggleNoCooldown()
         {
             if (skill != null)
