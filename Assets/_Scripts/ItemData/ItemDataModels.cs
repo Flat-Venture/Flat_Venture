@@ -9,7 +9,6 @@ namespace FlatVenture.ItemData
         public string itemId;
         public string displayName;
         public string rarityId;
-        public string iconPath;
         public bool isCursed;
         public bool isUnique;
         public string dropPool;
