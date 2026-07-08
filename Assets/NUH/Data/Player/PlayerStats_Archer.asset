@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88281a01e0588f949af9408f694490dc, type: 3}
+  m_Name: PlayerStats_Archer
+  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Data.PlayerStatsData
+  jobId: Archer
+  maxHealth: 50
+  hitInvincibilityDuration: 0.3
+  moveSpeed: 5
+  dashDuration: 0.25
+  dashDistance: 4
+  dashRechargeCooldown: 2
+  maxDashCharges: 2
+  basicAttackType: 1
+  attackPower: 10
+  attacksPerSecond: 1
+  basicAttackRange: 8
+  basicAttackWidth: 0.25
+  basicAttackProjectileSpeed: 18
+  activeSkillCooldown: 10
+  activeSkillCastTime: 0.2
+  activeSkillDamage: 20
+  activeSkillProjectileCount: 3
+  activeSkillProjectileInterval: 0.15
+  activeSkillProjectileSpeed: 15
+  activeSkillProjectileWidth: 2
+  activeSkillMaxHitTargets: 10
