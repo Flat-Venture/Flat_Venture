@@ -13,7 +13,7 @@ namespace FlatVenture.NUH.Player.Skills.Mage
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
     [RequireComponent(typeof(PlayerAimResolver))]
-    public sealed class MageActiveSkillController : MonoBehaviour
+    public sealed class MageActiveSkillController : MonoBehaviour, IPlayerActiveSkillStatus
     {
         // 풀에서 복제해 사용할 파이어볼 투사체 프리팹입니다.
         [SerializeField] private PlayerBasicAttackProjectile projectilePrefab;
@@ -48,6 +48,7 @@ namespace FlatVenture.NUH.Player.Skills.Mage
         public bool IsAiming { get; private set; }
         public bool IsCasting { get { return isCasting; } }
         public bool IgnoreCooldown { get { return ignoreCooldown; } }
+        public ActiveSkillInputMode InputMode { get { return inputMode; } }
         public float TotalSpreadAngle { get { return totalSpreadAngle; } }
         public int PoolActiveCount { get { return projectilePool?.CountActive ?? 0; } }
         public int PoolInactiveCount { get { return projectilePool?.CountInactive ?? 0; } }

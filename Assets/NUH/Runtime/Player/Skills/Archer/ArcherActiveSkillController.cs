@@ -13,7 +13,7 @@ namespace FlatVenture.NUH.Player.Skills.Archer
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
     [RequireComponent(typeof(PlayerAimResolver))]
-    public sealed class ArcherActiveSkillController : MonoBehaviour
+    public sealed class ArcherActiveSkillController : MonoBehaviour, IPlayerActiveSkillStatus
     {
         // 풀에서 복제해 사용할 궁수 액티브 투사체 프리팹입니다.
         [SerializeField] private ArcherActiveSkillProjectile projectilePrefab;
@@ -208,7 +208,7 @@ namespace FlatVenture.NUH.Player.Skills.Archer
             if (projectilePrefab == null)
                 return;
 
-            GameObject containerObject = new GameObject("Pool_ArcherPiercingShot");
+            GameObject containerObject = new GameObject("Pool_ArcherActiveSkill");
             poolContainer = containerObject.transform;
             projectilePool = new ComponentObjectPool<ArcherActiveSkillProjectile>(
                 projectilePrefab,
