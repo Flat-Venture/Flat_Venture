@@ -14,6 +14,7 @@ using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using Unity.Cinemachine;
+using Unity.Cinemachine.TargetTracking;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
@@ -43,26 +44,30 @@ namespace FlatVenture.NUH.Editor
         private const string Stage09ScenePath = SceneDirectory + "/Test_09_PlayerValidation.unity";
         private const string Stage10ScenePath = SceneDirectory + "/Test_10_ArcherBasicAttack.unity";
         private const string Stage11ScenePath = SceneDirectory + "/Test_11_ArcherActiveSkill.unity";
+        private const string Stage12ScenePath = SceneDirectory + "/Test_12_MageBasicAttack.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string BasicAttackPrefabDirectory = "Assets/NUH/Prefabs/Player/BasicAttacks";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
         private const string ArcherPiercingShotPrefabPath = SkillPrefabDirectory + "/Pfb_ArcherPiercingShot.prefab";
         private const string ArcherArrowPrefabPath = BasicAttackPrefabDirectory + "/Pfb_ArcherArrow.prefab";
+        private const string MageOrbPrefabPath = BasicAttackPrefabDirectory + "/Pfb_MageOrb.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
         private const string SwordWaveMaterialPath = TestMaterialDirectory + "/Mat_SwordWave_Test.asset";
         private const string ArcherPiercingShotMaterialPath = TestMaterialDirectory + "/Mat_ArcherPiercingShot_Test.asset";
         private const string ArcherArrowMaterialPath = TestMaterialDirectory + "/Mat_ArcherArrow_Test.asset";
+        private const string MageOrbMaterialPath = TestMaterialDirectory + "/Mat_MageOrb_Test.asset";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string ArcherStatsPath = DataDirectory + "/PlayerStats_Archer.asset";
+        private const string MageStatsPath = DataDirectory + "/PlayerStats_Mage.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
-        /// <summary>Unity 메뉴에서 1~11단계 테스트 씬 전체 재생성을 실행합니다.</summary>
+        /// <summary>Unity 메뉴에서 1~12단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~11단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~12단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         /// <summary>
@@ -82,7 +87,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage09();
             BuildStage10();
             BuildStage11();
-            Debug.Log("[NUH] 1~11단계 테스트 씬 전체 재생성 완료");
+            BuildStage12();
+            Debug.Log("[NUH] 1~12단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -500,6 +506,48 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 11단계 궁수 액티브 스킬 씬 생성 완료: {Stage11ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/12단계 마법사 원거리 기본공격 씬 생성")]
+        public static void BuildStage12FromMenu()
+        {
+            BuildStage12();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_12_MageBasicAttack 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>마법탄 직접 피해와 50% 스플래시 피해를 확인할 마법사 기본 공격 테스트 씬을 만듭니다.</summary>
+        public static void BuildStage12()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(BasicAttackPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureDirectory(DataDirectory);
+
+            if (!File.Exists(Path.GetFullPath(Stage10ScenePath)))
+                BuildStage10();
+
+            LoadOrCreateMageStats();
+            CreateMageOrbPrefab();
+            Scene scene = EditorSceneManager.OpenScene(Stage10ScenePath, OpenSceneMode.Single);
+            PlayerStatsData mageStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(MageStatsPath);
+            PlayerBasicAttackProjectile mageOrbPrefab =
+                AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(MageOrbPrefabPath);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            if (player == null || basicAttack == null || mageStats == null || mageOrbPrefab == null)
+                throw new MissingReferenceException("10단계 씬에서 마법사 기본 공격 구성요소를 찾을 수 없습니다.");
+
+            player.name = "Player_Mage_BasicAttack_Test";
+            AssignPlayerStats(player, mageStats);
+            AssignBasicAttackProjectile(basicAttack, mageOrbPrefab);
+            ApplyPreferredCinemachineOptions();
+            CreateMageAttackTargets();
+            UpdateMageAttackTestGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage12ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 12단계 마법사 원거리 기본공격 씬 생성 완료: {Stage12ScenePath}");
         }
 
         /// <summary>
@@ -984,6 +1032,42 @@ namespace FlatVenture.NUH.Editor
             return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(ArcherArrowPrefabPath);
         }
 
+        /// <summary>마법사 테스트용 단색 마법탄 재질과 스플래시가 켜진 투사체 프리팹을 생성합니다.</summary>
+        private static PlayerBasicAttackProjectile CreateMageOrbPrefab()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(MageOrbMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+                material = new Material(shader) { color = new Color(0.65f, 0.35f, 1f, 1f) };
+                AssetDatabase.CreateAsset(material, MageOrbMaterialPath);
+            }
+
+            GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            projectileObject.name = "Pfb_MageOrb";
+            Collider primitiveCollider = projectileObject.GetComponent<Collider>();
+            if (primitiveCollider != null)
+                Object.DestroyImmediate(primitiveCollider);
+            projectileObject.GetComponent<Renderer>().sharedMaterial = material;
+            Rigidbody body = projectileObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            PlayerBasicAttackProjectile projectile = projectileObject.AddComponent<PlayerBasicAttackProjectile>();
+            projectileObject.GetComponent<BoxCollider>().isTrigger = true;
+
+            SerializedObject projectileObjectData = new SerializedObject(projectile);
+            projectileObjectData.FindProperty("splashRadius").floatValue = 2.25f;
+            projectileObjectData.FindProperty("splashDamageMultiplier").floatValue = 0.5f;
+            projectileObjectData.ApplyModifiedPropertiesWithoutUndo();
+
+            PrefabUtility.SaveAsPrefabAsset(projectileObject, MageOrbPrefabPath);
+            Object.DestroyImmediate(projectileObject);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(MageOrbPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(MageOrbPrefabPath);
+        }
+
         /// <summary>궁수 액티브 스킬 테스트용 단색 관통 사격 재질과 풀링 가능한 프리팹을 생성합니다.</summary>
         private static ArcherActiveSkillProjectile CreateArcherPiercingShotPrefab()
         {
@@ -1042,6 +1126,29 @@ namespace FlatVenture.NUH.Editor
             return stats;
         }
 
+        /// <summary>마법사 원거리 기본 공격이 사용할 SO를 만들고 스플래시 테스트용 기본 수치를 기록합니다.</summary>
+        private static PlayerStatsData LoadOrCreateMageStats()
+        {
+            PlayerStatsData stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(MageStatsPath);
+            if (stats == null)
+            {
+                stats = ScriptableObject.CreateInstance<PlayerStatsData>();
+                AssetDatabase.CreateAsset(stats, MageStatsPath);
+            }
+
+            SerializedObject statsObject = new SerializedObject(stats);
+            statsObject.FindProperty("jobId").stringValue = "Mage";
+            statsObject.FindProperty("basicAttackType").enumValueIndex = (int)BasicAttackType.Projectile;
+            statsObject.FindProperty("attackPower").floatValue = 12f;
+            statsObject.FindProperty("attacksPerSecond").floatValue = 1f;
+            statsObject.FindProperty("basicAttackRange").floatValue = 9f;
+            statsObject.FindProperty("basicAttackWidth").floatValue = 0.45f;
+            statsObject.FindProperty("basicAttackProjectileSpeed").floatValue = 14f;
+            statsObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(stats);
+            return stats;
+        }
+
         /// <summary>궁수 기본 공격 컨트롤러의 직렬화 필드에 화살 프리팹을 연결합니다.</summary>
         private static void AssignBasicAttackProjectile(
             PlayerBasicAttackController basicAttack,
@@ -1094,6 +1201,66 @@ namespace FlatVenture.NUH.Editor
                 return;
 
             guide.text = "Test_10_ArcherBasicAttack\n자동: 8m 안의 가장 가까운 적에게 화살 발사\n좌클릭 유지: 빈 공간에도 수동 발사 / 적·벽·사거리 끝에서 풀 반환";
+        }
+
+        /// <summary>마법탄의 직접 피해, 50% 스플래시 피해, 범위 밖 미적중을 확인할 더미를 배치합니다.</summary>
+        private static void CreateMageAttackTargets()
+        {
+            GameObject oldArcherTargets = GameObject.Find("Targets_ArcherBasicAttackTest");
+            if (oldArcherTargets != null)
+                Object.DestroyImmediate(oldArcherTargets);
+
+            GameObject oldTargets = GameObject.Find("Targets_MageBasicAttackTest");
+            if (oldTargets != null)
+                Object.DestroyImmediate(oldTargets);
+
+            GameObject oldArrowWall = GameObject.Find("ArcherArrowWall_01");
+            if (oldArrowWall != null)
+                Object.DestroyImmediate(oldArrowWall);
+
+            GameObject root = new GameObject("Targets_MageBasicAttackTest");
+            CreateAttackDummy(root.transform, "MageDummy_01_DirectHit", new Vector3(0f, 1f, 4f));
+            CreateAttackDummy(root.transform, "MageDummy_02_SplashLeft", new Vector3(-1.4f, 1f, 4.4f));
+            CreateAttackDummy(root.transform, "MageDummy_03_SplashBack", new Vector3(0f, 1f, 5.8f));
+            CreateAttackDummy(root.transform, "MageDummy_04_OutsideSplash", new Vector3(3.2f, 1f, 4f));
+            CreateAttackDummy(root.transform, "MageDummy_05_ManualAimTarget", new Vector3(-5f, 1f, 5.5f));
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "MageOrbWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(5.5f, 1.5f, 2.5f);
+            wall.transform.localScale = new Vector3(0.5f, 3f, 4f);
+        }
+
+        /// <summary>12단계 마법사 테스트 씬의 조작법과 기대 결과를 화면 안내에 기록합니다.</summary>
+        private static void UpdateMageAttackTestGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_12_MageBasicAttack\n자동: 9m 안의 가장 가까운 적에게 마법탄 발사\n직접 적중: 피해 12 / 폭발 반경 2.25m 주변 적: 피해 6\n좌클릭 유지: 빈 공간에도 수동 발사 / 벽 충돌 시 폭발 없이 소멸";
+        }
+
+        /// <summary>새 테스트 씬에 사용할 Cinemachine Orbital Follow 옵션을 요청값으로 맞춥니다.</summary>
+        private static void ApplyPreferredCinemachineOptions()
+        {
+            CinemachineOrbitalFollow orbitalFollow = Object.FindFirstObjectByType<CinemachineOrbitalFollow>();
+            if (orbitalFollow == null)
+                return;
+
+            orbitalFollow.TargetOffset = Vector3.zero;
+            orbitalFollow.Radius = 25f;
+            orbitalFollow.OrbitStyle = CinemachineOrbitalFollow.OrbitStyles.Sphere;
+            orbitalFollow.RecenteringTarget = CinemachineOrbitalFollow.ReferenceFrames.TrackingTarget;
+
+            TrackerSettings trackerSettings = orbitalFollow.TrackerSettings;
+            trackerSettings.BindingMode = BindingMode.WorldSpace;
+            trackerSettings.PositionDamping = Vector3.zero;
+            orbitalFollow.TrackerSettings = trackerSettings;
+
+            if (orbitalFollow.GetComponent<CinemachineHardLookAt>() == null)
+                orbitalFollow.gameObject.AddComponent<CinemachineHardLookAt>();
         }
 
         /// <summary>긴 사거리 테스트를 위해 바닥과 외곽 벽을 확장하고 전방 벽을 뒤로 옮깁니다.</summary>
