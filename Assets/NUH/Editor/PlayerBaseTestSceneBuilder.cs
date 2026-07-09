@@ -8,6 +8,7 @@ using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Input;
 using FlatVenture.NUH.Player.Movement;
 using FlatVenture.NUH.Player.Skills.Archer;
+using FlatVenture.NUH.Player.Skills.Mage;
 using FlatVenture.NUH.Player.Skills.Warrior;
 using FlatVenture.NUH.Seed.Debugging;
 using UnityEditor;
@@ -45,29 +46,32 @@ namespace FlatVenture.NUH.Editor
         private const string Stage10ScenePath = SceneDirectory + "/Test_10_ArcherBasicAttack.unity";
         private const string Stage11ScenePath = SceneDirectory + "/Test_11_ArcherActiveSkill.unity";
         private const string Stage12ScenePath = SceneDirectory + "/Test_12_MageBasicAttack.unity";
+        private const string Stage13ScenePath = SceneDirectory + "/Test_13_MageActiveSkill.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string BasicAttackPrefabDirectory = "Assets/NUH/Prefabs/Player/BasicAttacks";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
         private const string ArcherPiercingShotPrefabPath = SkillPrefabDirectory + "/Pfb_ArcherPiercingShot.prefab";
         private const string ArcherArrowPrefabPath = BasicAttackPrefabDirectory + "/Pfb_ArcherArrow.prefab";
         private const string MageOrbPrefabPath = BasicAttackPrefabDirectory + "/Pfb_MageOrb.prefab";
+        private const string MageFireballPrefabPath = SkillPrefabDirectory + "/Pfb_MageFireball.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
         private const string SwordWaveMaterialPath = TestMaterialDirectory + "/Mat_SwordWave_Test.asset";
         private const string ArcherPiercingShotMaterialPath = TestMaterialDirectory + "/Mat_ArcherPiercingShot_Test.asset";
         private const string ArcherArrowMaterialPath = TestMaterialDirectory + "/Mat_ArcherArrow_Test.asset";
         private const string MageOrbMaterialPath = TestMaterialDirectory + "/Mat_MageOrb_Test.asset";
+        private const string MageFireballMaterialPath = TestMaterialDirectory + "/Mat_MageFireball_Test.asset";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string ArcherStatsPath = DataDirectory + "/PlayerStats_Archer.asset";
         private const string MageStatsPath = DataDirectory + "/PlayerStats_Mage.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
-        /// <summary>Unity 메뉴에서 1~12단계 테스트 씬 전체 재생성을 실행합니다.</summary>
+        /// <summary>Unity 메뉴에서 1~13단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~12단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~13단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         /// <summary>
@@ -88,7 +92,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage10();
             BuildStage11();
             BuildStage12();
-            Debug.Log("[NUH] 1~12단계 테스트 씬 전체 재생성 완료");
+            BuildStage13();
+            Debug.Log("[NUH] 1~13단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -548,6 +553,54 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 12단계 마법사 원거리 기본공격 씬 생성 완료: {Stage12ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/13단계 마법사 액티브 스킬 씬 생성")]
+        public static void BuildStage13FromMenu()
+        {
+            BuildStage13();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_13_MageActiveSkill 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>마법사 기본공격 씬에 좌우 30도 부채꼴 파이어볼 액티브 스킬 테스트 구성을 추가합니다.</summary>
+        public static void BuildStage13()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(SkillPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureDirectory(DataDirectory);
+            EnsureActiveSkillInputAction();
+
+            if (!File.Exists(Path.GetFullPath(Stage12ScenePath)))
+                BuildStage12();
+
+            LoadOrCreateMageStats();
+            CreateMageFireballPrefab();
+            Scene scene = EditorSceneManager.OpenScene(Stage12ScenePath, OpenSceneMode.Single);
+            PlayerStatsData mageStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(MageStatsPath);
+            PlayerBasicAttackProjectile fireballPrefab =
+                AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(MageFireballPrefabPath);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            if (player == null || basicAttack == null || mageStats == null || fireballPrefab == null)
+                throw new MissingReferenceException("12단계 씬에서 마법사 액티브 스킬 구성요소를 찾을 수 없습니다.");
+
+            player.name = "Player_Mage_ActiveSkill_Test";
+            AssignPlayerStats(player, mageStats);
+            MageActiveSkillController skill = player.GetComponent<MageActiveSkillController>();
+            if (skill == null)
+                skill = player.gameObject.AddComponent<MageActiveSkillController>();
+
+            AssignMageActiveSkillPrefab(skill, fireballPrefab);
+            ApplyPreferredCinemachineOptions();
+            CreateMageActiveSkillTargets();
+            CreateMageActiveSkillDebugView(player, skill);
+            UpdateMageActiveSkillGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage13ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 13단계 마법사 액티브 스킬 씬 생성 완료: {Stage13ScenePath}");
         }
 
         /// <summary>
@@ -1068,6 +1121,42 @@ namespace FlatVenture.NUH.Editor
             return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(MageOrbPrefabPath);
         }
 
+        /// <summary>마법사 액티브 스킬용 단색 파이어볼 재질과 스플래시가 켜진 투사체 프리팹을 생성합니다.</summary>
+        private static PlayerBasicAttackProjectile CreateMageFireballPrefab()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(MageFireballMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+                material = new Material(shader) { color = new Color(1f, 0.28f, 0.05f, 1f) };
+                AssetDatabase.CreateAsset(material, MageFireballMaterialPath);
+            }
+
+            GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            projectileObject.name = "Pfb_MageFireball";
+            Collider primitiveCollider = projectileObject.GetComponent<Collider>();
+            if (primitiveCollider != null)
+                Object.DestroyImmediate(primitiveCollider);
+            projectileObject.GetComponent<Renderer>().sharedMaterial = material;
+            Rigidbody body = projectileObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            PlayerBasicAttackProjectile projectile = projectileObject.AddComponent<PlayerBasicAttackProjectile>();
+            projectileObject.GetComponent<BoxCollider>().isTrigger = true;
+
+            SerializedObject projectileObjectData = new SerializedObject(projectile);
+            projectileObjectData.FindProperty("splashRadius").floatValue = 2.25f;
+            projectileObjectData.FindProperty("splashDamageMultiplier").floatValue = 0.5f;
+            projectileObjectData.ApplyModifiedPropertiesWithoutUndo();
+
+            PrefabUtility.SaveAsPrefabAsset(projectileObject, MageFireballPrefabPath);
+            Object.DestroyImmediate(projectileObject);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(MageFireballPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(MageFireballPrefabPath);
+        }
+
         /// <summary>궁수 액티브 스킬 테스트용 단색 관통 사격 재질과 풀링 가능한 프리팹을 생성합니다.</summary>
         private static ArcherActiveSkillProjectile CreateArcherPiercingShotPrefab()
         {
@@ -1144,6 +1233,15 @@ namespace FlatVenture.NUH.Editor
             statsObject.FindProperty("basicAttackRange").floatValue = 9f;
             statsObject.FindProperty("basicAttackWidth").floatValue = 0.45f;
             statsObject.FindProperty("basicAttackProjectileSpeed").floatValue = 14f;
+            statsObject.FindProperty("activeSkillCooldown").floatValue = 10f;
+            statsObject.FindProperty("activeSkillCastTime").floatValue = 0.2f;
+            statsObject.FindProperty("activeSkillDamage").floatValue = 18f;
+            statsObject.FindProperty("activeSkillProjectileCount").intValue = 5;
+            statsObject.FindProperty("activeSkillProjectileInterval").floatValue = 0f;
+            statsObject.FindProperty("activeSkillProjectileSpeed").floatValue = 16f;
+            statsObject.FindProperty("activeSkillProjectileWidth").floatValue = 0.55f;
+            statsObject.FindProperty("activeSkillRange").floatValue = 12f;
+            statsObject.FindProperty("activeSkillMaxHitTargets").intValue = 999;
             statsObject.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(stats);
             return stats;
@@ -1159,6 +1257,18 @@ namespace FlatVenture.NUH.Editor
             attackObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
             attackObject.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(basicAttack);
+        }
+
+        /// <summary>마법사 액티브 스킬 컨트롤러의 직렬화 필드에 파이어볼 프리팹을 연결합니다.</summary>
+        private static void AssignMageActiveSkillPrefab(
+            MageActiveSkillController skill,
+            PlayerBasicAttackProjectile projectilePrefab)
+        {
+            SerializedObject skillObject = new SerializedObject(skill);
+            skillObject.Update();
+            skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            skillObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
         }
 
         /// <summary>궁수 액티브 스킬 컨트롤러의 직렬화 필드에 관통 사격 프리팹을 연결합니다.</summary>
@@ -1240,6 +1350,70 @@ namespace FlatVenture.NUH.Editor
                 return;
 
             guide.text = "Test_12_MageBasicAttack\n자동: 9m 안의 가장 가까운 적에게 마법탄 발사\n직접 적중: 피해 12 / 폭발 반경 2.25m 주변 적: 피해 6\n좌클릭 유지: 빈 공간에도 수동 발사 / 벽 충돌 시 폭발 없이 소멸";
+        }
+
+        /// <summary>마법사 액티브 스킬의 부채꼴 발사, 직접 피해, 스플래시 피해를 확인할 더미를 배치합니다.</summary>
+        private static void CreateMageActiveSkillTargets()
+        {
+            GameObject oldBasicTargets = GameObject.Find("Targets_MageBasicAttackTest");
+            if (oldBasicTargets != null)
+                Object.DestroyImmediate(oldBasicTargets);
+
+            GameObject oldTargets = GameObject.Find("Targets_MageActiveSkillTest");
+            if (oldTargets != null)
+                Object.DestroyImmediate(oldTargets);
+
+            GameObject oldWall = GameObject.Find("MageOrbWall_01");
+            if (oldWall != null)
+                Object.DestroyImmediate(oldWall);
+
+            GameObject root = new GameObject("Targets_MageActiveSkillTest");
+            CreateAttackDummy(root.transform, "MageActiveDummy_01_Left30", new Vector3(-3.4f, 1f, 6f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_02_Left15", new Vector3(-1.6f, 1f, 6.3f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_03_Center", new Vector3(0f, 1f, 6.5f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_04_Right15", new Vector3(1.6f, 1f, 6.3f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_05_Right30", new Vector3(3.4f, 1f, 6f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_06_CenterSplash", new Vector3(0.9f, 1f, 6.8f));
+            CreateAttackDummy(root.transform, "MageActiveDummy_07_OutsideFan", new Vector3(5.6f, 1f, 6f));
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "MageFireballWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(0f, 1.5f, 11.5f);
+            wall.transform.localScale = new Vector3(5f, 3f, 0.5f);
+        }
+
+        /// <summary>마법사 액티브 스킬 테스트 전용 조준선·상태 Text·쿨타임 제거 버튼을 생성합니다.</summary>
+        private static void CreateMageActiveSkillDebugView(PlayerController player, MageActiveSkillController skill)
+        {
+            GameObject oldView = GameObject.Find("MageActiveSkillDebugView");
+            if (oldView != null)
+                Object.DestroyImmediate(oldView);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            Text status = CreateUiText(canvas.transform, "Txt_MageActiveSkillDebug", new Vector2(24f, -300f), new Vector2(660f, 230f), 21, TextAnchor.UpperLeft);
+            GameObject viewObject = new GameObject("MageActiveSkillDebugView", typeof(LineRenderer), typeof(MageActiveSkillDebugView));
+            MageActiveSkillDebugView view = viewObject.GetComponent<MageActiveSkillDebugView>();
+            SerializedObject serializedView = new SerializedObject(view);
+            serializedView.FindProperty("skill").objectReferenceValue = skill;
+            serializedView.FindProperty("player").objectReferenceValue = player;
+            serializedView.FindProperty("output").objectReferenceValue = status;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+
+            Button noCooldownButton = CreateUiButton(canvas.transform, "Btn_MageActiveSkillNoCooldown", "파이어볼 쿨타임 제거", new Vector2(24f, 300f));
+            RectTransform buttonRect = noCooldownButton.GetComponent<RectTransform>();
+            buttonRect.sizeDelta = new Vector2(230f, 48f);
+            UnityEventTools.AddPersistentListener(noCooldownButton.onClick, view.ToggleNoCooldown);
+        }
+
+        /// <summary>13단계 테스트 씬의 조작법과 기대 결과를 화면 안내에 기록합니다.</summary>
+        private static void UpdateMageActiveSkillGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_13_MageActiveSkill\n우클릭 유지: 중앙 방향 조준 / 우클릭 해제: 좌우 30도 총 60도 부채꼴 파이어볼 5발\n직접 적중: 피해 18 / 폭발 반경 2.25m 주변 적: 피해 9 / 벽 충돌 시 폭발 없이 소멸";
         }
 
         /// <summary>새 테스트 씬에 사용할 Cinemachine Orbital Follow 옵션을 요청값으로 맞춥니다.</summary>

@@ -13,7 +13,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
     [RequireComponent(typeof(PlayerAimResolver))]
-    public sealed class WarriorActiveSkillController : MonoBehaviour
+    public sealed class WarriorActiveSkillController : MonoBehaviour, IPlayerActiveSkillStatus
     {
         // 풀에서 복제·재사용할 검기 원본 프리팹입니다.
         [SerializeField] private WarriorActiveSkillProjectile projectilePrefab;
@@ -215,7 +215,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
             if (projectilePrefab == null)
                 return;
 
-            GameObject containerObject = new GameObject("Pool_WarriorSwordWave");
+            GameObject containerObject = new GameObject("Pool_WarriorActiveSkill");
             poolContainer = containerObject.transform;
             projectilePool = new ComponentObjectPool<WarriorActiveSkillProjectile>(
                 projectilePrefab,

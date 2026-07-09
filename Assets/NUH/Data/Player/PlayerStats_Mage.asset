@@ -28,10 +28,10 @@ MonoBehaviour:
   basicAttackProjectileSpeed: 14
   activeSkillCooldown: 10
   activeSkillCastTime: 0.2
-  activeSkillDamage: 20
-  activeSkillProjectileCount: 3
-  activeSkillProjectileInterval: 0.15
-  activeSkillProjectileSpeed: 15
-  activeSkillProjectileWidth: 2
-  activeSkillRange: 15
-  activeSkillMaxHitTargets: 10
+  activeSkillDamage: 18
+  activeSkillProjectileCount: 5
+  activeSkillProjectileInterval: 0
+  activeSkillProjectileSpeed: 16
+  activeSkillProjectileWidth: 0.55
+  activeSkillRange: 12
+  activeSkillMaxHitTargets: 999

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using FlatVenture.NUH.Common.Pooling;
 using FlatVenture.NUH.Player.Aiming;
@@ -7,27 +7,29 @@ using FlatVenture.NUH.Player.Input;
 using FlatVenture.NUH.Player.Skills;
 using UnityEngine;
 
-namespace FlatVenture.NUH.Player.Skills.Archer
+namespace FlatVenture.NUH.Player.Skills.Mage
 {
-    /// <summary>궁수 액티브 스킬인 관통 사격의 입력, 조준, 선딜레이, 쿨타임, 풀링을 관리합니다.</summary>
+    /// <summary>마법사 액티브 스킬인 부채꼴 파이어볼의 입력, 조준, 쿨타임, 풀링을 관리합니다.</summary>
     [RequireComponent(typeof(PlayerController))]
     [RequireComponent(typeof(PlayerInputReader))]
     [RequireComponent(typeof(PlayerAimResolver))]
-    public sealed class ArcherActiveSkillController : MonoBehaviour, IPlayerActiveSkillStatus
+    public sealed class MageActiveSkillController : MonoBehaviour, IPlayerActiveSkillStatus
     {
-        // 풀에서 복제해 사용할 궁수 액티브 투사체 프리팹입니다.
-        [SerializeField] private ArcherActiveSkillProjectile projectilePrefab;
-        // 기본은 우클릭을 누르는 동안 조준하고 뗄 때 발동하는 방식입니다.
+        // 풀에서 복제해 사용할 파이어볼 투사체 프리팹입니다.
+        [SerializeField] private PlayerBasicAttackProjectile projectilePrefab;
+        // 기본은 우클릭을 누르는 동안 조준하고 뗄 때 중앙 방향을 확정하는 방식입니다.
         [SerializeField] private ActiveSkillInputMode inputMode = ActiveSkillInputMode.HoldAndRelease;
         // 마우스 조준 Ray가 닿을 수 있는 표면 레이어입니다.
         [SerializeField] private LayerMask aimSurfaceMask = ~0;
+        // 중앙 방향 기준 좌우로 나눠 발사할 전체 각도입니다. 현재 기획값은 60도입니다.
+        [Min(0f)] [SerializeField] private float totalSpreadAngle = 60f;
 
         // 같은 플레이어 오브젝트에서 가져오는 상태·입력·기본공격·조준 모듈입니다.
         private PlayerController player;
         private PlayerInputReader inputReader;
         private PlayerBasicAttackController basicAttack;
         private PlayerAimResolver aimResolver;
-        // 우클릭 조준 중 계속 갱신되는 XZ 방향입니다.
+        // 우클릭 조준 중 계속 갱신되는 XZ 중앙 방향입니다.
         private Vector3 aimDirection = Vector3.forward;
         // 0이 되면 다음 액티브 스킬을 사용할 수 있습니다.
         private float cooldownRemaining;
@@ -35,11 +37,11 @@ namespace FlatVenture.NUH.Player.Skills.Archer
         private bool isCasting;
         // 테스트 UI에서 쿨타임을 무시할 때 사용합니다.
         private bool ignoreCooldown;
-        // 관통 사격 투사체의 재사용 풀과 현재 활성 투사체 목록입니다.
-        private ComponentObjectPool<ArcherActiveSkillProjectile> projectilePool;
+        // 파이어볼 투사체의 재사용 풀과 현재 활성 투사체 목록입니다.
+        private ComponentObjectPool<PlayerBasicAttackProjectile> projectilePool;
         private Transform poolContainer;
-        private readonly List<ArcherActiveSkillProjectile> activeProjectiles =
-            new List<ArcherActiveSkillProjectile>();
+        private readonly List<PlayerBasicAttackProjectile> activeProjectiles =
+            new List<PlayerBasicAttackProjectile>();
 
         public Vector3 AimDirection { get { return aimDirection; } }
         public float CooldownRemaining { get { return cooldownRemaining; } }
@@ -47,6 +49,7 @@ namespace FlatVenture.NUH.Player.Skills.Archer
         public bool IsCasting { get { return isCasting; } }
         public bool IgnoreCooldown { get { return ignoreCooldown; } }
         public ActiveSkillInputMode InputMode { get { return inputMode; } }
+        public float TotalSpreadAngle { get { return totalSpreadAngle; } }
         public int PoolActiveCount { get { return projectilePool?.CountActive ?? 0; } }
         public int PoolInactiveCount { get { return projectilePool?.CountInactive ?? 0; } }
         public int PoolTotalCount { get { return projectilePool?.CountAll ?? 0; } }
@@ -138,7 +141,7 @@ namespace FlatVenture.NUH.Player.Skills.Archer
                 IsAiming = true;
         }
 
-        /// <summary>우클릭을 뗄 때 HoldAndRelease 방식이면 현재 방향으로 시전합니다.</summary>
+        /// <summary>우클릭을 뗄 때 현재 방향을 부채꼴의 중앙 방향으로 확정하고 시전합니다.</summary>
         private void OnSkillReleased()
         {
             if (inputMode != ActiveSkillInputMode.HoldAndRelease || !IsAiming)
@@ -170,7 +173,7 @@ namespace FlatVenture.NUH.Player.Skills.Archer
             StartCoroutine(CastRoutine(lockedDirection));
         }
 
-        /// <summary>설정된 선딜레이 후 한 발의 관통 사격을 발사합니다.</summary>
+        /// <summary>설정된 선딜레이 후 중앙 방향 기준 좌우 30도 부채꼴로 파이어볼을 동시에 발사합니다.</summary>
         private IEnumerator CastRoutine(Vector3 lockedDirection)
         {
             float castTime = player.RuntimeState.ActiveSkillCastTime;
@@ -178,23 +181,37 @@ namespace FlatVenture.NUH.Player.Skills.Archer
                 yield return new WaitForSeconds(castTime);
 
             if (!player.RuntimeState.IsDead)
-                FireProjectile(lockedDirection);
+                FireSpreadProjectiles(lockedDirection);
 
             basicAttack?.ApplyPostSkillCooldown();
             isCasting = false;
         }
 
-        /// <summary>풀에서 관통 사격 하나를 꺼내 런타임 스탯과 함께 초기화합니다.</summary>
-        private void FireProjectile(Vector3 lockedDirection)
+        /// <summary>런타임 투사체 수를 전체 각도에 균등 배치해 부채꼴로 발사합니다.</summary>
+        private void FireSpreadProjectiles(Vector3 centerDirection)
+        {
+            int projectileCount = Mathf.Max(1, player.RuntimeState.ActiveSkillProjectileCount);
+            float startAngle = projectileCount == 1 ? 0f : -totalSpreadAngle * 0.5f;
+            float angleStep = projectileCount == 1 ? 0f : totalSpreadAngle / (projectileCount - 1);
+            for (int i = 0; i < projectileCount; i++)
+            {
+                float angle = startAngle + (angleStep * i);
+                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * centerDirection;
+                FireProjectile(direction.normalized);
+            }
+        }
+
+        /// <summary>풀에서 파이어볼 하나를 꺼내 런타임 스탯과 함께 초기화합니다.</summary>
+        private void FireProjectile(Vector3 direction)
         {
             const float spawnForwardOffset = 0.8f;
-            Vector3 spawnPosition = transform.position + (lockedDirection * spawnForwardOffset) + (Vector3.up * 0.15f);
-            ArcherActiveSkillProjectile projectile = projectilePool.Get();
+            Vector3 spawnPosition = transform.position + (direction * spawnForwardOffset) + (Vector3.up * 0.15f);
+            PlayerBasicAttackProjectile projectile = projectilePool.Get();
             activeProjectiles.Add(projectile);
             projectile.Initialize(
                 transform,
                 spawnPosition,
-                lockedDirection,
+                direction,
                 player.RuntimeState.ActiveSkillProjectileSpeed,
                 player.RuntimeState.ActiveSkillDamage,
                 player.RuntimeState.ActiveSkillProjectileWidth,
@@ -202,24 +219,24 @@ namespace FlatVenture.NUH.Player.Skills.Archer
                 ReleaseProjectile);
         }
 
-        /// <summary>직렬화된 프리팹으로 관통 사격 풀을 만들고 초기 수량을 미리 생성합니다.</summary>
+        /// <summary>직렬화된 프리팹으로 파이어볼 풀을 만들고 초기 수량을 미리 생성합니다.</summary>
         private void InitializePool()
         {
             if (projectilePrefab == null)
                 return;
 
-            GameObject containerObject = new GameObject("Pool_ArcherActiveSkill");
+            GameObject containerObject = new GameObject("Pool_MageActiveSkillFireball");
             poolContainer = containerObject.transform;
-            projectilePool = new ComponentObjectPool<ArcherActiveSkillProjectile>(
+            projectilePool = new ComponentObjectPool<PlayerBasicAttackProjectile>(
                 projectilePrefab,
                 poolContainer,
-                defaultCapacity: 4,
-                maxSize: 32);
-            projectilePool.Prewarm(4);
+                defaultCapacity: 10,
+                maxSize: 64);
+            projectilePool.Prewarm(10);
         }
 
         /// <summary>사라진 투사체를 활성 목록에서 제거하고 풀에 반환합니다.</summary>
-        private void ReleaseProjectile(ArcherActiveSkillProjectile projectile)
+        private void ReleaseProjectile(PlayerBasicAttackProjectile projectile)
         {
             activeProjectiles.Remove(projectile);
             projectilePool?.Release(projectile);
