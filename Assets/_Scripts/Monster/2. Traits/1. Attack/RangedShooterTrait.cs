@@ -13,6 +13,9 @@ public class RangedShooterTrait : MonsterTrait
     [Tooltip("공격 쿨타임 (공격 속도)")]
     public float attackCooldown = 2.5f;
 
+    [Tooltip("투사체의 데미지")]
+    public float projectileDamage = 10f;
+
     [Header("Shooter Settings")]
     [Tooltip("발사할 투사체(총알/마법 등) 프리팹")]
     public GameObject projectilePrefab;
@@ -23,13 +26,11 @@ public class RangedShooterTrait : MonsterTrait
     [Tooltip("투사체 날아가는 속도")]
     public float projectileSpeed = 12f;
 
-    
     [Tooltip("미리 만들어둘 총알 개수(오브젝트 풀링)")]
     public int poolSize = 10;
 
     private float nextFireTime = 0f;
     private List<GameObject> projectilePool = new List<GameObject>();
-
 
     public override void Setup(MonsterController controller)
     {
@@ -57,8 +58,10 @@ public class RangedShooterTrait : MonsterTrait
         //몬스터가 살아있고, 스턴(넉백) 상태가 아니며, 쫓고 있는 타겟(플레이어)이 있을 때만 작동
         if (controller != null && controller.IsAlive && !controller.IsStunned && controller.CurrentTarget != null)
         {
-            //쿨타임이 다 돌았으면 발사
-            if (Time.time >= nextFireTime)
+            float distanceToTarget = Vector3.Distance(transform.position, controller.CurrentTarget.position);
+
+            //거리 체크 조건 추가 및 쿨타임이 다 돌았으면 발사
+            if (distanceToTarget <= attackRange && Time.time >= nextFireTime)
             {
                 ShootProjectile();
 
@@ -85,7 +88,7 @@ public class RangedShooterTrait : MonsterTrait
             }
         }
 
-        //만약 10개를 다 쐈는데 쉬고 있는 총알이 없다면 새로 생성
+        //만약 설정한 풀 사이즈를 넘어서 쏠 경우에만 새로 생성 (안전 장치)
         if (bullet == null)
         {
             bullet = Instantiate(projectilePrefab);
@@ -101,14 +104,19 @@ public class RangedShooterTrait : MonsterTrait
         //땅과 평행하게 날아가도록 y축 고정 (포물선 필요시 해당 부분 수정)
         direction.y = 0;
 
-        //투사체 생성 및 방향 바라보기
-        GameObject project = Instantiate(projectilePrefab, spawnPosition, Quaternion.LookRotation(direction));
+        //투사체 위치 및 회전 설정 후 활성화 (Instantiate 대체)
+        bullet.transform.position = spawnPosition;
+        bullet.transform.rotation = Quaternion.LookRotation(direction);
+        bullet.SetActive(true);
 
         //물리적인 힘(속도)을 가해 날려보냄
-        Rigidbody rb = project.GetComponent<Rigidbody>();
-
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
         if (rb != null) rb.linearVelocity = direction * projectileSpeed;
         else Debug.LogWarning("투사체 프리팹에 Rigidbody가 없어 날아가지 않습니다");
+
+        //투사체에 데미지 세팅
+        EnemyProjectile projScript = bullet.GetComponent<EnemyProjectile>();
+        if (projScript != null) projScript.SetupDamage(projectileDamage);
 
         Debug.Log($"<color=cyan>[Ranged Attack]</color> {gameObject.name}이(가) 투사체를 발사했습니다");
     }
