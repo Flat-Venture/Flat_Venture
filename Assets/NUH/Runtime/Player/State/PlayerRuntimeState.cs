@@ -50,6 +50,7 @@ namespace FlatVenture.NUH.Player.State
         public float ActiveSkillProjectileInterval { get; private set; }
         public float ActiveSkillProjectileSpeed { get; private set; }
         public float ActiveSkillProjectileWidth { get; private set; }
+        public float ActiveSkillRange { get; private set; }
         public int ActiveSkillMaxHitTargets { get; private set; }
 
         // UI와 각 기능 모듈이 상태 변화를 즉시 받을 수 있도록 제공하는 이벤트입니다.
@@ -93,6 +94,7 @@ namespace FlatVenture.NUH.Player.State
             ActiveSkillProjectileInterval = Source.ActiveSkillProjectileInterval;
             ActiveSkillProjectileSpeed = Source.ActiveSkillProjectileSpeed;
             ActiveSkillProjectileWidth = Source.ActiveSkillProjectileWidth;
+            ActiveSkillRange = Source.ActiveSkillRange;
             ActiveSkillMaxHitTargets = Source.ActiveSkillMaxHitTargets;
 
             IsDead = false;
@@ -174,6 +176,7 @@ namespace FlatVenture.NUH.Player.State
         public void SetActiveSkillDamage(float value) { ActiveSkillDamage = Mathf.Max(0f, value); }
         public void SetActiveSkillProjectileSpeed(float value) { ActiveSkillProjectileSpeed = Mathf.Max(0.01f, value); }
         public void SetActiveSkillProjectileWidth(float value) { ActiveSkillProjectileWidth = Mathf.Max(0.1f, value); }
+        public void SetActiveSkillRange(float value) { ActiveSkillRange = Mathf.Max(0.1f, value); }
         public void SetActiveSkillCastTime(float value) { ActiveSkillCastTime = Mathf.Clamp(value, 0f, 5f); }
     }
 }

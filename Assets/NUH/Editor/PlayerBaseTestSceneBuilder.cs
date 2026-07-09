@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using FlatVenture.NUH.Player;
 using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.Aiming;
@@ -7,6 +7,7 @@ using FlatVenture.NUH.Player.Debugging;
 using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Input;
 using FlatVenture.NUH.Player.Movement;
+using FlatVenture.NUH.Player.Skills.Archer;
 using FlatVenture.NUH.Player.Skills.Warrior;
 using FlatVenture.NUH.Seed.Debugging;
 using UnityEditor;
@@ -41,24 +42,27 @@ namespace FlatVenture.NUH.Editor
         private const string Stage08ScenePath = SceneDirectory + "/Test_08_SeedDebug.unity";
         private const string Stage09ScenePath = SceneDirectory + "/Test_09_PlayerValidation.unity";
         private const string Stage10ScenePath = SceneDirectory + "/Test_10_ArcherBasicAttack.unity";
+        private const string Stage11ScenePath = SceneDirectory + "/Test_11_ArcherActiveSkill.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string BasicAttackPrefabDirectory = "Assets/NUH/Prefabs/Player/BasicAttacks";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
+        private const string ArcherPiercingShotPrefabPath = SkillPrefabDirectory + "/Pfb_ArcherPiercingShot.prefab";
         private const string ArcherArrowPrefabPath = BasicAttackPrefabDirectory + "/Pfb_ArcherArrow.prefab";
         private const string TestMaterialDirectory = "Assets/NUH/Art/Test";
         private const string SwordWaveMaterialPath = TestMaterialDirectory + "/Mat_SwordWave_Test.asset";
+        private const string ArcherPiercingShotMaterialPath = TestMaterialDirectory + "/Mat_ArcherPiercingShot_Test.asset";
         private const string ArcherArrowMaterialPath = TestMaterialDirectory + "/Mat_ArcherArrow_Test.asset";
         private const string DataDirectory = "Assets/NUH/Data/Player";
         private const string StatsPath = DataDirectory + "/PlayerStats_Warrior.asset";
         private const string ArcherStatsPath = DataDirectory + "/PlayerStats_Archer.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
-        /// <summary>Unity 메뉴에서 1~10단계 테스트 씬 전체 재생성을 실행합니다.</summary>
+        /// <summary>Unity 메뉴에서 1~11단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~10단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~11단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         /// <summary>
@@ -77,7 +81,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage08();
             BuildStage09();
             BuildStage10();
-            Debug.Log("[NUH] 1~10단계 테스트 씬 전체 재생성 완료");
+            BuildStage11();
+            Debug.Log("[NUH] 1~11단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -283,8 +288,8 @@ namespace FlatVenture.NUH.Editor
 
             EnsurePlayerCoreComponents(player.gameObject);
 
-            WarriorSwordWaveProjectile projectilePrefab =
-                AssetDatabase.LoadAssetAtPath<WarriorSwordWaveProjectile>(SwordWavePrefabPath);
+            WarriorActiveSkillProjectile projectilePrefab =
+                AssetDatabase.LoadAssetAtPath<WarriorActiveSkillProjectile>(SwordWavePrefabPath);
             if (projectilePrefab == null)
                 throw new MissingReferenceException("검기 프리팹을 찾을 수 없습니다.");
 
@@ -292,16 +297,16 @@ namespace FlatVenture.NUH.Editor
             if (basicAttack != null)
                 basicAttack.enabled = false;
 
-            WarriorSwordWaveController skill = player.GetComponent<WarriorSwordWaveController>();
+            WarriorActiveSkillController skill = player.GetComponent<WarriorActiveSkillController>();
             if (skill == null)
-                skill = player.gameObject.AddComponent<WarriorSwordWaveController>();
+                skill = player.gameObject.AddComponent<WarriorActiveSkillController>();
 
             SerializedObject skillObject = new SerializedObject(skill);
             skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
             skillObject.ApplyModifiedPropertiesWithoutUndo();
 
             CreateSwordWaveTargets();
-            CreateSwordWaveDebugView(player, skill);
+            CreateWarriorActiveSkillDebugView(player, skill);
             UpdateSwordWaveTestGuide();
 
             EditorSceneManager.SaveScene(scene, Stage06ScenePath, true);
@@ -328,18 +333,18 @@ namespace FlatVenture.NUH.Editor
             PlayerController player = Object.FindFirstObjectByType<PlayerController>();
             if (player != null)
                 EnsurePlayerCoreComponents(player.gameObject);
-            WarriorSwordWaveController swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            WarriorActiveSkillController warriorActiveSkill = Object.FindFirstObjectByType<WarriorActiveSkillController>();
             PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
             PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
             PlayerHealthController health = Object.FindFirstObjectByType<PlayerHealthController>();
-            if (player == null || locomotion == null || health == null || basicAttack == null || swordWave == null)
+            if (player == null || locomotion == null || health == null || basicAttack == null || warriorActiveSkill == null)
                 throw new MissingReferenceException("6단계 씬에서 플레이어 또는 검기 컨트롤러를 찾을 수 없습니다.");
 
             basicAttack.enabled = true;
-            AssignPlayerInspectorReferences(player, locomotion, swordWave);
+            AssignPlayerInspectorReferences(player, locomotion, warriorActiveSkill);
 
             RemoveLegacyDebugUi();
-            CreateIntegratedDebugPanel(player, locomotion, health, swordWave);
+            CreateIntegratedDebugPanel(player, locomotion, health, warriorActiveSkill);
             UpdateIntegratedUiGuide();
 
             EditorSceneManager.SaveScene(scene, Stage07ScenePath, true);
@@ -391,16 +396,16 @@ namespace FlatVenture.NUH.Editor
             PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
             PlayerHealthController health = Object.FindFirstObjectByType<PlayerHealthController>();
             PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
-            WarriorSwordWaveController swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            WarriorActiveSkillController warriorActiveSkill = Object.FindFirstObjectByType<WarriorActiveSkillController>();
             if (player == null || inputReader == null || locomotion == null || health == null
-                || basicAttack == null || swordWave == null)
+                || basicAttack == null || warriorActiveSkill == null)
             {
                 throw new MissingReferenceException("7단계 씬에서 플레이어 모듈 구성요소를 찾을 수 없습니다.");
             }
 
             basicAttack.enabled = true;
-            AssignPlayerInspectorReferences(player, locomotion, swordWave);
-            CreatePlayerValidationPanel(player, inputReader, locomotion, health, basicAttack, swordWave);
+            AssignPlayerInspectorReferences(player, locomotion, warriorActiveSkill);
+            CreatePlayerValidationPanel(player, inputReader, locomotion, health, basicAttack, warriorActiveSkill);
             UpdatePlayerValidationGuide();
 
             EditorSceneManager.SaveScene(scene, Stage09ScenePath, true);
@@ -450,6 +455,53 @@ namespace FlatVenture.NUH.Editor
             Debug.Log($"[NUH] 10단계 궁수 원거리 기본공격 씬 생성 완료: {Stage10ScenePath}");
         }
 
+        [MenuItem("Flat Venture/NUH/11단계 궁수 액티브 스킬 씬 생성")]
+        public static void BuildStage11FromMenu()
+        {
+            BuildStage11();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_11_ArcherActiveSkill 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>궁수 기본공격 씬에 관통 사격 액티브 스킬과 전용 테스트 배치를 추가합니다.</summary>
+        public static void BuildStage11()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(SkillPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureDirectory(DataDirectory);
+            EnsureActiveSkillInputAction();
+
+            if (!File.Exists(Path.GetFullPath(Stage10ScenePath)))
+                BuildStage10();
+
+            LoadOrCreateArcherStats();
+            CreateArcherPiercingShotPrefab();
+            Scene scene = EditorSceneManager.OpenScene(Stage10ScenePath, OpenSceneMode.Single);
+            PlayerStatsData archerStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(ArcherStatsPath);
+            ArcherActiveSkillProjectile piercingShotPrefab =
+                AssetDatabase.LoadAssetAtPath<ArcherActiveSkillProjectile>(ArcherPiercingShotPrefabPath);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            if (player == null || basicAttack == null || archerStats == null || piercingShotPrefab == null)
+                throw new MissingReferenceException("10단계 씬에서 궁수 플레이어 또는 관통 사격 프리팹을 찾을 수 없습니다.");
+
+            player.name = "Player_Archer_ActiveSkill_Test";
+            AssignPlayerStats(player, archerStats);
+            ArcherActiveSkillController skill = player.GetComponent<ArcherActiveSkillController>();
+            if (skill == null)
+                skill = player.gameObject.AddComponent<ArcherActiveSkillController>();
+
+            AssignArcherPiercingShotPrefab(skill, piercingShotPrefab);
+            CreateArcherActiveSkillTargets();
+            CreateArcherActiveSkillDebugView(player, skill);
+            UpdateArcherActiveSkillGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage11ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 11단계 궁수 액티브 스킬 씬 생성 완료: {Stage11ScenePath}");
+        }
+
         /// <summary>
         /// 단계가 올라가도 플레이어 핵심 컴포넌트와 SO·카메라 참조가 빠지지 않도록 보장합니다.
         /// </summary>
@@ -477,21 +529,21 @@ namespace FlatVenture.NUH.Editor
         private static void AssignPlayerInspectorReferences(
             PlayerController player,
             PlayerLocomotionController locomotion,
-            WarriorSwordWaveController swordWave)
+            WarriorActiveSkillController warriorActiveSkill)
         {
             AssignPlayerStats(player, LoadOrCreateStats());
             AssignMovementReference(locomotion);
 
-            WarriorSwordWaveProjectile projectilePrefab =
-                AssetDatabase.LoadAssetAtPath<WarriorSwordWaveProjectile>(SwordWavePrefabPath);
+            WarriorActiveSkillProjectile projectilePrefab =
+                AssetDatabase.LoadAssetAtPath<WarriorActiveSkillProjectile>(SwordWavePrefabPath);
             if (projectilePrefab == null)
                 throw new MissingReferenceException("검기 프리팹을 찾을 수 없습니다.");
 
-            SerializedObject skillObject = new SerializedObject(swordWave);
+            SerializedObject skillObject = new SerializedObject(warriorActiveSkill);
             skillObject.Update();
             skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
             skillObject.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(swordWave);
+            EditorUtility.SetDirty(warriorActiveSkill);
         }
 
         /// <summary>
@@ -518,7 +570,11 @@ namespace FlatVenture.NUH.Editor
                 "Txt_DashDebug",
                 "Txt_AttackDebug",
                 "Txt_SwordWaveDebug",
+                "Txt_WarriorActiveSkillDebug",
                 "Btn_SwordWaveNoCooldown",
+                "Btn_WarriorActiveSkillNoCooldown",
+                "SwordWaveDebugView",
+                "WarriorActiveSkillDebugView",
                 "Pnl_IntegratedDebug"
             };
 
@@ -535,7 +591,7 @@ namespace FlatVenture.NUH.Editor
             PlayerController player,
             PlayerLocomotionController locomotion,
             PlayerHealthController health,
-            WarriorSwordWaveController swordWave)
+            WarriorActiveSkillController warriorActiveSkill)
         {
             Canvas canvas = Object.FindFirstObjectByType<Canvas>();
             GameObject panel = new GameObject("Pnl_IntegratedDebug", typeof(RectTransform), typeof(Image), typeof(PlayerIntegratedDebugPanel));
@@ -556,7 +612,7 @@ namespace FlatVenture.NUH.Editor
             serializedPanel.FindProperty("player").objectReferenceValue = player;
             serializedPanel.FindProperty("locomotion").objectReferenceValue = locomotion;
             serializedPanel.FindProperty("health").objectReferenceValue = health;
-            serializedPanel.FindProperty("swordWave").objectReferenceValue = swordWave;
+            serializedPanel.FindProperty("warriorActiveSkill").objectReferenceValue = warriorActiveSkill;
             serializedPanel.FindProperty("output").objectReferenceValue = output;
             serializedPanel.ApplyModifiedPropertiesWithoutUndo();
 
@@ -583,7 +639,7 @@ namespace FlatVenture.NUH.Editor
             UnityEventTools.AddPersistentListener(heal.onClick, debugPanel.HealFull);
             UnityEventTools.AddPersistentListener(invincible.onClick, debugPanel.ToggleInvincibility);
             UnityEventTools.AddPersistentListener(reset.onClick, debugPanel.ResetPlayer);
-            UnityEventTools.AddPersistentListener(noCooldown.onClick, debugPanel.ToggleSwordWaveNoCooldown);
+            UnityEventTools.AddPersistentListener(noCooldown.onClick, debugPanel.ToggleWarriorActiveSkillNoCooldown);
         }
 
         /// <summary>능력치 한 항목의 이름과 -/+ 버튼을 같은 행에 생성합니다.</summary>
@@ -622,7 +678,7 @@ namespace FlatVenture.NUH.Editor
             PlayerLocomotionController locomotion,
             PlayerHealthController health,
             PlayerBasicAttackController basicAttack,
-            WarriorSwordWaveController swordWave)
+            WarriorActiveSkillController warriorActiveSkill)
         {
             GameObject oldPanel = GameObject.Find("Pnl_PlayerValidation");
             if (oldPanel != null)
@@ -680,7 +736,7 @@ namespace FlatVenture.NUH.Editor
             serializedPanel.FindProperty("locomotion").objectReferenceValue = locomotion;
             serializedPanel.FindProperty("health").objectReferenceValue = health;
             serializedPanel.FindProperty("basicAttack").objectReferenceValue = basicAttack;
-            serializedPanel.FindProperty("swordWave").objectReferenceValue = swordWave;
+            serializedPanel.FindProperty("warriorActiveSkill").objectReferenceValue = warriorActiveSkill;
             serializedPanel.FindProperty("liveStatusOutput").objectReferenceValue = liveStatus;
             serializedPanel.FindProperty("validationResultOutput").objectReferenceValue = results;
             serializedPanel.ApplyModifiedPropertiesWithoutUndo();
@@ -875,7 +931,7 @@ namespace FlatVenture.NUH.Editor
         }
 
         /// <summary>검기 테스트 재질과 프리팹을 생성하거나 기존 에셋을 다시 사용합니다.</summary>
-        private static WarriorSwordWaveProjectile CreateSwordWavePrefab()
+        private static WarriorActiveSkillProjectile CreateSwordWavePrefab()
         {
             Material material = AssetDatabase.LoadAssetAtPath<Material>(SwordWaveMaterialPath);
             if (material == null)
@@ -893,11 +949,11 @@ namespace FlatVenture.NUH.Editor
             body.isKinematic = true;
             body.useGravity = false;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-            projectileObject.AddComponent<WarriorSwordWaveProjectile>();
+            projectileObject.AddComponent<WarriorActiveSkillProjectile>();
 
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(projectileObject, SwordWavePrefabPath);
             Object.DestroyImmediate(projectileObject);
-            return prefab.GetComponent<WarriorSwordWaveProjectile>();
+            return prefab.GetComponent<WarriorActiveSkillProjectile>();
         }
 
         /// <summary>궁수 테스트용 단색 화살 재질과 풀링 가능한 투사체 프리팹을 생성합니다.</summary>
@@ -928,15 +984,43 @@ namespace FlatVenture.NUH.Editor
             return AssetDatabase.LoadAssetAtPath<PlayerBasicAttackProjectile>(ArcherArrowPrefabPath);
         }
 
-        /// <summary>궁수 원거리 기본 공격이 사용할 SO를 만들고 임시 테스트 수치를 기록합니다.</summary>
+        /// <summary>궁수 액티브 스킬 테스트용 단색 관통 사격 재질과 풀링 가능한 프리팹을 생성합니다.</summary>
+        private static ArcherActiveSkillProjectile CreateArcherPiercingShotPrefab()
+        {
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(ArcherPiercingShotMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
+                material = new Material(shader) { color = new Color(0.2f, 1f, 0.35f, 0.9f) };
+                AssetDatabase.CreateAsset(material, ArcherPiercingShotMaterialPath);
+            }
+
+            GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            projectileObject.name = "Pfb_ArcherPiercingShot";
+            projectileObject.GetComponent<BoxCollider>().isTrigger = true;
+            projectileObject.GetComponent<Renderer>().sharedMaterial = material;
+            Rigidbody body = projectileObject.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.useGravity = false;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            projectileObject.AddComponent<ArcherActiveSkillProjectile>();
+
+            PrefabUtility.SaveAsPrefabAsset(projectileObject, ArcherPiercingShotPrefabPath);
+            Object.DestroyImmediate(projectileObject);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(ArcherPiercingShotPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            return AssetDatabase.LoadAssetAtPath<ArcherActiveSkillProjectile>(ArcherPiercingShotPrefabPath);
+        }
+
+        /// <summary>궁수 원거리 기본 공격과 관통 사격이 사용할 SO를 만들고 테스트 수치를 기록합니다.</summary>
         private static PlayerStatsData LoadOrCreateArcherStats()
         {
             PlayerStatsData stats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(ArcherStatsPath);
-            if (stats != null)
-                return stats;
-
-            stats = ScriptableObject.CreateInstance<PlayerStatsData>();
-            AssetDatabase.CreateAsset(stats, ArcherStatsPath);
+            if (stats == null)
+            {
+                stats = ScriptableObject.CreateInstance<PlayerStatsData>();
+                AssetDatabase.CreateAsset(stats, ArcherStatsPath);
+            }
 
             SerializedObject statsObject = new SerializedObject(stats);
             statsObject.FindProperty("jobId").stringValue = "Archer";
@@ -944,6 +1028,15 @@ namespace FlatVenture.NUH.Editor
             statsObject.FindProperty("basicAttackRange").floatValue = 8f;
             statsObject.FindProperty("basicAttackWidth").floatValue = 0.25f;
             statsObject.FindProperty("basicAttackProjectileSpeed").floatValue = 18f;
+            statsObject.FindProperty("activeSkillCooldown").floatValue = 10f;
+            statsObject.FindProperty("activeSkillCastTime").floatValue = 0.2f;
+            statsObject.FindProperty("activeSkillDamage").floatValue = 70f;
+            statsObject.FindProperty("activeSkillProjectileCount").intValue = 1;
+            statsObject.FindProperty("activeSkillProjectileInterval").floatValue = 0f;
+            statsObject.FindProperty("activeSkillProjectileSpeed").floatValue = 30f;
+            statsObject.FindProperty("activeSkillProjectileWidth").floatValue = 1f;
+            statsObject.FindProperty("activeSkillRange").floatValue = 20f;
+            statsObject.FindProperty("activeSkillMaxHitTargets").intValue = 999;
             statsObject.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(stats);
             return stats;
@@ -959,6 +1052,18 @@ namespace FlatVenture.NUH.Editor
             attackObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
             attackObject.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(basicAttack);
+        }
+
+        /// <summary>궁수 액티브 스킬 컨트롤러의 직렬화 필드에 관통 사격 프리팹을 연결합니다.</summary>
+        private static void AssignArcherPiercingShotPrefab(
+            ArcherActiveSkillController skill,
+            ArcherActiveSkillProjectile projectilePrefab)
+        {
+            SerializedObject skillObject = new SerializedObject(skill);
+            skillObject.Update();
+            skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            skillObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
         }
 
         /// <summary>자동 조준·수동 빈 공간 발사·벽 반환을 한 씬에서 확인할 궁수용 배치를 만듭니다.</summary>
@@ -991,6 +1096,109 @@ namespace FlatVenture.NUH.Editor
             guide.text = "Test_10_ArcherBasicAttack\n자동: 8m 안의 가장 가까운 적에게 화살 발사\n좌클릭 유지: 빈 공간에도 수동 발사 / 적·벽·사거리 끝에서 풀 반환";
         }
 
+        /// <summary>긴 사거리 테스트를 위해 바닥과 외곽 벽을 확장하고 전방 벽을 뒤로 옮깁니다.</summary>
+        private static void ExpandArcherActiveSkillTestArea()
+        {
+            GameObject floor = GameObject.Find("Floor_01");
+            if (floor != null)
+                floor.transform.localScale = new Vector3(28f, 0.5f, 46f);
+
+            GameObject frontWall = GameObject.Find("Wall_01");
+            if (frontWall != null)
+            {
+                frontWall.transform.position = new Vector3(0f, 1f, 23f);
+                frontWall.transform.localScale = new Vector3(28f, 2f, 0.5f);
+            }
+
+            GameObject backWall = GameObject.Find("Wall_02");
+            if (backWall != null)
+            {
+                backWall.transform.position = new Vector3(0f, 1f, -12f);
+                backWall.transform.localScale = new Vector3(28f, 2f, 0.5f);
+            }
+
+            GameObject rightWall = GameObject.Find("Wall_03");
+            if (rightWall != null)
+            {
+                rightWall.transform.position = new Vector3(14f, 1f, 5f);
+                rightWall.transform.localScale = new Vector3(0.5f, 2f, 36f);
+            }
+
+            GameObject leftWall = GameObject.Find("Wall_04");
+            if (leftWall != null)
+            {
+                leftWall.transform.position = new Vector3(-14f, 1f, 5f);
+                leftWall.transform.localScale = new Vector3(0.5f, 2f, 36f);
+            }
+        }
+
+        /// <summary>관통 사격이 긴 직선상의 모든 적을 맞히고, 옆 더미와 벽 충돌을 구분하도록 배치합니다.</summary>
+        private static void CreateArcherActiveSkillTargets()
+        {
+            ExpandArcherActiveSkillTestArea();
+
+            GameObject oldBasicTargets = GameObject.Find("Targets_ArcherBasicAttackTest");
+            if (oldBasicTargets != null)
+                Object.DestroyImmediate(oldBasicTargets);
+
+            GameObject oldTargets = GameObject.Find("Targets_ArcherActiveSkillTest");
+            if (oldTargets != null)
+                Object.DestroyImmediate(oldTargets);
+
+            GameObject oldArrowWall = GameObject.Find("ArcherArrowWall_01");
+            if (oldArrowWall != null)
+                Object.DestroyImmediate(oldArrowWall);
+
+            GameObject root = new GameObject("Targets_ArcherActiveSkillTest");
+            for (int i = 0; i < 8; i++)
+            {
+                float z = 9f + (i * 1.2f);
+                CreateAttackDummy(root.transform, $"PiercingShotDummy_{i + 1:00}_Line", new Vector3(0f, 1f, z));
+            }
+
+            CreateAttackDummy(root.transform, "PiercingShotDummy_09_SideOutsideWidth", new Vector3(1.4f, 1f, 12f));
+            CreateAttackDummy(root.transform, "PiercingShotDummy_10_BehindWall", new Vector3(0f, 1f, 20.5f));
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "PiercingShotWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(0f, 1.5f, 18.5f);
+            wall.transform.localScale = new Vector3(4f, 3f, 0.5f);
+        }
+
+        /// <summary>관통 사격 테스트 전용 조준선·상태 Text·쿨타임 제거 버튼을 생성합니다.</summary>
+        private static void CreateArcherActiveSkillDebugView(PlayerController player, ArcherActiveSkillController skill)
+        {
+            GameObject oldView = GameObject.Find("ArcherActiveSkillDebugView");
+            if (oldView != null)
+                Object.DestroyImmediate(oldView);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            Text status = CreateUiText(canvas.transform, "Txt_ArcherActiveSkillDebug", new Vector2(24f, -300f), new Vector2(620f, 210f), 21, TextAnchor.UpperLeft);
+            GameObject viewObject = new GameObject("ArcherActiveSkillDebugView", typeof(LineRenderer), typeof(ArcherActiveSkillDebugView));
+            ArcherActiveSkillDebugView view = viewObject.GetComponent<ArcherActiveSkillDebugView>();
+            SerializedObject serializedView = new SerializedObject(view);
+            serializedView.FindProperty("skill").objectReferenceValue = skill;
+            serializedView.FindProperty("player").objectReferenceValue = player;
+            serializedView.FindProperty("output").objectReferenceValue = status;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+
+            Button noCooldownButton = CreateUiButton(canvas.transform, "Btn_ArcherActiveSkillNoCooldown", "관통 사격 쿨타임 제거", new Vector2(24f, 300f));
+            RectTransform buttonRect = noCooldownButton.GetComponent<RectTransform>();
+            buttonRect.sizeDelta = new Vector2(230f, 48f);
+            UnityEventTools.AddPersistentListener(noCooldownButton.onClick, view.ToggleNoCooldown);
+        }
+
+        /// <summary>11단계 테스트 씬의 조작법과 기대 결과를 화면 안내에 기록합니다.</summary>
+        private static void UpdateArcherActiveSkillGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text = "Test_11_ArcherActiveSkill\n우클릭 유지: 조준 / 우클릭 해제: 0.2초 후 관통 사격 1발\n피해 70 / 폭 1m / 사거리 20m / 적 관통 제한 없음 / 벽 충돌 시 소멸";
+        }
+
         private static void CreateSwordWaveTargets()
         {
             GameObject oldBasicTargets = GameObject.Find("Targets_BasicAttackTest");
@@ -1015,23 +1223,27 @@ namespace FlatVenture.NUH.Editor
             wall.transform.localScale = new Vector3(4f, 3f, 0.5f);
         }
 
-        private static void CreateSwordWaveDebugView(PlayerController player, WarriorSwordWaveController skill)
+        private static void CreateWarriorActiveSkillDebugView(PlayerController player, WarriorActiveSkillController skill)
         {
-            GameObject oldView = GameObject.Find("SwordWaveDebugView");
+            GameObject oldView = GameObject.Find("WarriorActiveSkillDebugView");
+            if (oldView != null)
+                Object.DestroyImmediate(oldView);
+
+            oldView = GameObject.Find("SwordWaveDebugView");
             if (oldView != null)
                 Object.DestroyImmediate(oldView);
 
             Canvas canvas = Object.FindFirstObjectByType<Canvas>();
-            Text status = CreateUiText(canvas.transform, "Txt_SwordWaveDebug", new Vector2(24f, -300f), new Vector2(520f, 170f), 22, TextAnchor.UpperLeft);
-            GameObject viewObject = new GameObject("SwordWaveDebugView", typeof(LineRenderer), typeof(WarriorSwordWaveDebugView));
-            WarriorSwordWaveDebugView view = viewObject.GetComponent<WarriorSwordWaveDebugView>();
+            Text status = CreateUiText(canvas.transform, "Txt_WarriorActiveSkillDebug", new Vector2(24f, -300f), new Vector2(520f, 170f), 22, TextAnchor.UpperLeft);
+            GameObject viewObject = new GameObject("WarriorActiveSkillDebugView", typeof(LineRenderer), typeof(WarriorActiveSkillDebugView));
+            WarriorActiveSkillDebugView view = viewObject.GetComponent<WarriorActiveSkillDebugView>();
             SerializedObject serializedView = new SerializedObject(view);
             serializedView.FindProperty("skill").objectReferenceValue = skill;
             serializedView.FindProperty("player").objectReferenceValue = player;
             serializedView.FindProperty("output").objectReferenceValue = status;
             serializedView.ApplyModifiedPropertiesWithoutUndo();
 
-            Button noCooldownButton = CreateUiButton(canvas.transform, "Btn_SwordWaveNoCooldown", "검기 쿨타임 제거", new Vector2(24f, 300f));
+            Button noCooldownButton = CreateUiButton(canvas.transform, "Btn_WarriorActiveSkillNoCooldown", "검기 쿨타임 제거", new Vector2(24f, 300f));
             RectTransform buttonRect = noCooldownButton.GetComponent<RectTransform>();
             buttonRect.sizeDelta = new Vector2(190f, 48f);
             UnityEventTools.AddPersistentListener(noCooldownButton.onClick, view.ToggleNoCooldown);

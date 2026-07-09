@@ -1126,7 +1126,7 @@ GameObject:
   - component: {fileID: 435814235}
   - component: {fileID: 435814234}
   m_Layer: 0
-  m_Name: SwordWaveDebugView
+  m_Name: WarriorActiveSkillDebugView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1143,7 +1143,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bed756ac12449e34ebba41d774dfe120, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Debugging.WarriorSwordWaveDebugView
+  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Debugging.WarriorActiveSkillDebugView
   skill: {fileID: 898399895}
   player: {fileID: 898399888}
   output: {fileID: 1073479099}
@@ -2549,7 +2549,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f5c8ba996605ba498132b233bce5645, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Skills.Warrior.WarriorSwordWaveController
+  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Skills.Warrior.WarriorActiveSkillController
   projectilePrefab: {fileID: 7343949570590106200, guid: 6db99fe80093b684690aaeff9e33569b, type: 3}
   inputMode: 0
 --- !u!1 &938470414
@@ -2812,7 +2812,7 @@ GameObject:
   - component: {fileID: 1073479100}
   - component: {fileID: 1073479099}
   m_Layer: 0
-  m_Name: Txt_SwordWaveDebug
+  m_Name: Txt_WarriorActiveSkillDebug
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4539,7 +4539,7 @@ GameObject:
   - component: {fileID: 1764182125}
   - component: {fileID: 1764182124}
   m_Layer: 0
-  m_Name: Btn_SwordWaveNoCooldown
+  m_Name: Btn_WarriorActiveSkillNoCooldown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4610,7 +4610,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 435814234}
-        m_TargetAssemblyTypeName: FlatVenture.NUH.Player.Debugging.WarriorSwordWaveDebugView,
+        m_TargetAssemblyTypeName: FlatVenture.NUH.Player.Debugging.WarriorActiveSkillDebugView,
           FlatVenture.NUH.Runtime
         m_MethodName: ToggleNoCooldown
         m_Mode: 0

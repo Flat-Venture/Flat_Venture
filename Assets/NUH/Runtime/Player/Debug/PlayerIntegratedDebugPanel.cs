@@ -1,4 +1,4 @@
-using FlatVenture.NUH.Player.Health;
+﻿using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Movement;
 using FlatVenture.NUH.Player.State;
 using FlatVenture.NUH.Player.Skills.Warrior;
@@ -14,7 +14,7 @@ namespace FlatVenture.NUH.Player.Debugging
         [SerializeField] private PlayerController player;
         [SerializeField] private PlayerLocomotionController locomotion;
         [SerializeField] private PlayerHealthController health;
-        [SerializeField] private WarriorSwordWaveController swordWave;
+        [SerializeField] private WarriorActiveSkillController warriorActiveSkill;
         [SerializeField] private Text output;
 
         /// <summary>PlayerController가 준비한 현재 런타임 상태에 안전하게 접근합니다.</summary>
@@ -44,7 +44,7 @@ namespace FlatVenture.NUH.Player.Debugging
                 $"대시 회복 {state.DashRechargeCooldown:0.##}s | 남은 시간 {locomotion.DashRechargeRemaining:0.##}s\n" +
                 $"검기 피해 {state.ActiveSkillDamage:0.##} | 속도 {state.ActiveSkillProjectileSpeed:0.##}\n" +
                 $"검기 폭 {state.ActiveSkillProjectileWidth:0.##} | 시전 {state.ActiveSkillCastTime:0.##}s\n" +
-                $"검기 쿨타임 {GetSwordWaveCooldown():0.##}s | 제거 {IsSwordWaveCooldownIgnored()}\n" +
+                $"검기 쿨타임 {GetWarriorActiveSkillCooldown():0.##}s | 제거 {IsWarriorActiveSkillCooldownIgnored()}\n" +
                 $"풀 {GetPoolActiveCount()} active / {GetPoolInactiveCount()} inactive";
         }
 
@@ -82,10 +82,10 @@ namespace FlatVenture.NUH.Player.Debugging
         }
 
         /// <summary>검기 쿨타임 무시 상태를 전환합니다.</summary>
-        public void ToggleSwordWaveNoCooldown()
+        public void ToggleWarriorActiveSkillNoCooldown()
         {
-            if (swordWave != null)
-                swordWave.ToggleIgnoreCooldown();
+            if (warriorActiveSkill != null)
+                warriorActiveSkill.ToggleIgnoreCooldown();
         }
 
         // 증감 버튼은 같은 변경 함수를 재사용하며, 실제 안전 범위 제한은 PlayerRuntimeState가 담당합니다.
@@ -162,24 +162,24 @@ namespace FlatVenture.NUH.Player.Debugging
         }
 
         /// <summary>검기 컨트롤러가 없을 때도 UI가 안전하게 0을 표시하도록 값을 읽습니다.</summary>
-        private float GetSwordWaveCooldown()
+        private float GetWarriorActiveSkillCooldown()
         {
-            return swordWave != null ? swordWave.CooldownRemaining : 0f;
+            return warriorActiveSkill != null ? warriorActiveSkill.CooldownRemaining : 0f;
         }
 
-        private bool IsSwordWaveCooldownIgnored()
+        private bool IsWarriorActiveSkillCooldownIgnored()
         {
-            return swordWave != null && swordWave.IgnoreCooldown;
+            return warriorActiveSkill != null && warriorActiveSkill.IgnoreCooldown;
         }
 
         private int GetPoolActiveCount()
         {
-            return swordWave != null ? swordWave.PoolActiveCount : 0;
+            return warriorActiveSkill != null ? warriorActiveSkill.PoolActiveCount : 0;
         }
 
         private int GetPoolInactiveCount()
         {
-            return swordWave != null ? swordWave.PoolInactiveCount : 0;
+            return warriorActiveSkill != null ? warriorActiveSkill.PoolInactiveCount : 0;
         }
     }
 }

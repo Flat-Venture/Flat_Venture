@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using FlatVenture.NUH.Player.Combat;
 using FlatVenture.NUH.Player.Health;
 using FlatVenture.NUH.Player.Input;
@@ -21,7 +21,7 @@ namespace FlatVenture.NUH.Player.Debugging
         [SerializeField] private PlayerLocomotionController locomotion;
         [SerializeField] private PlayerHealthController health;
         [SerializeField] private PlayerBasicAttackController basicAttack;
-        [SerializeField] private WarriorSwordWaveController swordWave;
+        [SerializeField] private WarriorActiveSkillController warriorActiveSkill;
         [SerializeField] private Text liveStatusOutput;
         [SerializeField] private Text validationResultOutput;
 
@@ -154,8 +154,8 @@ namespace FlatVenture.NUH.Player.Debugging
 
             player.ResetPlayer();
             basicAttack.ApplyPostSkillCooldown();
-            if (!swordWave.IgnoreCooldown)
-                swordWave.ToggleIgnoreCooldown();
+            if (!warriorActiveSkill.IgnoreCooldown)
+                warriorActiveSkill.ToggleIgnoreCooldown();
 
             bool lethalApplied = health.TakeDamage(State.MaxHealth);
             bool deathStateValid = lethalApplied && State.IsDead && !inputReader.enabled;
@@ -167,11 +167,11 @@ namespace FlatVenture.NUH.Player.Debugging
                 && inputReader.enabled
                 && locomotion.DashCharges == State.MaxDashCharges
                 && Mathf.Approximately(basicAttack.CooldownRemaining, 0f)
-                && Mathf.Approximately(swordWave.CooldownRemaining, 0f)
-                && !swordWave.IsCasting
-                && !swordWave.IsAiming
-                && !swordWave.IgnoreCooldown
-                && swordWave.PoolActiveCount == 0;
+                && Mathf.Approximately(warriorActiveSkill.CooldownRemaining, 0f)
+                && !warriorActiveSkill.IsCasting
+                && !warriorActiveSkill.IsAiming
+                && !warriorActiveSkill.IgnoreCooldown
+                && warriorActiveSkill.PoolActiveCount == 0;
 
             AppendResult("사망 시 입력 차단 및 재시작 전체 초기화", deathStateValid && resetStateValid);
         }
@@ -221,7 +221,7 @@ namespace FlatVenture.NUH.Player.Debugging
                 && locomotion != null
                 && health != null
                 && basicAttack != null
-                && swordWave != null;
+                && warriorActiveSkill != null;
 
             if (!valid)
                 AppendResult(checkName + " 참조 연결", false);
@@ -263,11 +263,11 @@ namespace FlatVenture.NUH.Player.Debugging
         private float GetBasicAttackCooldown() { return basicAttack != null ? basicAttack.CooldownRemaining : 0f; }
         private bool GetManualAim() { return basicAttack != null && basicAttack.IsManualAim; }
         private string GetTargetName() { return basicAttack != null ? basicAttack.CurrentTargetName : "None"; }
-        private bool GetSkillAiming() { return swordWave != null && swordWave.IsAiming; }
-        private bool GetSkillCasting() { return swordWave != null && swordWave.IsCasting; }
-        private float GetSkillCooldown() { return swordWave != null ? swordWave.CooldownRemaining : 0f; }
-        private int GetPoolActive() { return swordWave != null ? swordWave.PoolActiveCount : 0; }
-        private int GetPoolInactive() { return swordWave != null ? swordWave.PoolInactiveCount : 0; }
-        private int GetPoolTotal() { return swordWave != null ? swordWave.PoolTotalCount : 0; }
+        private bool GetSkillAiming() { return warriorActiveSkill != null && warriorActiveSkill.IsAiming; }
+        private bool GetSkillCasting() { return warriorActiveSkill != null && warriorActiveSkill.IsCasting; }
+        private float GetSkillCooldown() { return warriorActiveSkill != null ? warriorActiveSkill.CooldownRemaining : 0f; }
+        private int GetPoolActive() { return warriorActiveSkill != null ? warriorActiveSkill.PoolActiveCount : 0; }
+        private int GetPoolInactive() { return warriorActiveSkill != null ? warriorActiveSkill.PoolInactiveCount : 0; }
+        private int GetPoolTotal() { return warriorActiveSkill != null ? warriorActiveSkill.PoolTotalCount : 0; }
     }
 }

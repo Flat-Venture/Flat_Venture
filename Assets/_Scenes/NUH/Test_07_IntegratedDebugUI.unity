@@ -1978,7 +1978,7 @@ GameObject:
   - component: {fileID: 435814235}
   - component: {fileID: 435814234}
   m_Layer: 0
-  m_Name: SwordWaveDebugView
+  m_Name: WarriorActiveSkillDebugView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1995,7 +1995,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bed756ac12449e34ebba41d774dfe120, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Debugging.WarriorSwordWaveDebugView
+  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Debugging.WarriorActiveSkillDebugView
   skill: {fileID: 898399895}
   player: {fileID: 898399888}
   output: {fileID: 0}
@@ -4672,7 +4672,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f5c8ba996605ba498132b233bce5645, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Skills.Warrior.WarriorSwordWaveController
+  m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Skills.Warrior.WarriorActiveSkillController
   projectilePrefab: {fileID: 7343949570590106200, guid: 6db99fe80093b684690aaeff9e33569b, type: 3}
   inputMode: 0
 --- !u!1 &991308169
@@ -6859,7 +6859,7 @@ MonoBehaviour:
   player: {fileID: 898399888}
   locomotion: {fileID: 898399887}
   health: {fileID: 898399886}
-  swordWave: {fileID: 898399895}
+  warriorActiveSkill: {fileID: 898399895}
   output: {fileID: 1764182123}
 --- !u!114 &1373856237
 MonoBehaviour:
@@ -8408,7 +8408,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1373856236}
         m_TargetAssemblyTypeName: FlatVenture.NUH.Player.Debugging.PlayerIntegratedDebugPanel,
           FlatVenture.NUH.Runtime
-        m_MethodName: ToggleSwordWaveNoCooldown
+        m_MethodName: ToggleWarriorActiveSkillNoCooldown
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

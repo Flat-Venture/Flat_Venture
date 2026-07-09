@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using FlatVenture.NUH.Player.Combat;
 using UnityEngine;
@@ -8,7 +8,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
     /// <summary>직선으로 이동하며 대상을 관통하고 벽에 닿으면 사라지는 전사 검기입니다.</summary>
     [RequireComponent(typeof(BoxCollider))]
     [RequireComponent(typeof(Rigidbody))]
-    public sealed class WarriorSwordWaveProjectile : MonoBehaviour
+    public sealed class WarriorActiveSkillProjectile : MonoBehaviour
     {
         // 여러 Collider가 있는 같은 대상이나 이미 관통한 대상을 중복 타격하지 않게 기록합니다.
         private readonly HashSet<IPlayerAttackTarget> hitTargets = new HashSet<IPlayerAttackTarget>();
@@ -28,7 +28,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
         // 충돌하지 않아도 무한히 날아가지 않도록 제한하는 남은 수명입니다.
         private float lifetimeRemaining;
         // 직접 Destroy하지 않고 소유한 풀로 돌려보내기 위한 콜백입니다.
-        private Action<WarriorSwordWaveProjectile> releaseHandler;
+        private Action<WarriorActiveSkillProjectile> releaseHandler;
 
         /// <summary>Rigidbody와 Trigger Collider를 투사체용 설정으로 맞춥니다.</summary>
         private void Awake()
@@ -51,7 +51,7 @@ namespace FlatVenture.NUH.Player.Skills.Warrior
             float projectileDamage,
             float width,
             int maximumHitTargets,
-            Action<WarriorSwordWaveProjectile> onRelease,
+            Action<WarriorActiveSkillProjectile> onRelease,
             float lifetime = 3f)
         {
             owner = projectileOwner;
