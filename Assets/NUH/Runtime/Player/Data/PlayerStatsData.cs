@@ -76,6 +76,9 @@ namespace FlatVenture.NUH.Player.Data
         [Min(0.1f)]
         [SerializeField] private float activeSkillProjectileWidth = 2f;
 
+        [Min(0.1f)]
+        [SerializeField] private float activeSkillRange = 15f;
+
         [Min(1)]
         [SerializeField] private int activeSkillMaxHitTargets = 10;
 
@@ -101,6 +104,7 @@ namespace FlatVenture.NUH.Player.Data
         public float ActiveSkillProjectileInterval { get { return activeSkillProjectileInterval; } }
         public float ActiveSkillProjectileSpeed { get { return activeSkillProjectileSpeed; } }
         public float ActiveSkillProjectileWidth { get { return activeSkillProjectileWidth; } }
+        public float ActiveSkillRange { get { return activeSkillRange; } }
         public int ActiveSkillMaxHitTargets { get { return activeSkillMaxHitTargets; } }
 
         /// <summary>
@@ -128,6 +132,7 @@ namespace FlatVenture.NUH.Player.Data
             activeSkillProjectileInterval = Mathf.Max(0f, activeSkillProjectileInterval);
             activeSkillProjectileSpeed = Mathf.Max(0.01f, activeSkillProjectileSpeed);
             activeSkillProjectileWidth = Mathf.Max(0.1f, activeSkillProjectileWidth);
+            activeSkillRange = Mathf.Max(0.1f, activeSkillRange);
             activeSkillMaxHitTargets = Mathf.Max(1, activeSkillMaxHitTargets);
         }
     }

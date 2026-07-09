@@ -170,6 +170,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             state.SetActiveSkillDamage(-1f);
             state.SetActiveSkillProjectileSpeed(-1f);
             state.SetActiveSkillProjectileWidth(-1f);
+            state.SetActiveSkillRange(-1f);
             state.SetActiveSkillCastTime(100f);
 
             Assert.That(state.MoveSpeed, Is.EqualTo(0f));
@@ -180,6 +181,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(state.ActiveSkillDamage, Is.EqualTo(0f));
             Assert.That(state.ActiveSkillProjectileSpeed, Is.EqualTo(0.01f));
             Assert.That(state.ActiveSkillProjectileWidth, Is.EqualTo(0.1f));
+            Assert.That(state.ActiveSkillRange, Is.EqualTo(0.1f));
             Assert.That(state.ActiveSkillCastTime, Is.EqualTo(5f));
         }
 

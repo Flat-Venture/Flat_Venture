@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Diagnostics;
 using FlatVenture.NUH.Player;
 using FlatVenture.NUH.Player.Combat;
@@ -28,7 +28,7 @@ namespace FlatVenture.NUH.Tests.EditMode
         private PlayerLocomotionController locomotion;
         private PlayerHealthController health;
         private PlayerBasicAttackController basicAttack;
-        private WarriorSwordWaveController swordWave;
+        private WarriorActiveSkillController warriorActiveSkill;
 
         /// <summary>검증 씬을 열고 PlayMode로 전환한 뒤 플레이어 모듈을 찾습니다.</summary>
         [UnitySetUp]
@@ -43,7 +43,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
             health = Object.FindFirstObjectByType<PlayerHealthController>();
             basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
-            swordWave = Object.FindFirstObjectByType<WarriorSwordWaveController>();
+            warriorActiveSkill = Object.FindFirstObjectByType<WarriorActiveSkillController>();
         }
 
         /// <summary>각 테스트가 끝나면 EditMode로 돌아와 다음 테스트를 독립 실행합니다.</summary>
@@ -63,7 +63,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(locomotion, Is.Not.Null);
             Assert.That(health, Is.Not.Null);
             Assert.That(basicAttack, Is.Not.Null);
-            Assert.That(swordWave, Is.Not.Null);
+            Assert.That(warriorActiveSkill, Is.Not.Null);
             Assert.That(basicAttack.enabled, Is.True);
             Assert.That(player.RuntimeState, Is.Not.Null);
             Assert.That(EditorApplication.isPlaying, Is.True);
@@ -103,8 +103,8 @@ namespace FlatVenture.NUH.Tests.EditMode
         {
             player.ResetPlayer();
             basicAttack.ApplyPostSkillCooldown();
-            if (!swordWave.IgnoreCooldown)
-                swordWave.ToggleIgnoreCooldown();
+            if (!warriorActiveSkill.IgnoreCooldown)
+                warriorActiveSkill.ToggleIgnoreCooldown();
 
             bool lethalApplied = health.TakeDamage(player.RuntimeState.MaxHealth);
 
@@ -112,7 +112,7 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(player.RuntimeState.IsDead, Is.True);
             Assert.That(inputReader.enabled, Is.False);
             Assert.That(basicAttack.CooldownRemaining, Is.GreaterThan(0f));
-            Assert.That(swordWave.IgnoreCooldown, Is.True);
+            Assert.That(warriorActiveSkill.IgnoreCooldown, Is.True);
 
             player.ResetPlayer();
             yield return null;
@@ -123,11 +123,11 @@ namespace FlatVenture.NUH.Tests.EditMode
             Assert.That(inputReader.enabled, Is.True);
             Assert.That(locomotion.DashCharges, Is.EqualTo(player.RuntimeState.MaxDashCharges));
             Assert.That(basicAttack.CooldownRemaining, Is.EqualTo(0f).Within(0.001f));
-            Assert.That(swordWave.CooldownRemaining, Is.EqualTo(0f).Within(0.001f));
-            Assert.That(swordWave.IgnoreCooldown, Is.False);
-            Assert.That(swordWave.IsCasting, Is.False);
-            Assert.That(swordWave.IsAiming, Is.False);
-            Assert.That(swordWave.PoolActiveCount, Is.EqualTo(0));
+            Assert.That(warriorActiveSkill.CooldownRemaining, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(warriorActiveSkill.IgnoreCooldown, Is.False);
+            Assert.That(warriorActiveSkill.IsCasting, Is.False);
+            Assert.That(warriorActiveSkill.IsAiming, Is.False);
+            Assert.That(warriorActiveSkill.PoolActiveCount, Is.EqualTo(0));
         }
     }
 }
