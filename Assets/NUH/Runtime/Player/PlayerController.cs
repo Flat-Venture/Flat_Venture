@@ -23,6 +23,9 @@ namespace FlatVenture.NUH.Player
         /// <summary>SO 원본을 복사해 만든 현재 플레이의 가변 상태입니다.</summary>
         public PlayerRuntimeState RuntimeState { get; private set; }
 
+        /// <summary>현재 런타임 상태의 원본으로 사용하는 직업 능력치 SO입니다.</summary>
+        public PlayerStatsData BaseStats { get { return baseStats; } }
+
         /// <summary>
         /// 다른 컴포넌트의 Start보다 먼저 필요한 참조와 런타임 상태를 준비합니다.
         /// Unity의 Awake 호출 단계에서 실행됩니다.
@@ -58,6 +61,29 @@ namespace FlatVenture.NUH.Player
             characterController.enabled = true;
 
             RuntimeState.Reset();
+            inputReader.enabled = true;
+        }
+
+        /// <summary>
+        /// 테스트 또는 직업 선택에서 사용할 원본 능력치 SO를 교체하고 런타임 상태를 새 직업 기준으로 초기화합니다.
+        /// </summary>
+        /// <param name="nextStats">새로 적용할 직업별 원본 능력치 SO입니다.</param>
+        /// <param name="resetPosition">true면 시작 위치로 되돌리고, false면 현재 위치를 유지합니다.</param>
+        public void ApplyStatsData(PlayerStatsData nextStats, bool resetPosition)
+        {
+            if (nextStats == null || RuntimeState == null)
+                return;
+
+            baseStats = nextStats;
+
+            if (resetPosition)
+            {
+                characterController.enabled = false;
+                transform.position = spawnPosition;
+                characterController.enabled = true;
+            }
+
+            RuntimeState.Initialize(baseStats);
             inputReader.enabled = true;
         }
     }

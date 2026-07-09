@@ -47,6 +47,7 @@ namespace FlatVenture.NUH.Editor
         private const string Stage11ScenePath = SceneDirectory + "/Test_11_ArcherActiveSkill.unity";
         private const string Stage12ScenePath = SceneDirectory + "/Test_12_MageBasicAttack.unity";
         private const string Stage13ScenePath = SceneDirectory + "/Test_13_MageActiveSkill.unity";
+        private const string Stage14ScenePath = SceneDirectory + "/Test_14_JobSwitchCombatDebug.unity";
         private const string SkillPrefabDirectory = "Assets/NUH/Prefabs/Player/Skills";
         private const string BasicAttackPrefabDirectory = "Assets/NUH/Prefabs/Player/BasicAttacks";
         private const string SwordWavePrefabPath = SkillPrefabDirectory + "/Pfb_WarriorSwordWave.prefab";
@@ -66,12 +67,12 @@ namespace FlatVenture.NUH.Editor
         private const string MageStatsPath = DataDirectory + "/PlayerStats_Mage.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
 
-        /// <summary>Unity 메뉴에서 1~13단계 테스트 씬 전체 재생성을 실행합니다.</summary>
+        /// <summary>Unity 메뉴에서 1~14단계 테스트 씬 전체 재생성을 실행합니다.</summary>
         [MenuItem("Flat Venture/NUH/전체 테스트 씬 다시 생성")]
         public static void RebuildAllStagesFromMenu()
         {
             RebuildAllStages();
-            EditorUtility.DisplayDialog("Flat Venture", "1~13단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
+            EditorUtility.DisplayDialog("Flat Venture", "1~14단계 테스트 씬을 모두 다시 생성했습니다.", "확인");
         }
 
         /// <summary>
@@ -93,7 +94,8 @@ namespace FlatVenture.NUH.Editor
             BuildStage11();
             BuildStage12();
             BuildStage13();
-            Debug.Log("[NUH] 1~13단계 테스트 씬 전체 재생성 완료");
+            BuildStage14();
+            Debug.Log("[NUH] 1~14단계 테스트 씬 전체 재생성 완료");
         }
 
         [MenuItem("Flat Venture/NUH/1단계 테스트 씬 생성")]
@@ -601,6 +603,140 @@ namespace FlatVenture.NUH.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"[NUH] 13단계 마법사 액티브 스킬 씬 생성 완료: {Stage13ScenePath}");
+        }
+
+        [MenuItem("Flat Venture/NUH/14단계 직업 변경 전투 디버그 씬 생성")]
+        public static void BuildStage14FromMenu()
+        {
+            BuildStage14();
+            EditorUtility.DisplayDialog("Flat Venture", "Test_14_JobSwitchCombatDebug 씬 생성을 완료했습니다.", "확인");
+        }
+
+        /// <summary>전사, 궁수, 마법사를 버튼으로 실시간 전환하며 기본 공격과 액티브 스킬을 디버깅하는 씬을 만듭니다.</summary>
+        public static void BuildStage14()
+        {
+            EnsureDirectory(SceneDirectory);
+            EnsureDirectory(SkillPrefabDirectory);
+            EnsureDirectory(BasicAttackPrefabDirectory);
+            EnsureDirectory(TestMaterialDirectory);
+            EnsureDirectory(DataDirectory);
+            EnsureActiveSkillInputAction();
+
+            if (!File.Exists(Path.GetFullPath(Stage13ScenePath)))
+                BuildStage13();
+
+            PlayerStatsData warriorStats = LoadOrCreateStats();
+            PlayerStatsData archerStats = LoadOrCreateArcherStats();
+            PlayerStatsData mageStats = LoadOrCreateMageStats();
+            WarriorActiveSkillProjectile swordWavePrefab = CreateSwordWavePrefab();
+            ArcherActiveSkillProjectile archerActivePrefab = CreateArcherPiercingShotPrefab();
+            PlayerBasicAttackProjectile archerBasicPrefab = CreateArcherArrowPrefab();
+            PlayerBasicAttackProjectile mageBasicPrefab = CreateMageOrbPrefab();
+            PlayerBasicAttackProjectile mageActivePrefab = CreateMageFireballPrefab();
+            FillMissingJobSwitchAssets(
+                ref warriorStats,
+                ref archerStats,
+                ref mageStats,
+                ref swordWavePrefab,
+                ref archerActivePrefab,
+                ref archerBasicPrefab,
+                ref mageBasicPrefab,
+                ref mageActivePrefab);
+
+            Scene scene = EditorSceneManager.OpenScene(Stage13ScenePath, OpenSceneMode.Single);
+            PlayerController player = Object.FindFirstObjectByType<PlayerController>();
+            PlayerBasicAttackController basicAttack = Object.FindFirstObjectByType<PlayerBasicAttackController>();
+            PlayerLocomotionController locomotion = Object.FindFirstObjectByType<PlayerLocomotionController>();
+            if (player == null || basicAttack == null)
+                throw new MissingReferenceException("13단계 씬에서 직업 변경 테스트 구성요소를 찾을 수 없습니다.");
+
+            player.name = "Player_Warrior_JobSwitch_Test";
+            AssignPlayerStats(player, warriorStats);
+            AssignBasicAttackProjectile(basicAttack, null);
+            AssignMovementReference(locomotion);
+
+            WarriorActiveSkillController warriorSkill = player.GetComponent<WarriorActiveSkillController>();
+            if (warriorSkill == null)
+                warriorSkill = player.gameObject.AddComponent<WarriorActiveSkillController>();
+            ArcherActiveSkillController archerSkill = player.GetComponent<ArcherActiveSkillController>();
+            if (archerSkill == null)
+                archerSkill = player.gameObject.AddComponent<ArcherActiveSkillController>();
+            MageActiveSkillController mageSkill = player.GetComponent<MageActiveSkillController>();
+            if (mageSkill == null)
+                mageSkill = player.gameObject.AddComponent<MageActiveSkillController>();
+
+            AssignWarriorActiveSkillPrefab(warriorSkill, swordWavePrefab);
+            AssignArcherPiercingShotPrefab(archerSkill, archerActivePrefab);
+            AssignMageActiveSkillPrefab(mageSkill, mageActivePrefab);
+            warriorSkill.enabled = true;
+            archerSkill.enabled = false;
+            mageSkill.enabled = false;
+
+            ApplyPreferredCinemachineOptions();
+            CreateJobSwitchTargets();
+            CreateJobSwitchDebugPanel(
+                player,
+                basicAttack,
+                warriorSkill,
+                archerSkill,
+                mageSkill,
+                warriorStats,
+                archerStats,
+                mageStats,
+                archerBasicPrefab,
+                mageBasicPrefab);
+            UpdateJobSwitchGuide();
+
+            EditorSceneManager.SaveScene(scene, Stage14ScenePath, true);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[NUH] 14단계 직업 변경 전투 디버그 씬 생성 완료: {Stage14ScenePath}");
+        }
+
+        /// <summary>생성 메서드가 돌려준 참조를 우선 사용하고, 비어 있는 항목만 에셋 경로에서 다시 찾습니다.</summary>
+        private static void FillMissingJobSwitchAssets(
+            ref PlayerStatsData warriorStats,
+            ref PlayerStatsData archerStats,
+            ref PlayerStatsData mageStats,
+            ref WarriorActiveSkillProjectile swordWavePrefab,
+            ref ArcherActiveSkillProjectile archerActivePrefab,
+            ref PlayerBasicAttackProjectile archerBasicPrefab,
+            ref PlayerBasicAttackProjectile mageBasicPrefab,
+            ref PlayerBasicAttackProjectile mageActivePrefab)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(StatsPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(ArcherStatsPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(MageStatsPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(SwordWavePrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(ArcherPiercingShotPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(ArcherArrowPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(MageOrbPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+            AssetDatabase.ImportAsset(MageFireballPrefabPath, ImportAssetOptions.ForceSynchronousImport);
+
+            if (warriorStats == null)
+                warriorStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(StatsPath);
+            if (archerStats == null)
+                archerStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(ArcherStatsPath);
+            if (mageStats == null)
+                mageStats = AssetDatabase.LoadAssetAtPath<PlayerStatsData>(MageStatsPath);
+            if (swordWavePrefab == null)
+                swordWavePrefab = LoadPrefabComponent<WarriorActiveSkillProjectile>(SwordWavePrefabPath);
+            if (archerActivePrefab == null)
+                archerActivePrefab = LoadPrefabComponent<ArcherActiveSkillProjectile>(ArcherPiercingShotPrefabPath);
+            if (archerBasicPrefab == null)
+                archerBasicPrefab = LoadPrefabComponent<PlayerBasicAttackProjectile>(ArcherArrowPrefabPath);
+            if (mageBasicPrefab == null)
+                mageBasicPrefab = LoadPrefabComponent<PlayerBasicAttackProjectile>(MageOrbPrefabPath);
+            if (mageActivePrefab == null)
+                mageActivePrefab = LoadPrefabComponent<PlayerBasicAttackProjectile>(MageFireballPrefabPath);
+        }
+
+        /// <summary>프리팹 에셋의 루트 GameObject에서 지정 컴포넌트를 안정적으로 로드합니다.</summary>
+        private static T LoadPrefabComponent<T>(string path) where T : Component
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            return prefab != null ? prefab.GetComponent<T>() : null;
         }
 
         /// <summary>
@@ -1271,6 +1407,18 @@ namespace FlatVenture.NUH.Editor
             EditorUtility.SetDirty(skill);
         }
 
+        /// <summary>전사 액티브 스킬 컨트롤러의 직렬화 필드에 검기 프리팹을 연결합니다.</summary>
+        private static void AssignWarriorActiveSkillPrefab(
+            WarriorActiveSkillController skill,
+            WarriorActiveSkillProjectile projectilePrefab)
+        {
+            SerializedObject skillObject = new SerializedObject(skill);
+            skillObject.Update();
+            skillObject.FindProperty("projectilePrefab").objectReferenceValue = projectilePrefab;
+            skillObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
+        }
+
         /// <summary>궁수 액티브 스킬 컨트롤러의 직렬화 필드에 관통 사격 프리팹을 연결합니다.</summary>
         private static void AssignArcherPiercingShotPrefab(
             ArcherActiveSkillController skill,
@@ -1414,6 +1562,136 @@ namespace FlatVenture.NUH.Editor
                 return;
 
             guide.text = "Test_13_MageActiveSkill\n우클릭 유지: 중앙 방향 조준 / 우클릭 해제: 좌우 30도 총 60도 부채꼴 파이어볼 5발\n직접 적중: 피해 18 / 폭발 반경 2.25m 주변 적: 피해 9 / 벽 충돌 시 폭발 없이 소멸";
+        }
+
+        /// <summary>14단계 테스트 씬의 조작법과 기대 결과를 화면 안내에 기록합니다.</summary>
+        private static void UpdateJobSwitchGuide()
+        {
+            GameObject guideObject = GameObject.Find("Txt_TestGuide");
+            if (guideObject == null || !guideObject.TryGetComponent(out Text guide))
+                return;
+
+            guide.text =
+                "Test_14_JobSwitchCombatDebug\n" +
+                "오른쪽 버튼: 전사/궁수/마법사 실시간 직업 변경\n" +
+                "좌클릭 유지: 현재 직업 기본공격 수동 조준 / 우클릭 유지 후 해제: 현재 직업 액티브 스킬\n" +
+                "전환 시 SO·기본공격 프리팹·액티브 스킬 컨트롤러·풀 상태가 함께 바뀌는지 확인";
+        }
+
+        /// <summary>세 직업의 근접, 직선, 부채꼴, 스플래시 공격을 한 공간에서 확인할 더미와 벽을 배치합니다.</summary>
+        private static void CreateJobSwitchTargets()
+        {
+            string[] oldRoots =
+            {
+                "Targets_BasicAttackTest",
+                "Targets_ArcherBasicAttackTest",
+                "Targets_ArcherActiveSkillTest",
+                "Targets_MageBasicAttackTest",
+                "Targets_MageActiveSkillTest",
+                "Targets_JobSwitchCombatTest"
+            };
+
+            foreach (string rootName in oldRoots)
+            {
+                GameObject oldRoot = GameObject.Find(rootName);
+                if (oldRoot != null)
+                    Object.DestroyImmediate(oldRoot);
+            }
+
+            GameObject root = new GameObject("Targets_JobSwitchCombatTest");
+            CreateAttackDummy(root.transform, "JobDummy_01_WarriorNear", new Vector3(0f, 1f, 1.35f));
+            CreateAttackDummy(root.transform, "JobDummy_02_LineA", new Vector3(0f, 1f, 4f));
+            CreateAttackDummy(root.transform, "JobDummy_03_LineB", new Vector3(0f, 1f, 6.5f));
+            CreateAttackDummy(root.transform, "JobDummy_04_LineC", new Vector3(0f, 1f, 9f));
+            CreateAttackDummy(root.transform, "JobDummy_05_LeftFan", new Vector3(-2.4f, 1f, 6.5f));
+            CreateAttackDummy(root.transform, "JobDummy_06_RightFan", new Vector3(2.4f, 1f, 6.5f));
+            CreateAttackDummy(root.transform, "JobDummy_07_SplashNear", new Vector3(1.2f, 1f, 4.3f));
+            CreateAttackDummy(root.transform, "JobDummy_08_Outside", new Vector3(5.5f, 1f, 8f));
+
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = "JobSwitchSkillWall_01";
+            wall.transform.SetParent(root.transform);
+            wall.transform.position = new Vector3(0f, 1.5f, 14f);
+            wall.transform.localScale = new Vector3(7f, 3f, 0.5f);
+        }
+
+        /// <summary>직업 변경 버튼, 현재 상태 Text, 쿨타임 제거·초기화 버튼을 가진 테스트 패널을 만듭니다.</summary>
+        private static void CreateJobSwitchDebugPanel(
+            PlayerController player,
+            PlayerBasicAttackController basicAttack,
+            WarriorActiveSkillController warriorSkill,
+            ArcherActiveSkillController archerSkill,
+            MageActiveSkillController mageSkill,
+            PlayerStatsData warriorStats,
+            PlayerStatsData archerStats,
+            PlayerStatsData mageStats,
+            PlayerBasicAttackProjectile archerBasicAttackPrefab,
+            PlayerBasicAttackProjectile mageBasicAttackPrefab)
+        {
+            if (warriorStats == null || archerStats == null || mageStats == null
+                || archerBasicAttackPrefab == null || mageBasicAttackPrefab == null)
+            {
+                string missing =
+                    $"WarriorStats:{warriorStats == null}, " +
+                    $"ArcherStats:{archerStats == null}, " +
+                    $"MageStats:{mageStats == null}, " +
+                    $"ArcherBasic:{archerBasicAttackPrefab == null}, " +
+                    $"MageBasic:{mageBasicAttackPrefab == null}";
+                Debug.LogWarning("직업 변경 디버그 패널 일부 참조가 비어 있습니다. 에디터 Play 중 fallback으로 다시 연결합니다. " + missing);
+            }
+
+            GameObject oldPanel = GameObject.Find("Pnl_JobSwitchDebug");
+            if (oldPanel != null)
+                Object.DestroyImmediate(oldPanel);
+
+            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+                return;
+
+            GameObject panel = new GameObject("Pnl_JobSwitchDebug", typeof(RectTransform), typeof(Image), typeof(PlayerJobSwitchDebugPanel));
+            panel.transform.SetParent(canvas.transform, false);
+            RectTransform rect = panel.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(560f, 0f);
+            panel.GetComponent<Image>().color = new Color(0.025f, 0.035f, 0.055f, 0.94f);
+
+            Text title = CreateUiText(panel.transform, "Txt_JobSwitchTitle", new Vector2(20f, -20f), new Vector2(520f, 42f), 26, TextAnchor.UpperLeft);
+            title.text = "직업 실시간 변경";
+
+            Text output = CreateUiText(panel.transform, "Txt_JobSwitchStatus", new Vector2(20f, -70f), new Vector2(520f, 330f), 19, TextAnchor.UpperLeft);
+            output.text = "Play 후 직업 버튼을 눌러 전투 모듈 전환을 확인하세요.";
+
+            PlayerJobSwitchDebugPanel debugPanel = panel.GetComponent<PlayerJobSwitchDebugPanel>();
+            debugPanel.ConfigureForTestScene(
+                player,
+                basicAttack,
+                warriorSkill,
+                archerSkill,
+                mageSkill,
+                warriorStats,
+                archerStats,
+                mageStats,
+                archerBasicAttackPrefab,
+                mageBasicAttackPrefab,
+                output);
+            EditorUtility.SetDirty(debugPanel);
+
+            Button warriorButton = CreateUiButton(panel.transform, "Btn_SwitchWarrior", "전사", new Vector2(20f, 245f));
+            Button archerButton = CreateUiButton(panel.transform, "Btn_SwitchArcher", "궁수", new Vector2(160f, 245f));
+            Button mageButton = CreateUiButton(panel.transform, "Btn_SwitchMage", "마법사", new Vector2(300f, 245f));
+            Button noCooldownButton = CreateUiButton(panel.transform, "Btn_CurrentActiveNoCooldown", "현재 스킬 쿨타임 제거", new Vector2(20f, 180f));
+            Button resetButton = CreateUiButton(panel.transform, "Btn_ResetCurrentJob", "현재 직업 원본 초기화", new Vector2(260f, 180f));
+            noCooldownButton.GetComponent<RectTransform>().sizeDelta = new Vector2(220f, 48f);
+            resetButton.GetComponent<RectTransform>().sizeDelta = new Vector2(230f, 48f);
+
+            UnityEventTools.AddPersistentListener(warriorButton.onClick, debugPanel.SwitchToWarrior);
+            UnityEventTools.AddPersistentListener(archerButton.onClick, debugPanel.SwitchToArcher);
+            UnityEventTools.AddPersistentListener(mageButton.onClick, debugPanel.SwitchToMage);
+            UnityEventTools.AddPersistentListener(noCooldownButton.onClick, debugPanel.ToggleCurrentSkillNoCooldown);
+            UnityEventTools.AddPersistentListener(resetButton.onClick, debugPanel.ResetCurrentJob);
         }
 
         /// <summary>새 테스트 씬에 사용할 Cinemachine Orbital Follow 옵션을 요청값으로 맞춥니다.</summary>
