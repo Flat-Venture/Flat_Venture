@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 원거리형 역할군을 위한 기본 특성 클래스
@@ -22,7 +23,13 @@ public class RangedShooterTrait : MonsterTrait
     [Tooltip("투사체 날아가는 속도")]
     public float projectileSpeed = 12f;
 
+    
+    [Tooltip("미리 만들어둘 총알 개수(오브젝트 풀링)")]
+    public int poolSize = 10;
+
     private float nextFireTime = 0f;
+    private List<GameObject> projectilePool = new List<GameObject>();
+
 
     public override void Setup(MonsterController controller)
     {
@@ -30,6 +37,19 @@ public class RangedShooterTrait : MonsterTrait
 
         //시작하자마자 바로 쏘지 않도록 첫 쿨타임 적용
         nextFireTime = Time.time + attackCooldown;
+
+        //게임 시작 시 총알을 미리 만들어두고 끔
+        if (projectilePrefab != null)
+        {
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject gameObject = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+                
+                //비활성화 상태로 대기
+                gameObject.SetActive(false);
+                projectilePool.Add(gameObject);
+            }
+        }
     }
 
     private void Update()
@@ -52,6 +72,25 @@ public class RangedShooterTrait : MonsterTrait
     {
         //투사체가 설정되어 있지 않으면 발사하지 않음
         if (projectilePrefab == null) return;
+        
+        //보관함에서 꺼져 있는 총알 찾기
+        GameObject bullet = null;
+        
+        foreach (var b in projectilePool)
+        {
+            if (!b.activeInHierarchy)
+            {
+                bullet = b;
+                break;
+            }
+        }
+
+        //만약 10개를 다 쐈는데 쉬고 있는 총알이 없다면 새로 생성
+        if (bullet == null)
+        {
+            bullet = Instantiate(projectilePrefab);
+            projectilePool.Add(bullet);
+        }
 
         //발사 위치 설정 (firePoint가 설정되어 있으면 자신의 위치에서 살짝 위로)
         Vector3 spawnPosition = firePoint != null ? firePoint.position : transform.position + (Vector3.up * 1f);
