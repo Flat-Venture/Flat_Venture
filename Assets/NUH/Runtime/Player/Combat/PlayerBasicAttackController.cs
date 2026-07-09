@@ -60,6 +60,28 @@ namespace FlatVenture.NUH.Player.Combat
         // 디버그 뷰가 공격 방향·조준 방식·적중 수를 표시할 때 구독합니다.
         public event Action<Vector3, bool, int> AttackPerformed;
 
+        /// <summary>
+        /// 직업 변경 시 원거리 기본 공격 프리팹을 교체하고 기존 풀과 날아가던 투사체를 정리합니다.
+        /// 전사처럼 근접 기본 공격을 사용하는 직업은 null을 전달합니다.
+        /// </summary>
+        public void ConfigureProjectilePrefab(PlayerBasicAttackProjectile nextProjectilePrefab)
+        {
+            ReleaseAllActiveProjectiles();
+            projectilePool?.Dispose();
+            projectilePool = null;
+            projectilePrefab = nextProjectilePrefab;
+            missingProjectileWarningLogged = false;
+
+            if (poolContainer != null)
+            {
+                Destroy(poolContainer.gameObject);
+                poolContainer = null;
+            }
+
+            InitializeProjectilePool();
+            ResetAttack();
+        }
+
         /// <summary>액티브 스킬 사용 후 기본 공격에 최소 한 공격 주기의 후딜레이를 적용합니다.</summary>
         public void ApplyPostSkillCooldown()
         {
@@ -294,6 +316,12 @@ namespace FlatVenture.NUH.Player.Combat
             damagedTargets.Clear();
             missingProjectileWarningLogged = false;
 
+            ReleaseAllActiveProjectiles();
+        }
+
+        /// <summary>현재 날아가는 기본 공격 투사체를 모두 풀로 되돌립니다.</summary>
+        private void ReleaseAllActiveProjectiles()
+        {
             if (projectilePool == null)
             {
                 activeProjectiles.Clear();

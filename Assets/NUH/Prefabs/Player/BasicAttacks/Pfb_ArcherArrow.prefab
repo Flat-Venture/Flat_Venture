@@ -153,3 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89a7ae39a4ca8574ea94074a90f9b709, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Combat.PlayerBasicAttackProjectile
+  splashRadius: 0
+  splashDamageMultiplier: 0.5
+  splashTargetMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
