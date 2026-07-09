@@ -1,91 +1,147 @@
 using UnityEngine;
 using System;
+using FlatVenture.Enums;
 
 /// <summary>
 /// 진입한 맵 노드의 RoomType에 맞춰 실제 게임 스테이지를 세팅하고 관리
 /// </summary>
 public class StageManager : MonoBehaviour
 {
-    //스테이지가 끝났을 때 호출하여 지도를 다시 열게 할 콜백 함수
-    private Action onStageClearedCallback;
+    [Header("Player Settings")]
+    public GameObject player;
+
+    [Header("Room Prefabs")]
+    public GameObject normalRoomPrefab;
+    public GameObject eliteRoomPrefab;
+    public GameObject restRoomPrefab;
+    public GameObject forgeRoomPrefab;
+    public GameObject shopRoomPrefab;
+    public GameObject unknownRoomPrefab;
+    public GameObject bossRoomPrefab;
+
+    [Header("UI Settings")]
+    public GameObject mapCanvas; //맵 캔버스를 On/Off 하기 위한 변수
+
+    private RoomController currentActiveRoom;
+    private Action openMapCallback;
+    private MapNode currentNode; //방금 입장한 노드를 기억해둘 변수
 
     /// <summary>
-    /// 외부에서 맵 복귀용 콜백을 주입받아 초기화
+    /// MapTestRunner에서 호출하여 지도를 다시 여는 콜백 함수
     /// </summary>
-    public void Init(Action onStageCleared)
+    public void Init(Action openMapCallback)
     {
-        this.onStageClearedCallback = onStageCleared;
+        this.openMapCallback = openMapCallback;
     }
 
     /// <summary>
-    /// 맵 시스템에서 전달받은 노드 정보를 바탕으로 스테이지를 구성
+    /// MapNode 클릭 시 호출되어 해당 방을 생성하고 입장
     /// </summary>
+    /// <param name="node"></param>
     public void EnterStage(MapNode node)
     {
-        Debug.Log($"<color=orange>[StageManager]</color> {node.Floor}층 {node.RoomType} 방 세팅을 시작합니다.");
+        //입장할 때 어떤 노드인지 기억
+        this.currentNode = node;
 
-        switch (node.RoomType)
+        //맵 UI를 끄고 게임 씬으로 진입
+        if (mapCanvas != null) mapCanvas.SetActive(false);
+
+        //기존 활성화된 방이 있으면 메모리에서 제거
+        if (currentActiveRoom != null) Destroy(currentActiveRoom.gameObject);
+
+        //노드의 RoomType에 따라 방 프리팹을 생성
+        GameObject roomPrefabToSpawn = GetRoomPrefab(node.RoomType);
+
+        if (roomPrefabToSpawn != null)
         {
-            case RoomType.Normal:
-                SetupBattleStage("일반 몬스터");
-                break;
-            case RoomType.Elite:
-                SetupBattleStage("엘리트 몬스터");
-                break;
-            case RoomType.Boss:
-                SetupBattleStage("보스 몬스터");
-                break;
-            case RoomType.Rest:
-                SetupRestStage();
-                break;
-            case RoomType.Shop:
-                SetupShopStage();
-                break;
-            case RoomType.Unknown:
-                SetupEventStage();
-                break;
-            case RoomType.Start:
-                Debug.Log("<color=orange>[StageManager]</color> 시작 방입니다. 바로 다음 노드를 선택하세요.");
-                //시작 방은 전투가 없으므로 0.5초 뒤 바로 맵을 다시 오픈
-                Invoke(nameof(ClearStage), 0.5f); 
-                break;
+            //씬의 원점(0, 0, 0)에 새로운 방 생성
+            GameObject newRoomObject = Instantiate(roomPrefabToSpawn, Vector3.zero, Quaternion.identity);
+            currentActiveRoom = newRoomObject.GetComponent<RoomController>();
+
+            if (currentActiveRoom != null)
+            {
+                //포탈 탑승 시 호출될 이벤트를 구독
+                currentActiveRoom.onRoomCleared += HandleRoomCleared;
+
+                //충돌 문제를 방지하기 위해 CharacterController를 비활성화 후 플레이어 위치 이동
+                if (currentActiveRoom.playerSpawnPoint != null && player != null)
+                {
+                    CharacterController characterController = player.GetComponent<CharacterController>();
+                    if (characterController != null) characterController.enabled = false;
+
+                    player.transform.position = currentActiveRoom.playerSpawnPoint.position;
+                    if (characterController != null) characterController.enabled = true;
+                }
+
+                //방 세팅 끝. 몬스터 스폰 이벤트 실행
+                currentActiveRoom.StartRoomEvent();
+            }
+
+            else
+            {
+                Debug.LogWarning("[StageManager] 생성된 방 프리팹에 RoomController 컴포넌트가 없습니다.");
+            }
+
+            //플레이어를 활성화하여 전투 시작
+            if (player != null) player.SetActive(true);
+        }
+
+        else
+        {
+            Debug.LogWarning($"[StageManager] {node.RoomType}에 해당하는 프리팹이 등록되지 않았습니다.");
+            HandleRoomCleared(null);
+        }
+
+    }
+
+    /// <summary>
+    /// 전달받은 Enum 값에 대응하는 프리팹을 매핑
+    /// </summary>
+    private GameObject GetRoomPrefab(RoomType type)
+    {
+        switch (type)
+        {
+            case RoomType.Normal: return normalRoomPrefab;
+            case RoomType.Elite: return eliteRoomPrefab;
+            case RoomType.Rest: return restRoomPrefab;
+            case RoomType.Forge: return forgeRoomPrefab;
+            case RoomType.Shop: return shopRoomPrefab;
+            case RoomType.Unknown: return unknownRoomPrefab;
+            case RoomType.Boss: return bossRoomPrefab;
+            default: return null;
         }
     }
 
-    private void SetupBattleStage(string monsterType)
+    private void HandleRoomCleared(RoomController clearedRoom)
     {
-        Debug.Log($"<color=orange>[StageManager]</color> {monsterType} 스폰 중... 전투 시작!");
-        
-        //TODO: 앞으로 만들 MonsterBase 및 프리팹 소환 로직이 들어갈 자리
-        //[임시 테스트용] 3초 뒤에 전투가 끝난 것으로 간주
-        //실제 게임에서는 몬스터가 모두 죽었을 때 ClearStage()를 호출하면 됨
-        Invoke(nameof(ClearStage), 3.0f);
-    }
+        if (clearedRoom != null) 
+        {
+            //이벤트 구독 해제
+            clearedRoom.onRoomCleared -= HandleRoomCleared;
 
-    private void SetupRestStage()
-    {
-        Debug.Log("<color=orange>[StageManager]</color> 모닥불 UI를 엽니다. (휴식/강화 선택)");
-        Invoke(nameof(ClearStage), 3.0f);
-    }
+            //포탈을 탔으므로 던전 방 오브젝트를 완전 파괴
+            Destroy(clearedRoom.gameObject);
+            if (currentActiveRoom == clearedRoom) currentActiveRoom = null;
+        }
 
-    private void SetupShopStage()
-    {
-        Debug.Log("<color=orange>[StageManager]</color> 상점 UI를 엽니다.");
-        Invoke(nameof(ClearStage), 3.0f);
-    }
+        Debug.Log("<color=green>[Core Loop]</color> 포탈 탑승 및 방 정리 완료! 지도로 복귀합니다.");
 
-    private void SetupEventStage()
-    {
-        Debug.Log("<color=orange>[StageManager]</color> 미지(물음표) 이벤트 팝업을 엽니다.");
-        Invoke(nameof(ClearStage), 3.0f);
-    }
+        //플레이어 다시 끄기 (또는 무적/대기 상태로 전환)
+        if (player != null) player.SetActive(false);
 
-    /// <summary>
-    /// 방 안의 이벤트나 전투가 모두 끝났을 때 외부에서 호출하여 맵으로 돌아감
-    /// </summary>
-    public void ClearStage()
-    {
-        Debug.Log("<color=cyan>[StageManager]</color> 스테이지 클리어! 맵 시스템에 완료 신호를 보냅니다.");
-        onStageClearedCallback?.Invoke();
+        //맵 UI 다시 켜기
+        if (mapCanvas != null) mapCanvas.SetActive(true);
+
+        //포탈을 타고 지도로 돌아왔을 때 들고 있던 노드 정보를 확인/전달
+        if (currentNode != null)
+        {
+            Debug.Log($"<color=yellow>[Save Data 준비완료]</color> 현재 층: {currentNode.Floor}, 노드 ID: {currentNode.NodeID}");
+            
+            //TODO: 저장 함수에 아래와 같이 변수들을 넘겨주면 됨
+            //예시: SaveManager.Instance.SaveProgress(currentNode.Floor, currentNode.NodeID);
+        }
+
+        //다시 맵을 열기 위한 델리게이트 실행
+        openMapCallback?.Invoke();
     }
 }

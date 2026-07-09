@@ -1,7 +1,7 @@
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using FlatVenture.Enums;
+using FlatVenture.NUH.Seed;
 
 /// <summary>
 /// 시드값을 기반으로 지도의 전체 구조와 방 배치를 생성하는 클래스
@@ -12,15 +12,17 @@ public class MapGenerator
     private const int MAX_WIDTH = 6;        //가로 최대 노드 수
     private const int MAX_START_NODES = 3;  //시작 최대 노드 수
 
-    public int CurrentSeed { get; private set; }
+    public SeedService CurrentSeedService { get; private set;}
 
     /// <summary>
     /// 지정된 시드를 바탕으로 맵(그래프)를 생성하여 반환
     /// </summary>
-    public List<List<MapNode>> GenerateMap(int seed)
+    public List<List<MapNode>> GenerateMap(SeedService seedService)
     {
-        CurrentSeed = seed;
-        System.Random mapRandom = new System.Random(seed);
+        CurrentSeedService = seedService;
+        
+        //매뉴얼 규칙: "Map" 이라는 고유 스트림 이름을 사용하여 독립적인 난수열을 가져옴
+        IRandomStream mapRandom = seedService.GetStream("Map");
 
         List<List<MapNode>> entireMap = new List<List<MapNode>>();
         int globalNodeID = 0;
@@ -37,13 +39,13 @@ public class MapGenerator
             if (floor == 0) nodeCount = 1;
 
             //1층: 시작점에서 뻗어나가는 첫 선택지 (2~4개)
-            else if (floor == 1) nodeCount = mapRandom.Next(2, MAX_START_NODES + 1);
+            else if (floor == 1) nodeCount = mapRandom.Range(2, MAX_START_NODES + 1);
 
             //8층: 보스 방
             else if (floor == MAX_FLOOR - 1) nodeCount = 1;
 
             //나머지 층: 일반 맵 진행 (1~6개)
-            else nodeCount = mapRandom.Next(2, MAX_WIDTH + 1);
+            else nodeCount = mapRandom.Range(2, MAX_WIDTH + 1);
 
             for (int i = 0; i < nodeCount; i++)
             {
@@ -66,7 +68,7 @@ public class MapGenerator
                 else
                 {
                     //노드의 UI 가로 위치 비율 설정 (충돌 방지를 위한 균등 분할 기반 미세 조정)
-                    newNode.NormalizedX = (i + 1.0f) / (nodeCount + 1.0f) + (float)(mapRandom.NextDouble() * 0.04f - 0.02f);
+                    newNode.NormalizedX = (i + 1.0f) / (nodeCount + 1.0f) + (float)(mapRandom.Range(0f, 1f) * 0.04f - 0.02f);
                     newNode.NormalizedY = (float)floor / (MAX_FLOOR - 1);
                 }
 
@@ -88,7 +90,7 @@ public class MapGenerator
     /// <summary>
     /// 각 층의 노드들을 다음 층과 연결하는 로직
     /// </summary>
-    private void ConnectNodes(List<List<MapNode>> map, System.Random mapRandom)
+    private void ConnectNodes(List<List<MapNode>> map, IRandomStream mapRandom)
     {
         for (int floor = 0; floor < map.Count - 1; floor++)
         {
@@ -136,7 +138,7 @@ public class MapGenerator
                 for (int i = 0; i < currentCount; i++)
                 {
                     //40% 확률로 새로운 갈래길 시도
-                    if (mapRandom.NextDouble() < 0.4f)
+                    if (mapRandom.Chance(0.4f))
                     {
                         //선 교차를 막기 위해 연결 가능한 최소/최대 인덱스(Valid Range)를 동적으로 계산
                         int minJ = 0;
@@ -165,7 +167,7 @@ public class MapGenerator
                         //유효한 범위 내에서 무작위 타겟 선택
                         if (minJ <= maxJ)
                         {
-                            int targetJ = mapRandom.Next(minJ, maxJ + 1);
+                            int targetJ = mapRandom.Range(minJ, maxJ + 1);
 
                             //보내는 쪽 3개 미만 && (받는 쪽 3개 미만 OR 보스 방) 일 때만 연결 허용
                             if (outCount[i] < 3 && (inCount[targetJ] < 3 || isBossLayer))
@@ -195,7 +197,7 @@ public class MapGenerator
     /// <summary>
     /// 연결된 맵 노드들에 기획된 확률과 쿼터(할당량)에 맞춰 방 종류를 배정
     /// </summary>
-    private void AssignRoomTypes(List<List<MapNode>> map, System.Random mapRandom)
+    private void AssignRoomTypes(List<List<MapNode>> map, IRandomStream mapRandom)
     {
         Dictionary<RoomType, int> quotas = new Dictionary<RoomType, int>()
         {
@@ -233,10 +235,10 @@ public class MapGenerator
     /// <summary>
     /// 가중치(Weight) 확률에 따라 방을 무작위로 뽑되, 제한된 쿼터를 초과하면 대체 방으로 변경
     /// </summary>
-    private RoomType GetRandomRoomTypeWithQuota(System.Random mapRandom, Dictionary<RoomType, int> quotas)
+    private RoomType GetRandomRoomTypeWithQuota(IRandomStream mapRandom, Dictionary<RoomType, int> quotas)
     {
         //방 등장 확률 가중치 (총합 100 기준, 추후 기획 밸런스에 맞춰 수지 조정 가능)
-        int roll = mapRandom.Next(0, 100);
+        int roll = mapRandom.Range(0, 100);
 
         RoomType selectedType;
 
@@ -253,7 +255,7 @@ public class MapGenerator
             if (quotas[selectedType] > 0) quotas[selectedType]--; //쿼터 1개 소모
 
             //제한된 개수를 모두 소모했다면, 일반 몬스터(Normal) 방이나 이벤트(Unknown) 방으로 강제 대체 (50:50 확률)
-            else selectedType = mapRandom.Next(0, 2) == 0 ? RoomType.Normal : RoomType.Unknown;
+            else selectedType = mapRandom.Chance(0.5f) ? RoomType.Normal : RoomType.Unknown;
         }
 
         return selectedType;
@@ -262,7 +264,7 @@ public class MapGenerator
     /// <summary>
     /// 각 층의 노드들을 다음 층과 연결
     /// </summary>
-    private void ConnectNode(List<List<MapNode>> map, System.Random mapRandom)
+    private void ConnectNode(List<List<MapNode>> map, IRandomStream mapRandom)
     {
         for (int floor = 0; floor < map.Count - 1; floor++)
         {
@@ -282,12 +284,12 @@ public class MapGenerator
                 MapNode currentNode = currentNodes[i];
 
                 //현재 노드에더 다음 층으로 뻗어나갈 길의 개수를 결정
-                int connectionCount = mapRandom.Next(1, 3); //1~2개 연결
+                int connectionCount = mapRandom.Range(1, 3); //1~2개 연결
 
                 for (int j = 0; j < connectionCount; j++)
                 {
                     //교차 방지: 항상 이전 노드가 연결했던 인덱스 이상만 연결
-                    int targetIndex = nextNodeStartIndex + mapRandom.Next(0, 2);
+                    int targetIndex = nextNodeStartIndex + mapRandom.Range(0, 2);
 
                     //인덱스가 다음 층 녿드의 최대 개수를 넘지 않도로 제한
                     if (targetIndex >= nextNodes.Count) targetIndex = nextNodes.Count - 1;

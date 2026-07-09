@@ -26,8 +26,8 @@ public class MonsterController : MonoBehaviour, IPlayerAttackTarget
     //사망 시 외부에 알리기 위한 콜백
     public Action<MonsterController> onDeathCallback;
 
-    //몬스터에 붙어 있는 모든 특성 배열
-    private MonsterTrait[] traits;
+    //몬스터에 붙어 있는 모든 특성 리스트
+    private List<MonsterTrait> traits = new List<MonsterTrait>();
 
     //생존 여부를 플레이어 스크립트에 알려줌
     public bool IsAlive => CurrentHP > 0;
@@ -41,7 +41,7 @@ public class MonsterController : MonoBehaviour, IPlayerAttackTarget
         CurrentHP = maxHP;
 
         //몬스터가 생성될 때 붙어있는 모든 Trait들을 초기화
-        traits = GetComponentsInChildren<MonsterTrait>();
+        traits.AddRange(GetComponentsInChildren<MonsterTrait>());
         foreach (var trait in traits)
         {
             trait.Setup(this);
@@ -87,6 +87,21 @@ public class MonsterController : MonoBehaviour, IPlayerAttackTarget
 
         if (CurrentHP <= 0) Die();
     }
+
+    /// <summary>
+    /// 방 생성 시 랜덤 엘리트 특성 등을 동적으로 추가
+    /// </summary>
+    /// <param name="newTrait"></param>
+    public void AttachDynamicTrait(MonsterTrait newTrait)
+    {
+        if (newTrait != null && !traits.Contains(newTrait))
+        {
+            traits.Add(newTrait);
+
+            //부착 즉시 초기화하여 컨트롤러와 연결
+            newTrait.Setup(this);
+        }
+    } 
 
     private void Die()
     {

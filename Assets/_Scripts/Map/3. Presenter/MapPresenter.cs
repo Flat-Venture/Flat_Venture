@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using FlatVenture.NUH.Seed;
 
 /// <summary>
 /// MapModel과 MapUIManager를 연결하는 Presenter
@@ -153,12 +154,13 @@ public class MapPresenter
     public void GenerateNewDungeonMap()
     {
         //무작위 시드값 생성
-        int newSeed = UnityEngine.Random.Range(1, int.MaxValue);
+        int newSeed = FlatVenture.NUH.Seed.SeedValue.Generate();;
 
         Debug.Log($"<color=magenta>[MapSystem]</color> 새로운 시드({newSeed})로 던전을 생성합니다.");
 
         //새롭게 생성된 시드를 Generateor에 넘김
-        var mapData = generator.GenerateMap(newSeed);
+        SeedService tempSeedService = new SeedService(newSeed);
+        var mapData = generator.GenerateMap(tempSeedService);
 
         //모델에 새 시드와 맵 데이터를 젖당
         model.SetMapData(newSeed, mapData);
