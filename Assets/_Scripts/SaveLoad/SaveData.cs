@@ -94,6 +94,7 @@ namespace FlatVenture.SaveLoad
         public List<string> clearedNodeIds = new List<string>();
         public List<string> availableNextNodeIds = new List<string>();
         public List<DungeonAcquiredItemSaveData> acquiredItems = new List<DungeonAcquiredItemSaveData>();
+        public InventorySaveData inventory = new InventorySaveData();
         public DungeonSaveState dungeonState = DungeonSaveState.None;
     }
 
@@ -105,5 +106,48 @@ namespace FlatVenture.SaveLoad
         public string itemId;
         public string displayName;
         public int count;
+    }
+
+    // 던전 안에서 사용하는 5x5 인벤토리 상태를 저장합니다.
+    [Serializable]
+    public sealed class InventorySaveData
+    {
+        public int width = 5;
+        public int height = 5;
+        public int debugGold;
+        public List<InventorySlotSaveData> slots = new List<InventorySlotSaveData>();
+    }
+
+    // 인벤토리 슬롯 하나의 아이템, 프레임, 강화, 봉인 상태를 저장합니다.
+    [Serializable]
+    public sealed class InventorySlotSaveData
+    {
+        public int slotIndex;
+        public string frameElementId;
+        public int upgradeLevel;
+        public bool isSealed;
+        public InventoryItemSaveData item;
+    }
+
+    // 인벤토리에 들어온 아이템 인스턴스 정보를 저장합니다.
+    [Serializable]
+    public sealed class InventoryItemSaveData
+    {
+        public string instanceId;
+        public string itemId;
+        public string displayName;
+        public string rarityId;
+        public bool isCursed;
+        public bool isUnique;
+        public int sellPrice;
+        public List<InventoryItemElementSaveData> elements = new List<InventoryItemElementSaveData>();
+    }
+
+    // 아이템 인스턴스가 가진 속성 포인트를 저장합니다.
+    [Serializable]
+    public sealed class InventoryItemElementSaveData
+    {
+        public string elementId;
+        public int elementValue;
     }
 }

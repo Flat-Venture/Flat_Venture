@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using FlatVenture.Inventory;
 
 namespace FlatVenture.SaveLoad
 {
@@ -11,6 +12,14 @@ namespace FlatVenture.SaveLoad
     // 시간 정지와 입력 차단은 이후 담당 시스템이 붙을 예정이므로 여기서는 버튼과 저장 흐름만 담당합니다.
     public sealed class PauseMenuBehaviour : MonoBehaviour
     {
+        private const int PauseCanvasSortingOrder = 10000;
+        private static int openMenuCount;
+
+        public static bool IsAnyOpen
+        {
+            get { return openMenuCount > 0; }
+        }
+
         [SerializeField] private bool isDungeonScene;
         [SerializeField] private Key toggleKey = Key.Escape;
         [SerializeField] private string titleSceneName = "Test_03_Title";
@@ -56,18 +65,40 @@ namespace FlatVenture.SaveLoad
         // 메뉴를 엽니다.
         public void Open()
         {
-            isOpen = true;
+            SetOpenState(true);
             menuRoot.gameObject.SetActive(true);
+            menuRoot.SetAsLastSibling();
             SetStatus(string.Empty);
         }
 
         // 메뉴를 닫습니다.
         public void Close()
         {
-            isOpen = false;
+            SetOpenState(false);
 
             if (menuRoot != null)
                 menuRoot.gameObject.SetActive(false);
+        }
+
+        // 메뉴 열림 상태를 전역으로 공유해서 다른 디버그 UI가 뒤에서 클릭되지 않게 합니다.
+        private void SetOpenState(bool nextOpen)
+        {
+            if (isOpen == nextOpen)
+            {
+                return;
+            }
+
+            isOpen = nextOpen;
+            openMenuCount = Mathf.Max(0, openMenuCount + (nextOpen ? 1 : -1));
+        }
+
+        // 씬 전환이나 오브젝트 제거 중 열린 상태가 남지 않게 정리합니다.
+        private void OnDestroy()
+        {
+            if (isOpen)
+            {
+                SetOpenState(false);
+            }
         }
 
         // 계속하기 버튼 처리입니다.
@@ -92,6 +123,7 @@ namespace FlatVenture.SaveLoad
             }
 
             ResetDungeonProgress(SaveGameSession.CurrentSaveData);
+            ClearInventoryRuntimeIfExists();
             SaveCurrentSession("던전 포기");
             SceneManager.LoadScene(townSceneName);
         }
@@ -113,8 +145,29 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
+            CaptureInventoryIfExists(SaveGameSession.CurrentSaveData);
             SaveLoadService.Save(SaveGameSession.CurrentSlotIndex, SaveGameSession.CurrentSaveData);
             Debug.Log("[PauseMenu] 저장 완료: " + reason + " / 슬롯 " + SaveGameSession.CurrentSlotIndex);
+        }
+
+        // 씬에 인벤토리 런타임이 있으면 저장 직전에 현재 인벤토리 상태를 SaveData에 반영합니다.
+        private static void CaptureInventoryIfExists(SaveData saveData)
+        {
+            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            if (inventoryRuntime != null)
+            {
+                inventoryRuntime.CaptureToSaveData(saveData);
+            }
+        }
+
+        // 던전 포기처럼 던전 진행을 버리는 상황에서는 런타임 인벤토리도 함께 비웁니다.
+        private static void ClearInventoryRuntimeIfExists()
+        {
+            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            if (inventoryRuntime != null)
+            {
+                inventoryRuntime.ClearInventoryForTest();
+            }
         }
 
         // 던전 진행 데이터를 던전 밖 상태로 초기화합니다.
@@ -132,6 +185,8 @@ namespace FlatVenture.SaveLoad
             EnsureCanvasScaler(canvas);
             EnsureGraphicRaycaster(canvas);
             EnsureEventSystem();
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = PauseCanvasSortingOrder;
 
             menuRoot = CreateRect("Pause Menu", transform);
             StretchToParent(menuRoot);
