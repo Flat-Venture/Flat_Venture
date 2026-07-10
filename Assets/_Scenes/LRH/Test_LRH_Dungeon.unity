@@ -119,6 +119,75 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &115607241
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115607244}
+  - component: {fileID: 115607243}
+  - component: {fileID: 115607242}
+  m_Layer: 0
+  m_Name: InventoryDebug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &115607242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115607241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 792598b6138acf14d952821cfad31b44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.ItemData.DebugItemGrantPanel
+  inventoryRuntime: {fileID: 0}
+  itemAssetDatabase: {fileID: 11400000, guid: c58a97b8daee3ab438fe198c6e35d16d, type: 2}
+  toggleKey: 95
+  panelWidth: 620
+  panelHeight: 640
+  iconSize: 28
+--- !u!114 &115607243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115607241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925e6c3b22c3cba4eb683fb8531c4b16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.Inventory.InventoryDebugPanelBehaviour
+  inventoryRuntime: {fileID: 0}
+  itemAssetDatabase: {fileID: 11400000, guid: c58a97b8daee3ab438fe198c6e35d16d, type: 2}
+  startVisible: 1
+  toggleKey: 99
+  discardKey: 20
+  slotUpgradeAmount: 1
+--- !u!4 &115607244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115607241}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 960, y: 540, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &224422615
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,7 +315,7 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &1373362680
+--- !u!1 &339507145
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -254,24 +323,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1373362683}
-  - component: {fileID: 1373362682}
-  - component: {fileID: 1373362681}
-  - component: {fileID: 1373362684}
+  - component: {fileID: 339507147}
+  - component: {fileID: 339507146}
+  - component: {fileID: 339507148}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: PauseMenu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1373362681
+--- !u!114 &339507146
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1373362680}
+  m_GameObject: {fileID: 339507145}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b209171900c8bf40a669d317d3b7c4a, type: 3}
@@ -288,6 +356,59 @@ MonoBehaviour:
   dangerButtonColor: {r: 0.65, g: 0.16, b: 0.12, a: 1}
   textColor: {r: 1, g: 1, b: 1, a: 1}
   titleColor: {r: 1, g: 0.82, b: 0.24, a: 1}
+--- !u!4 &339507147
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339507145}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 960, y: 540, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &339507148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 339507145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a849a473a84a6f428b2bfb50e37053d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.SaveLoad.DungeonDebugProgressButtonBehaviour
+  font: {fileID: 0}
+  townSceneName: Test_LRH_Town
+  buttonColor: {r: 0.18, g: 0.34, b: 0.38, a: 1}
+  dangerButtonColor: {r: 0.65, g: 0.16, b: 0.12, a: 1}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  anchorMin: {x: 0.78, y: 0.18}
+  anchorMax: {x: 0.96, y: 0.34}
+--- !u!1 &1373362680
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1373362683}
+  - component: {fileID: 1373362682}
+  - component: {fileID: 1373362685}
+  - component: {fileID: 1373362684}
+  m_Layer: 0
+  m_Name: GameData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!114 &1373362682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,7 +426,7 @@ MonoBehaviour:
   enableDebugSaveKeys: 1
   saveKey: 98
   printKey: 102
-  debugGoldAddAmount: 10
+  debugDungeonGoldAddAmount: 10
   onSaveDataReady:
     m_PersistentCalls:
       m_Calls: []
@@ -333,16 +454,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1373362680}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a849a473a84a6f428b2bfb50e37053d, type: 3}
+  m_Script: {fileID: 11500000, guid: 689b7e96c7b3ccf408fbd17fdb9e2bad, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.SaveLoad.DungeonDebugProgressButtonBehaviour
-  font: {fileID: 0}
-  townSceneName: Test_LRH_Town
-  buttonColor: {r: 0.18, g: 0.34, b: 0.38, a: 1}
-  dangerButtonColor: {r: 0.65, g: 0.16, b: 0.12, a: 1}
-  textColor: {r: 1, g: 1, b: 1, a: 1}
-  anchorMin: {x: 0.78, y: 0.18}
-  anchorMax: {x: 0.96, y: 0.34}
+  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.ItemData.GameDataLoaderBehaviour
+--- !u!114 &1373362685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1373362680}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 315f5ff35d7fbdc4e983db2dbe512fd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlatVenture.Inventory.InventoryRuntimeBehaviour
+  dataLoader: {fileID: 0}
+  width: 5
+  height: 5
 --- !u!1 &2005893811
 GameObject:
   m_ObjectHideFlags: 0
@@ -442,3 +571,5 @@ SceneRoots:
   - {fileID: 2005893814}
   - {fileID: 224422617}
   - {fileID: 1373362683}
+  - {fileID: 115607244}
+  - {fileID: 339507147}
