@@ -19,7 +19,21 @@ public class RangedMovementTrait : MonsterTrait
     {
         base.Setup(controller);
         agent = GetComponent<NavMeshAgent>();
-        if (agent != null) agent.speed = controller.moveSpeed;
+        
+        if (agent != null) 
+        {
+            agent.speed = controller.moveSpeed;
+        
+            //반경 5m 내의 가장 완벽한 바닥(NavMesh) 좌표를 찾음
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+            {
+                //Warp 대신 트랜스폼(몸체)을 먼저 그 바닥으로 완벽하게 이동
+                transform.position = hit.position;
+            }
+            
+            //바닥에 예쁘게 착지했으니, 이제 잠들어있던 에이전트를 깨움
+            agent.enabled = true;
+        }
     }
 
     private void Update()

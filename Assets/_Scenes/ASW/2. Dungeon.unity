@@ -1107,7 +1107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageManager
   player: {fileID: 372798982}
   normalRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
-  eliteRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
+  eliteRoomPrefab: {fileID: 2638135422681611259, guid: 825f3aaa27741bb48a3712b4177e357d, type: 3}
   restRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
   forgeRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
   shopRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}

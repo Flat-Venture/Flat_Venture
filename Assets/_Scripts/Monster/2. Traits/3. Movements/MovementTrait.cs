@@ -27,6 +27,15 @@ public class MovementTrait : MonsterTrait
         //뇌(Agent)는 길만 찾고, 실제 이동은 근육(Rigidbody)이 담당
         agent.updatePosition = false;
         agent.updateRotation = false;
+
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+        {
+            transform.position = hit.position;
+        }
+        
+        //이동이 끝난 후 에이전트 활성화
+        agent.enabled = true;
+
     }
 
     private void FixedUpdate()
