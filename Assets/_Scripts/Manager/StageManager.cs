@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using FlatVenture.Enums;
+using FlatVenture.SaveLoad;
 
 /// <summary>
 /// 진입한 맵 노드의 RoomType에 맞춰 실제 게임 스테이지를 세팅하고 관리
@@ -136,9 +137,7 @@ public class StageManager : MonoBehaviour
         if (currentNode != null)
         {
             Debug.Log($"<color=yellow>[Save Data 준비완료]</color> 현재 층: {currentNode.Floor}, 노드 ID: {currentNode.NodeID}");
-            
-            //TODO: 저장 함수에 아래와 같이 변수들을 넘겨주면 됨
-            //예시: SaveManager.Instance.SaveProgress(currentNode.Floor, currentNode.NodeID);
+            DungeonMapSaveBridge.SaveRoomCleared(currentNode);
         }
 
         //다시 맵을 열기 위한 델리게이트 실행

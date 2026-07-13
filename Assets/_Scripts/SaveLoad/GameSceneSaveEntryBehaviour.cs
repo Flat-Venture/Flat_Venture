@@ -118,6 +118,8 @@ namespace FlatVenture.SaveLoad
                 + "\nJewel: " + user.jewel
                 + "\nSelected Character: " + user.selectedCharacterId
                 + "\nIn Dungeon: " + dungeon.isInDungeon
+                + "\nDungeon Player Level: " + dungeon.playerLevel
+                + "\nDungeon Player Exp: " + dungeon.playerExp
                 + "\nDungeon Gold: " + dungeon.gold
                 + "\nDungeon State: " + dungeon.dungeonState;
         }

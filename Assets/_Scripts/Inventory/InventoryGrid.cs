@@ -10,7 +10,6 @@ namespace FlatVenture.Inventory
         public const int DefaultHeight = 5;
 
         private readonly InventorySlot[] slots;
-        private readonly Random random;
 
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -22,12 +21,11 @@ namespace FlatVenture.Inventory
             get { return slots; }
         }
 
-        public InventoryGrid(int width, int height, int? seed = null)
+        public InventoryGrid(int width, int height)
         {
             Width = Math.Max(1, width);
             Height = Math.Max(1, height);
             slots = new InventorySlot[Width * Height];
-            random = seed.HasValue ? new Random(seed.Value) : new Random();
 
             for (int y = 0; y < Height; y++)
             {
@@ -99,7 +97,7 @@ namespace FlatVenture.Inventory
                 return false;
             }
 
-            int index = emptyIndices[random.Next(emptyIndices.Count)];
+            int index = emptyIndices[UnityEngine.Random.Range(0, emptyIndices.Count)];
             slots[index].item = item;
             position = slots[index].position;
             return true;

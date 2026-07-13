@@ -89,6 +89,8 @@ namespace FlatVenture.SaveLoad
         public bool isInDungeon;
         public int dungeonSeed;
         public int currentFloor;
+        public int playerLevel = 1;
+        public int playerExp;
         public int gold;
         public string currentNodeId;
         public List<string> clearedNodeIds = new List<string>();
