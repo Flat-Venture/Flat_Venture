@@ -24,7 +24,8 @@ public class BerserkTrait : MonsterTrait
         base.Setup(controller);
 
         //임시 3D 모델의 색상 변경을 위한 Renderer 연결
-        meshRenderer = GetComponentInChildren<Renderer>();
+        //특성 프리팹이 아닌 몬스터 본체의 Renderer를 찾아야 하므로 controller를 통해 접근
+        meshRenderer = controller.GetComponentInChildren<Renderer>();
         
         if (meshRenderer != null) originalColor = meshRenderer.material.color;
     }
@@ -53,11 +54,12 @@ public class BerserkTrait : MonsterTrait
         controller.moveSpeed *= speedMultiplier;
 
         //크기 증가
-        transform.localScale *= scaleMultiplier;
+        //자기 자신이 아닌 몬스터 본체의 크기를 키워야 하므로 controller.transform 사용
+        controller.transform.localScale *= scaleMultiplier;
 
         //시각적 피드백: 몸 색상을 변경
         if (meshRenderer != null) meshRenderer.material.color = new Color(1f, 0.4f, 0f);
 
-        // TODO: 나중에 여기에 땀방울이 튀거나 붉은 오라가 뿜어지는 파티클 효과를 Instantiate 할 수 있음
+        //TODO: 나중에 여기에 땀방울이 튀거나 붉은 오라가 뿜어지는 파티클 효과를 Instantiate 할 수 있음
     }
 }
