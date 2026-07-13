@@ -1,4 +1,5 @@
 using UnityEngine;
+using FlatVenture.NUH.Player.Health;
 
 /// <summary>
 /// 적의 투사체를 담당하며, 플레이어 피격 처리 및 스스로 풀(Pool)로 돌아가는 기능
@@ -43,17 +44,20 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //플레이어와 충돌했는지 확인 (IPlayerAttackTarget 인터페이스 활용 가능)
-        if (other.CompareTag("Player"))
+        //부딪힌 오브젝트(또는 그 부모)에 플레이어 체력 스크립트가 있는지 확인합니다.
+        PlayerHealthController healthController = other.GetComponentInParent<PlayerHealthController>();
+        
+        //플레이어라면 데미지를 주고 즉시 총알 파괴
+        if (healthController != null)
         {
-            Debug.Log($"<color=red>[Projectile]</color> 플레이어에게 {damage} 데미지 줌!");
-            //TODO: 플레이어의 TakeDamage(damage) 함수 호출
-            
-            ReturnToPool();
+            Debug.Log($"<color=red>[Projectile]</color> 플레이어에게 {damage} 데미지 명중!");
+            healthController.TakeDamage(damage);
+            ReturnToPool(); 
+            return;
         }
 
-        //벽이나 바닥 등 다른 장애물에 맞았을 때도 비활성화
-        else if (other.CompareTag("Environment") || other.CompareTag("Obstacle"))
+        //플레이어가 아닌 벽이나 바닥 등 장애물에 맞았을 때도 파괴
+        if (other.CompareTag("Player") ||other.CompareTag("Environment") || other.CompareTag("Obstacle"))
         {
             ReturnToPool();
         }

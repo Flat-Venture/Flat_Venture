@@ -38,7 +38,7 @@ public class RoomController : MonoBehaviour
     //매니저에서 방을 세팅할 때 호출하는 시작 지점
     public void StartRoomEvent()
     {
-        SpawnMonsters();
+        Invoke(nameof(SpawnMonsters), 0.1f);
     }
 
     private void SpawnMonsters()
