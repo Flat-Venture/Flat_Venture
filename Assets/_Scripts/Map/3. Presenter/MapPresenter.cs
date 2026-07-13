@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using FlatVenture.NUH.Seed;
+using FlatVenture.SaveLoad;
 
 /// <summary>
 /// MapModel과 MapUIManager를 연결하는 Presenter
@@ -67,6 +69,8 @@ public class MapPresenter
 
             //갱신된 상태를 바탕으로 맵 전체 시작적 피드백 업데이트
             UpdateMapState();
+
+            DungeonMapSaveBridge.SaveNodeSelected(model, targetNode);
 
             //타겟 노드 정보를 넘겨주며 EnterNode 호출
             EnterNode(targetNode);
@@ -154,16 +158,24 @@ public class MapPresenter
     public void GenerateNewDungeonMap()
     {
         //무작위 시드값 생성
-        int newSeed = FlatVenture.NUH.Seed.SeedValue.Generate();;
+        int newSeed = FlatVenture.NUH.Seed.SeedValue.Generate();
 
-        Debug.Log($"<color=magenta>[MapSystem]</color> 새로운 시드({newSeed})로 던전을 생성합니다.");
+        GenerateDungeonMap(newSeed, true);
+    }
+
+    /// <summary>
+    /// 외부에서 전달받은 시드로 던전 맵을 생성합니다. SaveLoad가 있으면 저장된 dungeonSeed를 전달받아 사용합니다.
+    /// </summary>
+    public void GenerateDungeonMap(int seed, bool openForSelection)
+    {
+        Debug.Log($"<color=magenta>[MapSystem]</color> 시드({seed})로 던전을 생성합니다.");
 
         //새롭게 생성된 시드를 Generateor에 넘김
-        SeedService tempSeedService = new SeedService(newSeed);
+        SeedService tempSeedService = new SeedService(seed);
         var mapData = generator.GenerateMap(tempSeedService);
 
         //모델에 새 시드와 맵 데이터를 젖당
-        model.SetMapData(newSeed, mapData);
+        model.SetMapData(seed, mapData);
 
         //View를 통해 화면에 렌더링
         view.DrawMap(model.EntireMap, OnNodeClicked);
@@ -172,7 +184,42 @@ public class MapPresenter
         UpdateMapState();
 
         //최초 생성 직후 맵 열기
+        if (openForSelection)
+        {
+            OpenMapForSelection();
+        }
+    }
+
+    /// <summary>
+    /// 저장된 현재 노드/방문 노드 목록을 모델과 화면에 반영합니다.
+    /// </summary>
+    public void RestoreDungeonProgress(int currentNodeID, IEnumerable<int> visitedNodeIDs, bool isInDungeon)
+    {
+        model.RestoreProgress(currentNodeID, visitedNodeIDs, isInDungeon);
+        model.EnsureValidCurrentNode();
+        UpdateMapState();
+
+        if (isInDungeon)
+        {
+            view.HideMap();
+            return;
+        }
+
         OpenMapForSelection();
+    }
+
+    /// <summary>
+    /// 저장 상태가 노드 내부라면 현재 노드 방으로 다시 진입합니다.
+    /// </summary>
+    public void EnterRestoredCurrentNode()
+    {
+        MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
+        if (currentNode == null)
+        {
+            return;
+        }
+
+        EnterNode(currentNode);
     }
 
     public void ResetMapSystem()

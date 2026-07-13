@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FlatVenture.ItemData;
+using FlatVenture.NUH.Seed;
 using FlatVenture.SaveLoad;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace FlatVenture.Inventory
     // 테스트 UI, 치트 지급창, 이후 정식 UI는 이 컴포넌트의 InventoryGrid를 함께 바라보면 됩니다.
     public sealed class InventoryRuntimeBehaviour : MonoBehaviour
     {
+        private static readonly List<float> SlotUpgradeWeights = new List<float> { 80f, 19f, 1f };
+
         [SerializeField] private GameDataLoaderBehaviour dataLoader;
         [SerializeField] private int width = InventoryGrid.DefaultWidth;
         [SerializeField] private int height = InventoryGrid.DefaultHeight;
@@ -17,6 +20,7 @@ namespace FlatVenture.Inventory
         private readonly List<ItemRecord> sortedItems = new List<ItemRecord>();
         private readonly List<string> sortedElementIds = new List<string>();
         private InventorySynergyCalculator synergyCalculator;
+        private ISeedService seedService;
 
         public InventoryGrid Grid { get; private set; }
         public GameDataCatalog Catalog { get; private set; }
@@ -26,6 +30,12 @@ namespace FlatVenture.Inventory
         public IReadOnlyList<ItemRecord> SortedItems
         {
             get { return sortedItems; }
+        }
+
+        // 던전 입장/로드 쪽에서 현재 던전 SeedService를 넘겨주면 가격/강화 같은 재현 대상에 사용합니다.
+        public void SetSeedService(ISeedService nextSeedService)
+        {
+            seedService = nextSeedService;
         }
 
         public IReadOnlyList<string> SortedElementIds
@@ -381,14 +391,61 @@ namespace FlatVenture.Inventory
         // 등급 기준 판매가를 10% 오차 범위 안에서 계산합니다.
         public int CalculateSellPrice(InventoryItem item)
         {
+            return CalculateSellPrice(item, seedService);
+        }
+
+        // SeedService가 연결되어 있으면 Shop 스트림으로 판매 가격 오차를 계산합니다.
+        public int CalculateSellPrice(InventoryItem item, ISeedService sourceSeedService)
+        {
+            var random = sourceSeedService != null ? sourceSeedService.GetStream(SeedStreamNames.Shop) : null;
+            return CalculateSellPrice(item, random);
+        }
+
+        // 판매 가격은 등급 기준 가격에 10% 오차를 더합니다.
+        public int CalculateSellPrice(InventoryItem item, IRandomStream random)
+        {
             if (item != null && item.sellPrice > 0)
             {
                 return item.sellPrice;
             }
 
             int basePrice = GetBasePriceByRarity(item != null ? item.rarityId : null);
-            float multiplier = UnityEngine.Random.Range(0.9f, 1.1f);
+            float multiplier = random != null ? random.Range(0.9f, 1.1f) : UnityEngine.Random.Range(0.9f, 1.1f);
             return Mathf.RoundToInt(basePrice * multiplier);
+        }
+
+        // Forge 스트림으로 슬롯 강화 수치를 뽑고 선택된 슬롯에 적용합니다.
+        public bool TryAddRolledSlotUpgrade(int index, out int upgradeAmount, out string message)
+        {
+            upgradeAmount = RollSlotUpgradeAmount(seedService);
+
+            if (!Grid.TryAddSlotUpgrade(index, upgradeAmount))
+            {
+                message = "강화할 슬롯을 먼저 선택해주세요.";
+                return false;
+            }
+
+            var slot = Grid.GetSlot(index);
+            message = "슬롯 강화 변화량 +" + upgradeAmount + " / 현재 +" + (slot != null ? slot.upgradeLevel : 0);
+            return true;
+        }
+
+        // SeedService가 연결되어 있으면 Forge 스트림을 사용하고, 없으면 테스트용 기본값 +1을 반환합니다.
+        public int RollSlotUpgradeAmount(ISeedService sourceSeedService)
+        {
+            var random = sourceSeedService != null ? sourceSeedService.GetStream(SeedStreamNames.Forge) : null;
+            return RollSlotUpgradeAmount(random);
+        }
+
+        // 슬롯 강화 확률은 +1 80%, +2 19%, +3 1%입니다.
+        public int RollSlotUpgradeAmount(IRandomStream random)
+        {
+            if (random == null)
+            {
+                return 1;
+            }
+
+            return random.WeightedIndex(SlotUpgradeWeights) + 1;
         }
 
         // 등급 순서에 따라 1000, 2000, 3000, 4000 기준가를 반환합니다.

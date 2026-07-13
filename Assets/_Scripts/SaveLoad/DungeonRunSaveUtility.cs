@@ -19,6 +19,8 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.isInDungeon = true;
             saveData.dungeon.dungeonSeed = seed;
             saveData.dungeon.currentFloor = 1;
+            saveData.dungeon.playerLevel = 1;
+            saveData.dungeon.playerExp = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             saveData.dungeon.dungeonState = DungeonSaveState.Map;
         }
@@ -32,6 +34,8 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.isInDungeon = false;
             saveData.dungeon.dungeonSeed = 0;
             saveData.dungeon.currentFloor = 0;
+            saveData.dungeon.playerLevel = 0;
+            saveData.dungeon.playerExp = 0;
             saveData.dungeon.gold = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             EnsureLists(saveData.dungeon);

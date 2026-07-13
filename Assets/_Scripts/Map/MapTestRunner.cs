@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using FlatVenture.SaveLoad;
 
 /// <summary>
 /// 아키텍처 조립 후 맵 생성을 테스트하기 위한 임시 실행기
@@ -22,8 +23,26 @@ public class MapTestRunner : MonoBehaviour
 
         if (stageManager != null) stageManager.Init(presenter.OpenMapForSelection);
 
-        //presenter를 통해 새로운 맵 생성
-        presenter.GenerateNewDungeonMap();
+        DungeonMapSaveBridge.DungeonMapRestoreState restoreState;
+        if (DungeonMapSaveBridge.TryGetMapRestoreState(out restoreState))
+        {
+            presenter.GenerateDungeonMap(restoreState.dungeonSeed, !restoreState.hasCurrentNode);
+
+            if (restoreState.hasCurrentNode)
+            {
+                presenter.RestoreDungeonProgress(restoreState.currentNodeId, restoreState.visitedNodeIds, restoreState.isInNode);
+
+                if (restoreState.isInNode)
+                {
+                    presenter.EnterRestoredCurrentNode();
+                }
+            }
+        }
+        else
+        {
+            //presenter를 통해 새로운 맵 생성
+            presenter.GenerateNewDungeonMap();
+        }
     }
 
     private void HandleNodeEntered(MapNode node)

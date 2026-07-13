@@ -20,10 +20,8 @@ namespace FlatVenture.Inventory
 
         [SerializeField] private InventoryRuntimeBehaviour inventoryRuntime;
         [SerializeField] private ItemAssetDatabaseSO itemAssetDatabase;
-        [SerializeField] private bool startVisible = true;
         [SerializeField] private Key toggleKey = Key.I;
         [SerializeField] private Key discardKey = Key.F;
-        [SerializeField] private int slotUpgradeAmount = 1;
 
         private InventoryInteractionMode mode = InventoryInteractionMode.Normal;
         private int selectedSlot = -1;
@@ -32,10 +30,10 @@ namespace FlatVenture.Inventory
         private bool isVisible;
         private string message;
 
-        // 공유 인벤토리 런타임을 찾고 초기 표시 상태를 설정합니다.
+        // 공유 인벤토리 런타임을 찾고 시작 시에는 패널을 숨깁니다.
         private void Awake()
         {
-            isVisible = startVisible;
+            isVisible = false;
             FindRuntimeIfNeeded();
         }
 
@@ -331,7 +329,7 @@ namespace FlatVenture.Inventory
                 GrantRandomItem();
             }
 
-            if (GUILayout.Button("슬롯 " + FormatSignedNumber(slotUpgradeAmount)))
+            if (GUILayout.Button("슬롯 강화"))
             {
                 UpgradeSelectedSlot();
             }
@@ -532,18 +530,11 @@ namespace FlatVenture.Inventory
             inventoryRuntime.RecalculateSynergy();
         }
 
-        // 선택한 슬롯의 강화 수치를 1 올립니다.
+        // 선택한 슬롯에 강화 수치를 적용합니다.
         private void UpgradeSelectedSlot()
         {
-            var slot = inventoryRuntime.Grid.GetSlot(selectedSlot);
-            if (slot == null)
-            {
-                message = "강화할 슬롯을 먼저 선택해주세요.";
-                return;
-            }
-
-            inventoryRuntime.Grid.TryAddSlotUpgrade(selectedSlot, slotUpgradeAmount);
-            message = "슬롯 강화 변화량 " + FormatSignedNumber(slotUpgradeAmount) + " / 현재 +" + slot.upgradeLevel;
+            int upgradeAmount;
+            inventoryRuntime.TryAddRolledSlotUpgrade(selectedSlot, out upgradeAmount, out message);
         }
 
         // 선택 상태를 초기화합니다.
@@ -670,12 +661,6 @@ namespace FlatVenture.Inventory
             }
 
             return -1;
-        }
-
-        // 양수 변화량은 +기호를 붙여 표시합니다.
-        private static string FormatSignedNumber(int value)
-        {
-            return value > 0 ? "+" + value : value.ToString();
         }
 
         // 속성 ID에 맞는 UI 색상을 반환합니다.

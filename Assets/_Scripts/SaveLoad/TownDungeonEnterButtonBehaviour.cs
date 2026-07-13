@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using FlatVenture.NUH.Seed;
 
 namespace FlatVenture.SaveLoad
 {
@@ -36,7 +37,7 @@ namespace FlatVenture.SaveLoad
             }
 
             var saveData = SaveGameSession.CurrentSaveData;
-            DungeonRunSaveUtility.StartDungeon(saveData, Random.Range(1, int.MaxValue));
+            DungeonRunSaveUtility.StartDungeon(saveData, SeedValue.Generate());
 
             SaveLoadService.Save(SaveGameSession.CurrentSlotIndex, saveData);
             Debug.Log("[TownDungeonEnter] 던전 입장 저장 완료. Seed: " + saveData.dungeon.dungeonSeed);
