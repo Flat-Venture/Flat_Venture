@@ -19,6 +19,7 @@ namespace FlatVenture.SaveLoad
         private const string DeathLabel = "\uC0AC\uB9DD";
         private const string DeathLogMessage = "[DungeonDebugProgress] \uD50C\uB808\uC774\uC5B4 \uC0AC\uB9DD \uCC98\uB9AC \uC800\uC7A5 \uC644\uB8CC. \uB9C8\uC744\uB85C \uC774\uB3D9\uD569\uB2C8\uB2E4.";
 
+        [SerializeField] private bool showDebugButtons;
         [SerializeField] private Font font;
         [SerializeField] private string townSceneName = "Test_LRH_Town";
         [SerializeField] private Color buttonColor = new Color(0.18f, 0.34f, 0.38f, 1f);
@@ -32,6 +33,11 @@ namespace FlatVenture.SaveLoad
         // 임시 던전 진행 버튼 UI를 생성합니다.
         private void Start()
         {
+            if (!showDebugButtons)
+            {
+                return;
+            }
+
             Build();
             RefreshStatus();
         }

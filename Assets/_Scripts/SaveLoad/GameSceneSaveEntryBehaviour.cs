@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using FlatVenture.Inventory;
 
 namespace FlatVenture.SaveLoad
 {
@@ -69,8 +70,19 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
+            CaptureInventoryIfExists(CurrentSaveData);
             SaveLoadService.Save(CurrentSlotIndex, CurrentSaveData);
             Debug.Log("[GameSceneSaveEntry] Save complete. Slot " + CurrentSlotIndex);
+        }
+
+        // 씬에 인벤토리 런타임이 있으면 저장 직전에 현재 인벤토리 상태를 SaveData에 반영합니다.
+        private static void CaptureInventoryIfExists(SaveData saveData)
+        {
+            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            if (inventoryRuntime != null)
+            {
+                inventoryRuntime.CaptureToSaveData(saveData);
+            }
         }
 
         // 테스트 확인용으로 던전 골드를 조금 올린 뒤 저장합니다.
@@ -82,7 +94,12 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
-            CurrentSaveData.dungeon.gold += debugDungeonGoldAddAmount;
+            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            if (inventoryRuntime != null)
+                inventoryRuntime.AddDebugGold(debugDungeonGoldAddAmount);
+            else
+                CurrentSaveData.dungeon.gold += debugDungeonGoldAddAmount;
+
             SaveCurrentSession();
             Debug.Log("[GameSceneSaveEntry] Debug dungeon gold added: +" + debugDungeonGoldAddAmount);
         }
@@ -101,6 +118,8 @@ namespace FlatVenture.SaveLoad
                 + "\nJewel: " + user.jewel
                 + "\nSelected Character: " + user.selectedCharacterId
                 + "\nIn Dungeon: " + dungeon.isInDungeon
+                + "\nDungeon Player Level: " + dungeon.playerLevel
+                + "\nDungeon Player Exp: " + dungeon.playerExp
                 + "\nDungeon Gold: " + dungeon.gold
                 + "\nDungeon State: " + dungeon.dungeonState;
         }

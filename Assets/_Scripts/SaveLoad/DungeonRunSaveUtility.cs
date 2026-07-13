@@ -19,6 +19,8 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.isInDungeon = true;
             saveData.dungeon.dungeonSeed = seed;
             saveData.dungeon.currentFloor = 1;
+            saveData.dungeon.playerLevel = 1;
+            saveData.dungeon.playerExp = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             saveData.dungeon.dungeonState = DungeonSaveState.Map;
         }
@@ -32,12 +34,15 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.isInDungeon = false;
             saveData.dungeon.dungeonSeed = 0;
             saveData.dungeon.currentFloor = 0;
+            saveData.dungeon.playerLevel = 0;
+            saveData.dungeon.playerExp = 0;
             saveData.dungeon.gold = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             EnsureLists(saveData.dungeon);
             saveData.dungeon.clearedNodeIds.Clear();
             saveData.dungeon.availableNextNodeIds.Clear();
             saveData.dungeon.acquiredItems.Clear();
+            saveData.dungeon.inventory = new InventorySaveData();
             saveData.dungeon.dungeonState = DungeonSaveState.None;
         }
 
@@ -94,6 +99,9 @@ namespace FlatVenture.SaveLoad
 
             if (dungeon.acquiredItems == null)
                 dungeon.acquiredItems = new List<DungeonAcquiredItemSaveData>();
+
+            if (dungeon.inventory == null)
+                dungeon.inventory = new InventorySaveData();
         }
 
         // 임시 테스트용으로 현재 던전 층을 올립니다. 이 메서드는 저장 파일을 쓰지 않습니다.
