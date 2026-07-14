@@ -39,7 +39,7 @@ public class StageManager : MonoBehaviour
     /// MapNode 클릭 시 호출되어 해당 방을 생성하고 입장
     /// </summary>
     /// <param name="node"></param>
-    public void EnterStage(MapNode node)
+    public void EnterStage(MapNode node, bool startFromPortalCheckpoint = false)
     {
         //입장할 때 어떤 노드인지 기억
         this.currentNode = node;
@@ -61,8 +61,12 @@ public class StageManager : MonoBehaviour
 
             if (currentActiveRoom != null)
             {
+                currentActiveRoom.currentRoomType = node.RoomType;
+                currentActiveRoom.currentNodeId = node.NodeID;
+
                 //포탈 탑승 시 호출될 이벤트를 구독
                 currentActiveRoom.onRoomCleared += HandleRoomCleared;
+                currentActiveRoom.onPortalGenerated += HandlePortalGenerated;
 
                 //충돌 문제를 방지하기 위해 CharacterController를 비활성화 후 플레이어 위치 이동
                 if (currentActiveRoom.playerSpawnPoint != null && player != null)
@@ -75,7 +79,7 @@ public class StageManager : MonoBehaviour
                 }
 
                 //방 세팅 끝. 몬스터 스폰 이벤트 실행
-                currentActiveRoom.StartRoomEvent();
+                currentActiveRoom.StartRoomEvent(startFromPortalCheckpoint);
             }
 
             else
@@ -119,6 +123,7 @@ public class StageManager : MonoBehaviour
         {
             //이벤트 구독 해제
             clearedRoom.onRoomCleared -= HandleRoomCleared;
+            clearedRoom.onPortalGenerated -= HandlePortalGenerated;
 
             //포탈을 탔으므로 던전 방 오브젝트를 완전 파괴
             Destroy(clearedRoom.gameObject);
@@ -133,14 +138,18 @@ public class StageManager : MonoBehaviour
         //맵 UI 다시 켜기
         if (mapCanvas != null) mapCanvas.SetActive(true);
 
-        //포탈을 타고 지도로 돌아왔을 때 들고 있던 노드 정보를 확인/전달
-        if (currentNode != null)
-        {
-            Debug.Log($"<color=yellow>[Save Data 준비완료]</color> 현재 층: {currentNode.Floor}, 노드 ID: {currentNode.NodeID}");
-            DungeonMapSaveBridge.SaveRoomCleared(currentNode);
-        }
-
         //다시 맵을 열기 위한 델리게이트 실행
         openMapCallback?.Invoke();
+    }
+
+    private void HandlePortalGenerated(RoomController clearedRoom)
+    {
+        if (currentNode == null)
+        {
+            return;
+        }
+
+        Debug.Log($"<color=yellow>[Save Data 준비완료]</color> 포탈 생성 저장. 현재 층: {currentNode.Floor}, 노드 ID: {currentNode.NodeID}");
+        DungeonMapSaveBridge.SavePortalGenerated(currentNode);
     }
 }

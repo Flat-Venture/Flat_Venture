@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -10,12 +11,53 @@ public class Portal : MonoBehaviour
     public Action onPortalEntered;
 
     private bool isUsed = false;
+    private readonly HashSet<Collider> blockedUntilExit = new HashSet<Collider>();
 
     private void OnTriggerEnter(Collider other)
     {
         //이미 사용된 포탈이거나, 플레이어가 아니면 무시
         if (isUsed || !other.CompareTag("Player")) return;
 
+        if (ShouldBlockUntilExit(other))
+        {
+            return;
+        }
+
+        EnterPortal();
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (isUsed || !other.CompareTag("Player")) return;
+
+        if (ShouldBlockUntilExit(other))
+        {
+            return;
+        }
+
+        EnterPortal();
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        blockedUntilExit.Remove(other);
+    }
+
+    private bool ShouldBlockUntilExit(Collider playerCollider)
+    {
+        if (FlatVenture.Reward.DungeonRewardSelectionBehaviour.IsOpen)
+        {
+            blockedUntilExit.Add(playerCollider);
+            return true;
+        }
+
+        return blockedUntilExit.Contains(playerCollider);
+    }
+
+    private void EnterPortal()
+    {
         isUsed = true;
         Debug.Log("<color=magenta>[Portal]</color> 포탈 탑승! 지도로 돌아갑니다.");
 

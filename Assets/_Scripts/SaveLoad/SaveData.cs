@@ -8,8 +8,12 @@ namespace FlatVenture.SaveLoad
     public enum DungeonSaveState
     {
         None = 0,
+        // 던전 지도에서 노드를 선택할 수 있는 상태입니다. 던전 첫 진입 또는 다음 챕터 시작 같은 구간에 사용합니다.
         Map = 1,
-        InNode = 2
+        // 노드를 선택해 방 안으로 들어간 상태입니다. 전투/이벤트 내부 세부 진행은 저장하지 않습니다.
+        InNode = 2,
+        // 전투가 끝나고 포탈이 생성된 체크포인트입니다. 보상 선택 결과는 아직 저장하지 않습니다.
+        PortalGenerated = 3
     }
 
     // 저장 파일 하나의 최상위 데이터입니다.

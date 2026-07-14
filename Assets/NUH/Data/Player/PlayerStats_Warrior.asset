@@ -13,17 +13,19 @@ MonoBehaviour:
   m_Name: PlayerStats_Warrior
   m_EditorClassIdentifier: FlatVenture.NUH.Runtime::FlatVenture.NUH.Player.Data.PlayerStatsData
   jobId: Warrior
-  maxHealth: 50
+  maxHealth: 500
   hitInvincibilityDuration: 0.1
   moveSpeed: 5
   dashDuration: 0.25
   dashDistance: 4
   dashRechargeCooldown: 2
   maxDashCharges: 2
-  attackPower: 10
+  basicAttackType: 0
+  attackPower: 100
   attacksPerSecond: 1
   basicAttackRange: 1.5
   basicAttackWidth: 1
+  basicAttackProjectileSpeed: 18
   activeSkillCooldown: 10
   activeSkillCastTime: 0.2
   activeSkillDamage: 20
@@ -31,4 +33,5 @@ MonoBehaviour:
   activeSkillProjectileInterval: 0.15
   activeSkillProjectileSpeed: 15
   activeSkillProjectileWidth: 2
+  activeSkillRange: 15
   activeSkillMaxHitTargets: 10

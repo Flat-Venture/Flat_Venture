@@ -34,7 +34,7 @@ public class MapTestRunner : MonoBehaviour
 
                 if (restoreState.isInNode)
                 {
-                    presenter.EnterRestoredCurrentNode();
+                    presenter.EnterRestoredCurrentNode(restoreState.isPortalGenerated);
                 }
             }
         }
@@ -45,9 +45,9 @@ public class MapTestRunner : MonoBehaviour
         }
     }
 
-    private void HandleNodeEntered(MapNode node)
+    private void HandleNodeEntered(MapNode node, bool startFromPortalCheckpoint)
     {
-        if (stageManager != null) stageManager.EnterStage(node);
+        if (stageManager != null) stageManager.EnterStage(node, startFromPortalCheckpoint);
     }
 
     /// <summary>

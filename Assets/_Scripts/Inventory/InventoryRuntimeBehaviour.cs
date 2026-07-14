@@ -43,6 +43,28 @@ namespace FlatVenture.Inventory
             get { return sortedElementIds; }
         }
 
+        public bool HasCursedItem
+        {
+            get
+            {
+                if (Grid == null)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < Grid.Slots.Count; i++)
+                {
+                    var item = Grid.Slots[i].item;
+                    if (item != null && item.isCursed)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         // 인벤토리와 CSV 카탈로그 캐시를 준비합니다.
         private void Awake()
         {

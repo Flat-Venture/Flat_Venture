@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FlatVenture.Enums;
+using FlatVenture.Reward;
 
 /// <summary>
 /// 개별 방 프리팹의 루트에 부착되어 몬스터 스폰과 클리어 상태를 관리
@@ -28,16 +29,24 @@ public class RoomController : MonoBehaviour
 
     //현재 방 타입
     public RoomType currentRoomType;
+    public int currentNodeId;
 
     //방이 클리어되었을 때 스테이지 매니터에게 알리는 콜백
     public Action<RoomController> onRoomCleared;
+    public Action<RoomController> onPortalGenerated;
 
     private List<MonsterController> activeMonsters = new List<MonsterController>();
     private bool isRoomCleared = false;
     
     //매니저에서 방을 세팅할 때 호출하는 시작 지점
-    public void StartRoomEvent()
+    public void StartRoomEvent(bool startCleared = false)
     {
+        if (startCleared)
+        {
+            ClearRoom();
+            return;
+        }
+
         Invoke(nameof(SpawnMonsters), 0.1f);
     }
 
@@ -107,11 +116,25 @@ public class RoomController : MonoBehaviour
                     onRoomCleared?.Invoke(this); //이게 실행되면 StageManager가 지도를 염
                 };
             }
+
+            onPortalGenerated?.Invoke(this);
+
+            if (ShouldShowReward())
+            {
+                DungeonRewardSelectionBehaviour.ShowRewards(currentRoomType, currentNodeId);
+            }
         }
         else
         {
             Debug.LogWarning("포탈 프리팹이 연결되지 않아 즉시 지도를 엽니다.");
             onRoomCleared?.Invoke(this);
         }
+    }
+
+    private bool ShouldShowReward()
+    {
+        return currentRoomType == RoomType.Normal
+            || currentRoomType == RoomType.Elite
+            || currentRoomType == RoomType.Boss;
     }
 }
