@@ -124,10 +124,10 @@ GameObject:
   - component: {fileID: 501122937389252601}
   - component: {fileID: 6884103667306706498}
   - component: {fileID: 8237793085633307054}
-  - component: {fileID: 8986542094523322398}
+  - component: {fileID: 7337295919005839413}
   - component: {fileID: 8193732191821785421}
   - component: {fileID: 7936965535262622048}
-  - component: {fileID: 7337295919005839413}
+  - component: {fileID: 8986542094523322398}
   - component: {fileID: 4612021589543697298}
   m_Layer: 20
   m_Name: Monster_Melee
@@ -224,7 +224,7 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &8986542094523322398
+--- !u!114 &7337295919005839413
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -233,12 +233,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3070948620646613047}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 947df5e33f59357448b3353808c2bf9d, type: 3}
+  m_Script: {fileID: 11500000, guid: 45087facbe1b33b4baa5cf44df4ab2f9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeleeAttackTrait
-  attackRange: 2
-  attackCooldown: 1.5
-  attackDamage: 10
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterController
+  maxHP: 100
+  moveSpeed: 4
 --- !u!114 &8193732191821785421
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,7 +268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovementTrait
   stoppingDistance: 1.5
---- !u!114 &7337295919005839413
+--- !u!114 &8986542094523322398
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -278,11 +277,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3070948620646613047}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45087facbe1b33b4baa5cf44df4ab2f9, type: 3}
+  m_Script: {fileID: 11500000, guid: 947df5e33f59357448b3353808c2bf9d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterController
-  maxHP: 100
-  moveSpeed: 4
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeAttackTrait
+  attackRange: 2
+  attackCooldown: 1.5
+  attackDamage: 10
 --- !u!114 &4612021589543697298
 MonoBehaviour:
   m_ObjectHideFlags: 0

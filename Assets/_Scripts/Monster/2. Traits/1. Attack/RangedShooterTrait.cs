@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -15,6 +16,13 @@ public class RangedShooterTrait : MonsterTrait
 
     [Tooltip("투사체의 데미지")]
     public float projectileDamage = 10f;
+
+    [Header("Delay Settings")]
+    [Tooltip("공격 전 기를 모으는 시간 (선딜 - 이때 이동 멈춤)")]
+    public float preAttackDelay = 0.5f;
+
+    [Tooltip("공격 후 숨을 고르는 시간 (후딜 - 이때 이동 멈춤)")]
+    public float postAttackDelay = 0.5f;
 
     [Header("Shooter Settings")]
     [Tooltip("발사할 투사체(총알/마법 등) 프리팹")]
@@ -58,17 +66,46 @@ public class RangedShooterTrait : MonsterTrait
         //몬스터가 살아있고, 스턴(넉백) 상태가 아니며, 쫓고 있는 타겟(플레이어)이 있을 때만 작동
         if (controller != null && controller.IsAlive && !controller.IsStunned && controller.CurrentTarget != null)
         {
+            //이미 공격을 시전 중(선딜/후딜)이라면 중복 실행 방지
+            if (controller.IsAttacking) return;
+
             float distanceToTarget = Vector3.Distance(transform.position, controller.CurrentTarget.position);
 
             //거리 체크 조건 추가 및 쿨타임이 다 돌았으면 발사
             if (distanceToTarget <= attackRange && Time.time >= nextFireTime)
             {
-                ShootProjectile();
-
-                //쿨타임 리셋
-                nextFireTime = Time.time + attackCooldown; 
+                //공격 코루틴 시작
+                StartCoroutine(AttackSequence());
             }
         }
+    }
+
+    private IEnumerator AttackSequence()
+    {
+        //공격 시작. 신호등을 켜서 이동 스크립트가 멈추게 함
+        controller.IsAttacking = true;
+
+        //선딜 (기 모으기 대기)
+        yield return new WaitForSeconds(preAttackDelay);
+
+        //선딜 대기 중 플레이어에게 맞아 죽거나 넉백 당했다면 공격 취소
+        if (controller == null || !controller.IsAlive || controller.IsStunned)
+        {
+            if (controller != null) controller.IsAttacking = false;
+            yield break;
+        }
+
+        //실제 발사
+        ShootProjectile();
+
+        //후딜 (숨 고르기 대기)
+        yield return new WaitForSeconds(postAttackDelay);
+
+        //공격 완료. 신호등을 꺼서 다시 움직일 수 있게 함
+        if (controller != null) controller.IsAttacking = false;
+
+        //다음 쿨타임 계산 (공격이 완전히 끝난 시점부터 계산)
+        nextFireTime = Time.time + attackCooldown;
     }
 
     private void ShootProjectile()
