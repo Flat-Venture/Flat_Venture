@@ -57,7 +57,7 @@ public class EnemyProjectile : MonoBehaviour
         }
 
         //플레이어가 아닌 벽이나 바닥 등 장애물에 맞았을 때도 파괴
-        if (other.CompareTag("Player") ||other.CompareTag("Environment") || other.CompareTag("Obstacle"))
+        if (other.CompareTag("Player") || other.CompareTag("Environment"))
         {
             ReturnToPool();
         }

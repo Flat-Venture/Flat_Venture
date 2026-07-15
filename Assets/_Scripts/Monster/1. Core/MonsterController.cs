@@ -20,6 +20,9 @@ public class MonsterController : MonoBehaviour, IPlayerAttackTarget
     //넉백 당하는 중인지 체크
     public bool IsStunned { get; set; }
 
+    //현재 공격을 시전 중인지 체크
+    public bool IsAttacking { get; set; }
+
     //피격 상태를 알려주는 콜백
     public Action<float, Vector3> onHitCallback;
 
