@@ -124,10 +124,10 @@ GameObject:
   - component: {fileID: 9005769555684963536}
   - component: {fileID: 7003879183024351148}
   - component: {fileID: 7703322881884036448}
-  - component: {fileID: 3146849762534694897}
+  - component: {fileID: 8716330637278827135}
   - component: {fileID: 7407585715415690066}
   - component: {fileID: 6125875072781126786}
-  - component: {fileID: 8716330637278827135}
+  - component: {fileID: 3146849762534694897}
   - component: {fileID: 3691988636381707230}
   m_Layer: 20
   m_Name: Monster_Range
@@ -145,7 +145,7 @@ Transform:
   m_GameObject: {fileID: 7774701371451334709}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.16, y: 0.5, z: 5.67}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -160,7 +160,7 @@ NavMeshAgent:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7774701371451334709}
   m_Enabled: 1
-  m_AgentTypeID: -902729914
+  m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 5
   m_Acceleration: 8
@@ -224,7 +224,7 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &3146849762534694897
+--- !u!114 &8716330637278827135
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -233,14 +233,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7774701371451334709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d6383c8d5609ba479bb309c19f15cfa, type: 3}
+  m_Script: {fileID: 11500000, guid: 45087facbe1b33b4baa5cf44df4ab2f9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RangedShooterTrait
-  attackRange: 10
-  attackCooldown: 2.5
-  projectilePrefab: {fileID: 1067055236745940177, guid: 9e4256abf7bc5d0498037eab3e13518d, type: 3}
-  firePoint: {fileID: 0}
-  projectileSpeed: 12
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterController
+  maxHP: 100
+  moveSpeed: 2
 --- !u!114 &7407585715415690066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -253,7 +250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e38678e5771a074c8c13d6101721db6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TargetSensorTrait
-  detectRadius: 10
+  detectRadius: 15
   targetLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -272,7 +269,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RangedMovementTrait
   keepDistance: 8
   kiteDistance: 4
---- !u!114 &8716330637278827135
+--- !u!114 &3146849762534694897
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -281,11 +278,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 7774701371451334709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45087facbe1b33b4baa5cf44df4ab2f9, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d6383c8d5609ba479bb309c19f15cfa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MonsterController
-  maxHP: 100
-  moveSpeed: 4
+  m_EditorClassIdentifier: Assembly-CSharp::RangedShooterTrait
+  attackRange: 10
+  attackCooldown: 2.5
+  projectileDamage: 10
+  projectilePrefab: {fileID: 1067055236745940177, guid: 9e4256abf7bc5d0498037eab3e13518d, type: 3}
+  firePoint: {fileID: 0}
+  projectileSpeed: 12
+  poolSize: 10
 --- !u!114 &3691988636381707230
 MonoBehaviour:
   m_ObjectHideFlags: 0
