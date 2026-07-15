@@ -17,6 +17,7 @@ namespace FlatVenture.SaveLoad
             public int currentNodeId;
             public bool hasCurrentNode;
             public bool isInNode;
+            public bool isPortalGenerated;
             public List<int> visitedNodeIds = new List<int>();
         }
 
@@ -40,7 +41,8 @@ namespace FlatVenture.SaveLoad
             state = new DungeonMapRestoreState
             {
                 dungeonSeed = dungeon.dungeonSeed,
-                isInNode = dungeon.dungeonState == DungeonSaveState.InNode,
+                isInNode = dungeon.dungeonState == DungeonSaveState.InNode || dungeon.dungeonState == DungeonSaveState.PortalGenerated,
+                isPortalGenerated = dungeon.dungeonState == DungeonSaveState.PortalGenerated,
                 visitedNodeIds = ParseNodeIds(dungeon.clearedNodeIds)
             };
 
@@ -65,7 +67,7 @@ namespace FlatVenture.SaveLoad
 
         // 방 클리어/포탈 생성 후 저장합니다.
         // 이후 보상 선택 결과는 다음 노드를 선택하기 전까지 저장하지 않아, 재접속 시 보상을 다시 고를 수 있게 합니다.
-        public static void SaveRoomCleared(global::MapNode clearedNode)
+        public static void SavePortalGenerated(global::MapNode clearedNode)
         {
             if (!TryGetWritableDungeon(out var saveData))
             {
@@ -74,13 +76,12 @@ namespace FlatVenture.SaveLoad
 
             var dungeon = saveData.dungeon;
             EnsureDungeonLists(dungeon);
-            dungeon.dungeonState = DungeonSaveState.Map;
+            dungeon.dungeonState = DungeonSaveState.PortalGenerated;
 
             if (clearedNode != null)
             {
                 dungeon.currentNodeId = clearedNode.NodeID.ToString();
                 dungeon.currentFloor = clearedNode.Floor + 1;
-                AddUnique(dungeon.clearedNodeIds, dungeon.currentNodeId);
 
                 dungeon.availableNextNodeIds.Clear();
                 for (int i = 0; i < clearedNode.NextNodes.Count; i++)
@@ -91,6 +92,12 @@ namespace FlatVenture.SaveLoad
 
             CaptureInventoryIfExists(saveData);
             SaveCurrentSlot(saveData);
+        }
+
+        // 기존 호출부 호환용입니다. 포탈 생성 체크포인트 저장과 같은 의미로 처리합니다.
+        public static void SaveRoomCleared(global::MapNode clearedNode)
+        {
+            SavePortalGenerated(clearedNode);
         }
 
         // MapModel과 현재 노드 정보를 SaveData.dungeon에 반영합니다.

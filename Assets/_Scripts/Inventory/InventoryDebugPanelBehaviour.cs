@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FlatVenture.ItemData;
+using FlatVenture.Reward;
 using FlatVenture.SaveLoad;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -51,7 +52,7 @@ namespace FlatVenture.Inventory
                 return;
             }
 
-            if (keyboard[toggleKey].wasPressedThisFrame)
+            if (!DungeonRewardSelectionBehaviour.IsOpen && keyboard[toggleKey].wasPressedThisFrame)
             {
                 isVisible = !isVisible;
             }
@@ -91,6 +92,18 @@ namespace FlatVenture.Inventory
             {
                 inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
             }
+        }
+
+        // 다른 UI에서 인벤토리 확인이 필요할 때 패널을 엽니다.
+        public void ShowPanel()
+        {
+            isVisible = true;
+        }
+
+        // 다른 UI에서 인벤토리 확인을 마쳤을 때 패널을 닫습니다.
+        public void HidePanel()
+        {
+            isVisible = false;
         }
 
         // 왼쪽의 활성화된 시너지 목록과 속성 색상표를 표시합니다.

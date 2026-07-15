@@ -12,10 +12,10 @@ public class MapPresenter
     private readonly MapModel model;
     private readonly MapUIManager view;
     private readonly MapGenerator generator;
-    private readonly Action<MapNode> onNodeEntered;
+    private readonly Action<MapNode, bool> onNodeEntered;
 
     //의존성 주입 (DI) 패턴을 활용하여 Model과 View를 생성자에서 주입받음
-    public MapPresenter(MapModel model, MapUIManager view, MapGenerator generator, Action<MapNode> onNodeEntered = null)
+    public MapPresenter(MapModel model, MapUIManager view, MapGenerator generator, Action<MapNode, bool> onNodeEntered = null)
     {
         this.model = model;
         this.view = view;
@@ -149,7 +149,7 @@ public class MapPresenter
         view.HideMap();
 
         //어떤 씬을 불러울지 외부 시스템에게 위임
-        onNodeEntered?.Invoke(targetNode);
+        onNodeEntered?.Invoke(targetNode, false);
     }
     
     /// <summary>
@@ -211,7 +211,7 @@ public class MapPresenter
     /// <summary>
     /// 저장 상태가 노드 내부라면 현재 노드 방으로 다시 진입합니다.
     /// </summary>
-    public void EnterRestoredCurrentNode()
+    public void EnterRestoredCurrentNode(bool startFromPortalCheckpoint)
     {
         MapNode currentNode = model.GetNodeByID(model.CurrentNodeID);
         if (currentNode == null)
@@ -219,7 +219,10 @@ public class MapPresenter
             return;
         }
 
-        EnterNode(currentNode);
+        model.isInDungeon = true;
+        view.HideMap();
+
+        onNodeEntered?.Invoke(currentNode, startFromPortalCheckpoint);
     }
 
     public void ResetMapSystem()
