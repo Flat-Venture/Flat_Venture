@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FlatVenture.Enums;
@@ -7,7 +6,7 @@ using FlatVenture.Reward;
 /// <summary>
 /// 개별 방 프리팹의 루트에 부착되어 몬스터 스폰과 클리어 상태를 관리
 /// </summary>
-public class RoomController : MonoBehaviour
+public class RoomController : MonoBehaviour, IDungeonRoomController
 {
     [Header("Room Settings")]
     [Tooltip("플레이어가 이 방에 들어왔을 때 시작할 위치")]
@@ -23,26 +22,44 @@ public class RoomController : MonoBehaviour
     [Tooltip("엘리트 방일 경우 몬스터에게 무작위로 달아줄 특성 프리팹들")]
     public GameObject[] randomEliteTraitPrefabs;
 
-    [Header("Reward & Portal")]
-    [Tooltip("전투 종료 시 생성될 포탈 프리팹")]
-    public GameObject portalPrefab;
+    [Header("Portal")]
+    [Tooltip("포탈 생성/저장 체크포인트 호출을 담당하는 공용 생성기")]
+    [SerializeField] private PortalSpawner portalSpawner;
 
     //현재 방 타입
     public RoomType currentRoomType;
     public int currentNodeId;
 
-    //방이 클리어되었을 때 스테이지 매니터에게 알리는 콜백
-    public Action<RoomController> onRoomCleared;
-    public Action<RoomController> onPortalGenerated;
-
     private List<MonsterController> activeMonsters = new List<MonsterController>();
     private bool isRoomCleared = false;
+    private DungeonRoomContext roomContext;
+
+    public Transform PlayerSpawnPoint
+    {
+        get { return playerSpawnPoint; }
+    }
+
+    // StageManager가 현재 노드 정보를 전달합니다.
+    // 이 컨텍스트 안의 콜백을 통해 포탈 생성/방 클리어 이벤트가 다시 StageManager로 돌아갑니다.
+    public void InitializeRoom(DungeonRoomContext context)
+    {
+        if (context == null)
+        {
+            return;
+        }
+
+        currentRoomType = context.RoomType;
+        currentNodeId = context.NodeId;
+        roomContext = context;
+        EnsurePortalSpawner();
+    }
     
     //매니저에서 방을 세팅할 때 호출하는 시작 지점
     public void StartRoomEvent(bool startCleared = false)
     {
         if (startCleared)
         {
+            // 포탈 체크포인트에서 이어하기를 하면 몬스터 스폰 없이 클리어 상태만 복원합니다.
             ClearRoom();
             return;
         }
@@ -102,35 +119,42 @@ public class RoomController : MonoBehaviour
         isRoomCleared = true;
         Debug.Log($"<color=cyan>[RoomController]</color> 방 클리어. 포탈을 생성합니다.");
         
-        if (portalPrefab != null)
+        EnsurePortalSpawner();
+        if (portalSpawner != null)
         {
-            //방 중앙(원점) 또는 특정 위치에 포탈 생성
-            GameObject portalObj = Instantiate(portalPrefab, transform.position, Quaternion.identity, transform);
-            Portal portal = portalObj.GetComponent<Portal>();
+            // 전투방은 포탈이 생성되는 순간을 체크포인트로 저장합니다.
+            portalSpawner.SetSaveWhenPortalGenerated(true);
+            portalSpawner.Initialize(roomContext);
 
-            if (portal != null)
+            if (portalSpawner.SpawnPortal())
             {
-                //포탈을 타면 onRoomCleared 콜백이 실행되도록 연결
-                portal.onPortalEntered = () => 
+                if (ShouldShowReward())
                 {
-                    onRoomCleared?.Invoke(this); //이게 실행되면 StageManager가 지도를 염
-                };
-            }
+                    // 보상 선택 UI는 포탈 생성 이후에 표시되므로, 선택 결과는 즉시 저장하지 않습니다.
+                    DungeonRewardSelectionController.ShowRewards(currentRoomType, currentNodeId);
+                }
 
-            onPortalGenerated?.Invoke(this);
-
-            if (ShouldShowReward())
-            {
-                DungeonRewardSelectionBehaviour.ShowRewards(currentRoomType, currentNodeId);
+                return;
             }
         }
-        else
+
+        Debug.LogWarning("포탈 프리팹이 연결되지 않아 즉시 지도를 엽니다.");
+        if (roomContext != null)
         {
-            Debug.LogWarning("포탈 프리팹이 연결되지 않아 즉시 지도를 엽니다.");
-            onRoomCleared?.Invoke(this);
+            roomContext.NotifyRoomCleared();
         }
     }
 
+    private void EnsurePortalSpawner()
+    {
+        if (portalSpawner == null)
+        {
+            // 기존 전투방 프리팹에 직접 연결하지 못한 경우를 대비해 자식에서도 찾습니다.
+            portalSpawner = GetComponentInChildren<PortalSpawner>(true);
+        }
+    }
+
+    // 일반/엘리트/보스 전투방만 아이템 보상 선택 UI를 표시합니다.
     private bool ShouldShowReward()
     {
         return currentRoomType == RoomType.Normal

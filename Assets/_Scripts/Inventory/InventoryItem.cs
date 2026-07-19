@@ -14,7 +14,6 @@ namespace FlatVenture.Inventory
         public string rarityId;
         public bool isCursed;
         public bool isUnique;
-        public int sellPrice;
         public readonly List<InventoryItemElement> elements = new List<InventoryItemElement>();
 
         // CSV 아이템 레코드에서 인벤토리용 아이템 인스턴스를 생성합니다.

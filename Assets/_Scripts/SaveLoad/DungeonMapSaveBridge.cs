@@ -157,10 +157,19 @@ namespace FlatVenture.SaveLoad
         // 인벤토리 시스템이 없는 지도 단독 테스트에서는 아무 것도 하지 않습니다.
         private static void CaptureInventoryIfExists(SaveData saveData)
         {
-            var inventoryRuntime = Object.FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            var runtimes = Object.FindObjectsByType<InventoryRuntimeBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var inventoryRuntime = runtimes.Length > 0 ? runtimes[0] : null;
             if (inventoryRuntime != null)
             {
-                inventoryRuntime.CaptureToSaveData(saveData);
+                var capturedInventory = inventoryRuntime.CaptureSnapshot();
+                if (!InventorySaveMapper.HasMeaningfulState(capturedInventory)
+                    && InventorySaveMapper.HasMeaningfulState(saveData.dungeon.inventory))
+                {
+                    Debug.LogWarning("[DungeonMapSaveBridge] 빈 인벤토리 캡처가 기존 저장 인벤토리를 덮어쓰지 않도록 건너뜁니다.");
+                    return;
+                }
+
+                saveData.dungeon.inventory = capturedInventory;
             }
         }
 

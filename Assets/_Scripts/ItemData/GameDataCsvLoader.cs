@@ -193,6 +193,8 @@ namespace FlatVenture.ItemData
                     displayName = CsvValue.String(row, "display_name"),
                     sortOrder = CsvValue.Int(row, "sort_order"),
                     colorHex = CsvValue.String(row, "color_hex"),
+                    basePrice = CsvValue.Int(row, "base_price"),
+                    sellRate = CsvValue.Float(row, "sell_rate", 0.5f),
                     description = CsvValue.String(row, "description")
                 };
 

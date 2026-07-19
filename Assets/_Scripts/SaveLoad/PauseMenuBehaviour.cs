@@ -12,7 +12,7 @@ namespace FlatVenture.SaveLoad
     // 시간 정지와 입력 차단은 이후 담당 시스템이 붙을 예정이므로 여기서는 버튼과 저장 흐름만 담당합니다.
     public sealed class PauseMenuBehaviour : MonoBehaviour
     {
-        private const int PauseCanvasSortingOrder = 10000;
+        private const int PauseCanvasSortingOrder = 1000000;
         private static int openMenuCount;
 
         public static bool IsAnyOpen
@@ -33,6 +33,7 @@ namespace FlatVenture.SaveLoad
         [SerializeField] private Color titleColor = new Color(1f, 0.82f, 0.24f, 1f);
 
         private RectTransform menuRoot;
+        private Canvas menuCanvas;
         private Text statusText;
         private bool isOpen;
 
@@ -65,9 +66,10 @@ namespace FlatVenture.SaveLoad
         // 메뉴를 엽니다.
         public void Open()
         {
+            CloseLowerPriorityUi();
             SetOpenState(true);
+            BringPauseMenuToFront();
             menuRoot.gameObject.SetActive(true);
-            menuRoot.SetAsLastSibling();
             SetStatus(string.Empty);
         }
 
@@ -90,6 +92,7 @@ namespace FlatVenture.SaveLoad
 
             isOpen = nextOpen;
             openMenuCount = Mathf.Max(0, openMenuCount + (nextOpen ? 1 : -1));
+            DungeonUiInputBlocker.SetPauseMenuOpen(openMenuCount > 0);
         }
 
         // 씬 전환이나 오브젝트 제거 중 열린 상태가 남지 않게 정리합니다.
@@ -145,17 +148,36 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
-            CaptureInventoryIfExists(SaveGameSession.CurrentSaveData);
+            if (!IsActiveDungeonRun(SaveGameSession.CurrentSaveData))
+            {
+                CaptureInventoryIfExists(SaveGameSession.CurrentSaveData);
+            }
+
             SaveLoadService.Save(SaveGameSession.CurrentSlotIndex, SaveGameSession.CurrentSaveData);
             Debug.Log("[PauseMenu] 저장 완료: " + reason + " / 슬롯 " + SaveGameSession.CurrentSlotIndex);
+        }
+
+        private static bool IsActiveDungeonRun(SaveData saveData)
+        {
+            return saveData != null && saveData.dungeon != null && saveData.dungeon.isInDungeon;
         }
 
         // 씬에 인벤토리 런타임이 있으면 저장 직전에 현재 인벤토리 상태를 SaveData에 반영합니다.
         private static void CaptureInventoryIfExists(SaveData saveData)
         {
-            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            var inventoryRuntime = FindInventoryRuntimeIncludingInactive();
             if (inventoryRuntime != null)
             {
+                var capturedInventory = inventoryRuntime.CaptureSnapshot();
+                if (saveData != null
+                    && saveData.dungeon != null
+                    && !InventorySaveMapper.HasMeaningfulState(capturedInventory)
+                    && InventorySaveMapper.HasMeaningfulState(saveData.dungeon.inventory))
+                {
+                    Debug.LogWarning("[PauseMenu] 빈 인벤토리 캡처가 기존 저장 인벤토리를 덮어쓰지 않도록 건너뜁니다.");
+                    return;
+                }
+
                 inventoryRuntime.CaptureToSaveData(saveData);
             }
         }
@@ -163,10 +185,26 @@ namespace FlatVenture.SaveLoad
         // 던전 포기처럼 던전 진행을 버리는 상황에서는 런타임 인벤토리도 함께 비웁니다.
         private static void ClearInventoryRuntimeIfExists()
         {
-            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            var inventoryRuntime = FindInventoryRuntimeIncludingInactive();
             if (inventoryRuntime != null)
             {
                 inventoryRuntime.ClearInventoryForTest();
+            }
+        }
+
+        private static InventoryRuntimeBehaviour FindInventoryRuntimeIncludingInactive()
+        {
+            var runtimes = FindObjectsByType<InventoryRuntimeBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            return runtimes.Length > 0 ? runtimes[0] : null;
+        }
+
+        // ESC 메뉴가 열릴 때 뒤쪽에 남을 수 있는 읽기 전용 UI를 먼저 닫습니다.
+        private static void CloseLowerPriorityUi()
+        {
+            var mapButtons = FindObjectsByType<global::DungeonMapPreviewButtonBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < mapButtons.Length; i++)
+            {
+                mapButtons[i].ClosePreview();
             }
         }
 
@@ -181,12 +219,11 @@ namespace FlatVenture.SaveLoad
         {
             ResolveFont();
 
-            var canvas = EnsureCanvas();
-            EnsureCanvasScaler(canvas);
-            EnsureGraphicRaycaster(canvas);
+            menuCanvas = EnsureCanvas();
+            EnsureCanvasScaler(menuCanvas);
+            EnsureGraphicRaycaster(menuCanvas);
             EnsureEventSystem();
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = PauseCanvasSortingOrder;
+            BringPauseMenuToFront();
 
             menuRoot = CreateRect("Pause Menu", transform);
             StretchToParent(menuRoot);
@@ -283,6 +320,24 @@ namespace FlatVenture.SaveLoad
 
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             return canvas;
+        }
+
+        // 지도처럼 별도 Canvas 위에서도 ESC 메뉴가 항상 가장 앞에 보이도록 정렬을 다시 적용합니다.
+        private void BringPauseMenuToFront()
+        {
+            if (menuCanvas == null)
+            {
+                menuCanvas = EnsureCanvas();
+            }
+
+            menuCanvas.overrideSorting = true;
+            menuCanvas.sortingOrder = PauseCanvasSortingOrder;
+            transform.SetAsLastSibling();
+
+            if (menuRoot != null)
+            {
+                menuRoot.SetAsLastSibling();
+            }
         }
 
         // 해상도 변화에 대응하기 위한 CanvasScaler를 보장합니다.

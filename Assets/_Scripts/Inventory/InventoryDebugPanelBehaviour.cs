@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FlatVenture.ItemData;
 using FlatVenture.Reward;
@@ -7,8 +8,7 @@ using UnityEngine.InputSystem;
 
 namespace FlatVenture.Inventory
 {
-    // 인벤토리 규칙을 한 씬에서 확인하기 위한 테스트 패널입니다.
-    // 모드에 따라 클릭 동작을 바꿔서 스왑, 판매, 프레임 속성 부여를 빠르게 확인합니다.
+    // Inventory test panel used by reward/shop/rest/forge prototype UI.
     public sealed class InventoryDebugPanelBehaviour : MonoBehaviour
     {
         private enum InventoryInteractionMode
@@ -29,41 +29,66 @@ namespace FlatVenture.Inventory
         private int swapFirstSlot = -1;
         private int hoveredSlot = -1;
         private bool isVisible;
+        private bool allowDiscardKey = true;
+        private bool showSellPriceHint;
+        private bool externalPanelMode;
+        private string externalCloseButtonText = "\uB2EB\uAE30";
+        private Action externalCloseAction;
+        private Action externalCancelAction;
+        private Action<int> externalSlotClickAction;
+        private Action externalSellAction;
+        private bool externalSyncActiveSave = true;
         private string message;
 
-        // 공유 인벤토리 런타임을 찾고 시작 시에는 패널을 숨깁니다.
+        public ItemAssetDatabaseSO ItemAssetDatabase
+        {
+            get { return itemAssetDatabase; }
+        }
+
         private void Awake()
         {
             isVisible = false;
             FindRuntimeIfNeeded();
         }
 
-        // Input System으로 패널 토글과 F키 버리기를 처리합니다.
         private void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null)
+            if (keyboard == null || PauseMenuBehaviour.IsAnyOpen)
             {
                 return;
             }
 
-            if (PauseMenuBehaviour.IsAnyOpen)
+            if (CanToggleInventoryByKey() && keyboard[toggleKey].wasPressedThisFrame)
             {
-                return;
+                if (isVisible)
+                {
+                    HidePanel();
+                }
+                else
+                {
+                    ShowPanel();
+                }
             }
 
-            if (!DungeonRewardSelectionBehaviour.IsOpen && keyboard[toggleKey].wasPressedThisFrame)
-            {
-                isVisible = !isVisible;
-            }
-
-            if (isVisible && keyboard[discardKey].wasPressedThisFrame)
+            if (isVisible && allowDiscardKey && keyboard[discardKey].wasPressedThisFrame)
             {
                 DiscardHoveredOrSelectedItem();
             }
         }
 
-        // 임시 인벤토리 화면을 그립니다.
+        // I키로 일반 인벤토리를 열고 닫을 수 있는 상태인지 확인합니다.
+        private bool CanToggleInventoryByKey()
+        {
+            if (DungeonRewardSelectionController.IsOpen || global::DungeonUiInputBlocker.IsPauseMenuOpen)
+            {
+                return false;
+            }
+
+            // 스왑/판매/제련소 슬롯 선택처럼 특정 기능이 인벤토리 패널을 쓰는 중에는 I키 토글을 막습니다.
+            return !externalPanelMode;
+        }
+
         private void OnGUI()
         {
             if (!isVisible || PauseMenuBehaviour.IsAnyOpen)
@@ -74,7 +99,7 @@ namespace FlatVenture.Inventory
             FindRuntimeIfNeeded();
             if (inventoryRuntime == null || inventoryRuntime.Grid == null)
             {
-                GUI.Box(new Rect(24, 24, 420, 90), "InventoryRuntimeBehaviour를 찾지 못했습니다.");
+                GUI.Box(new Rect(24, 24, 420, 90), "InventoryRuntimeBehaviour not found.");
                 return;
             }
 
@@ -85,54 +110,195 @@ namespace FlatVenture.Inventory
             DrawControlPanel();
         }
 
-        // 씬에 있는 InventoryRuntimeBehaviour를 찾습니다.
         private void FindRuntimeIfNeeded()
         {
-            if (inventoryRuntime == null)
+            if (inventoryRuntime != null)
             {
-                inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+                return;
+            }
+
+            var runtimes = FindObjectsByType<InventoryRuntimeBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            if (runtimes.Length > 0)
+            {
+                inventoryRuntime = runtimes[0];
             }
         }
 
-        // 다른 UI에서 인벤토리 확인이 필요할 때 패널을 엽니다.
-        public void ShowPanel()
+        // 인벤토리 테스트 기능을 실행할 수 있는 런타임 상태인지 확인합니다.
+        private bool HasRuntime()
         {
-            isVisible = true;
+            FindRuntimeIfNeeded();
+            if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+            {
+                message = "InventoryRuntimeBehaviour를 찾지 못했습니다.";
+                return false;
+            }
+
+            return true;
         }
 
-        // 다른 UI에서 인벤토리 확인을 마쳤을 때 패널을 닫습니다.
+        public void ShowPanel()
+        {
+            FindRuntimeIfNeeded();
+            isVisible = true;
+            externalPanelMode = false;
+            allowDiscardKey = true;
+            showSellPriceHint = false;
+            externalCloseAction = null;
+            externalCancelAction = null;
+            externalSlotClickAction = null;
+            externalSellAction = null;
+            externalSyncActiveSave = true;
+            externalCloseButtonText = "\uB2EB\uAE30";
+            EnterMode(InventoryInteractionMode.Normal);
+        }
+
+        // 휴식 방처럼 제한된 상황에서 사용하는 스왑 전용 인벤토리 패널을 엽니다.
+        public void ShowSwapPanel(int swapCount, Action onClose = null, bool syncActiveSave = true, Action onCancel = null)
+        {
+            FindRuntimeIfNeeded();
+            if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+            {
+                return;
+            }
+
+            isVisible = true;
+            externalPanelMode = true;
+            allowDiscardKey = false;
+            showSellPriceHint = false;
+            externalCloseButtonText = "\uC2A4\uC651 \uC644\uB8CC";
+            externalCloseAction = onClose;
+            externalCancelAction = onCancel;
+            externalSlotClickAction = null;
+            externalSellAction = null;
+            externalSyncActiveSave = syncActiveSave;
+            global::DungeonUiInputBlocker.SetBlocked(this, true);
+            EnterSwapMode(swapCount);
+        }
+
+        public void ShowShopSellPanel(Action onReturnToShop = null, Action onAfterSell = null, bool syncActiveSave = true)
+        {
+            FindRuntimeIfNeeded();
+            if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+            {
+                return;
+            }
+
+            isVisible = true;
+            externalPanelMode = true;
+            allowDiscardKey = false;
+            showSellPriceHint = true;
+            externalCloseButtonText = "\uC0C1\uC810\uC73C\uB85C \uB3CC\uC544\uAC00\uAE30";
+            externalCloseAction = onReturnToShop;
+            externalCancelAction = null;
+            externalSlotClickAction = null;
+            externalSellAction = onAfterSell;
+            externalSyncActiveSave = syncActiveSave;
+            global::DungeonUiInputBlocker.SetBlocked(this, true);
+            EnterMode(InventoryInteractionMode.Sell);
+        }
+
+        public void ShowExternalPreviewPanel(string closeButtonText, Action onClose = null)
+        {
+            FindRuntimeIfNeeded();
+            if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+            {
+                return;
+            }
+
+            isVisible = true;
+            externalPanelMode = true;
+            allowDiscardKey = false;
+            showSellPriceHint = false;
+            externalCloseButtonText = string.IsNullOrEmpty(closeButtonText) ? "\uB2EB\uAE30" : closeButtonText;
+            externalCloseAction = onClose;
+            externalCancelAction = null;
+            externalSlotClickAction = null;
+            externalSellAction = null;
+            externalSyncActiveSave = true;
+            global::DungeonUiInputBlocker.SetBlocked(this, true);
+            EnterMode(InventoryInteractionMode.Normal);
+        }
+
+        public void ShowExternalSlotActionPanel(string helpMessage, string closeButtonText, Action<int> onSlotClicked, Action onClose)
+        {
+            FindRuntimeIfNeeded();
+            if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+            {
+                return;
+            }
+
+            isVisible = true;
+            externalPanelMode = true;
+            allowDiscardKey = false;
+            showSellPriceHint = false;
+            externalCloseButtonText = string.IsNullOrEmpty(closeButtonText) ? "\uB2EB\uAE30" : closeButtonText;
+            externalCloseAction = onClose;
+            externalCancelAction = null;
+            externalSlotClickAction = onSlotClicked;
+            externalSellAction = null;
+            externalSyncActiveSave = true;
+            selectedSlot = -1;
+            swapFirstSlot = -1;
+            mode = InventoryInteractionMode.Normal;
+            message = helpMessage;
+            global::DungeonUiInputBlocker.SetBlocked(this, true);
+        }
+
         public void HidePanel()
         {
             isVisible = false;
+            externalPanelMode = false;
+            allowDiscardKey = true;
+            showSellPriceHint = false;
+            externalCloseAction = null;
+            externalCancelAction = null;
+            externalSlotClickAction = null;
+            externalSellAction = null;
+            externalSyncActiveSave = true;
+            externalCloseButtonText = "\uB2EB\uAE30";
+            global::DungeonUiInputBlocker.SetBlocked(this, false);
+            EnterMode(InventoryInteractionMode.Normal);
         }
 
-        // 왼쪽의 활성화된 시너지 목록과 속성 색상표를 표시합니다.
+        // I키로 연 일반 인벤토리만 닫습니다. 스왑/강화 같은 외부 기능 패널은 닫지 않습니다.
+        public bool HideNormalPanelIfVisible()
+        {
+            if (!isVisible || externalPanelMode)
+            {
+                return false;
+            }
+
+            HidePanel();
+            return true;
+        }
+
         private void DrawSynergyPanel()
         {
             var rect = new Rect(24, 160, 250, 420);
-            GUI.Box(rect, "활성화된 시너지");
+            GUI.Box(rect, "\uD65C\uC131\uD654\uB41C \uC2DC\uB108\uC9C0");
 
             GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 32, rect.width - 28, rect.height - 46));
             var synergy = inventoryRuntime.SynergyResult;
 
-            GUILayout.Label("빙고 속성 시너지");
+            GUILayout.Label("\uBE59\uACE0 \uC18D\uC131 \uC2DC\uB108\uC9C0");
             if (synergy == null || synergy.completedLineCountsByElement.Count == 0)
             {
-                GUILayout.Label("- 완성된 줄 없음");
+                GUILayout.Label("- \uC644\uC131\uB41C \uC904 \uC5C6\uC74C");
             }
             else
             {
                 foreach (var pair in synergy.completedLineCountsByElement)
                 {
-                    DrawColorLabel(pair.Key, inventoryRuntime.GetElementDisplayName(pair.Key) + " x" + pair.Value + "줄");
+                    DrawColorLabel(pair.Key, inventoryRuntime.GetElementDisplayName(pair.Key) + " x" + pair.Value + "\uC904");
                 }
             }
 
             GUILayout.Space(12);
-            GUILayout.Label("개수 속성 시너지");
+            GUILayout.Label("\uAC1C\uC218 \uC18D\uC131 \uC2DC\uB108\uC9C0");
             if (synergy == null || synergy.countSynergyLevelsByElement.Count == 0)
             {
-                GUILayout.Label("- 활성화 없음");
+                GUILayout.Label("- \uD65C\uC131\uD654 \uC5C6\uC74C");
             }
             else
             {
@@ -145,31 +311,22 @@ namespace FlatVenture.Inventory
             }
 
             GUILayout.Space(12);
-            GUILayout.Label("속성 색상");
+            GUILayout.Label("\uC18D\uC131 \uC0C9\uC0C1");
             DrawElementLegend();
             GUILayout.EndArea();
         }
 
-        // 속성 색상표를 표시합니다.
         private void DrawElementLegend()
         {
             var elements = inventoryRuntime.SortedElementIds;
             int shown = 0;
-
-            for (int i = 0; i < elements.Count; i++)
+            for (int i = 0; i < elements.Count && shown < 9; i++)
             {
-                string elementId = elements[i];
-                if (shown >= 9)
-                {
-                    break;
-                }
-
-                DrawColorLabel(elementId, inventoryRuntime.GetElementDisplayName(elementId));
+                DrawColorLabel(elements[i], inventoryRuntime.GetElementDisplayName(elements[i]));
                 shown++;
             }
         }
 
-        // 색상 사각형과 텍스트를 함께 표시합니다.
         private void DrawColorLabel(string elementId, string label)
         {
             GUILayout.BeginHorizontal();
@@ -179,14 +336,13 @@ namespace FlatVenture.Inventory
             GUILayout.EndHorizontal();
         }
 
-        // 가운데 5x5 인벤토리를 표시합니다.
         private void DrawInventoryPanel()
         {
             var rect = new Rect(Screen.width * 0.5f - 205, 115, 410, 440);
-            GUI.Box(rect, "인벤토리");
+            GUI.Box(rect, "\uC778\uBCA4\uD1A0\uB9AC");
 
-            float cellSize = 66f;
-            float gap = 8f;
+            const float cellSize = 66f;
+            const float gap = 8f;
             float startX = rect.x + 26f;
             float startY = rect.y + 54f;
             var grid = inventoryRuntime.Grid;
@@ -204,7 +360,6 @@ namespace FlatVenture.Inventory
             }
         }
 
-        // 슬롯 한 칸을 그립니다.
         private void DrawSlot(Rect rect, InventorySlot slot)
         {
             if (rect.Contains(Event.current.mousePosition))
@@ -217,7 +372,6 @@ namespace FlatVenture.Inventory
             if (!string.IsNullOrEmpty(slot.frameElementId))
             {
                 DrawBorder(rect, GetElementColor(slot.frameElementId), 4f);
-                GUI.Label(new Rect(rect.x + 4, rect.y + 2, rect.width - 8, 16), inventoryRuntime.GetElementDisplayName(slot.frameElementId));
             }
             else
             {
@@ -231,6 +385,11 @@ namespace FlatVenture.Inventory
                 DrawItemElementStrip(rect, slot.item);
             }
 
+            if (!string.IsNullOrEmpty(slot.frameElementId))
+            {
+                GUI.Label(new Rect(rect.x + 4, rect.y + 2, rect.width - 8, 16), inventoryRuntime.GetElementDisplayName(slot.frameElementId));
+            }
+
             if (slot.upgradeLevel > 0)
             {
                 GUI.Label(new Rect(rect.x + rect.width - 28, rect.y + 2, 28, 18), "+" + slot.upgradeLevel);
@@ -238,10 +397,10 @@ namespace FlatVenture.Inventory
 
             if (slot.isSealed)
             {
-                GUI.Label(new Rect(rect.x + 10, rect.y + 23, rect.width - 20, 22), "봉인");
+                GUI.Label(new Rect(rect.x + 10, rect.y + 23, rect.width - 20, 22), "\uBD09\uC778");
             }
 
-            if (IsSelected(slot.position.index))
+            if (selectedSlot == slot.position.index)
             {
                 DrawBorder(new Rect(rect.x - 4, rect.y - 4, rect.width + 8, rect.height + 8), Color.white, 3f);
             }
@@ -257,11 +416,10 @@ namespace FlatVenture.Inventory
             }
         }
 
-        // 아이템 대표 속성을 슬롯 하단 색상 바에 표시합니다.
         private void DrawItemElementStrip(Rect rect, InventoryItem item)
         {
             string elementId;
-            if (!TryGetDisplayElementId(item, out elementId))
+            if (item == null || !item.TryGetPrimaryElementId(out elementId))
             {
                 return;
             }
@@ -269,126 +427,153 @@ namespace FlatVenture.Inventory
             DrawFilledRect(new Rect(rect.x + 5, rect.yMax - 8, rect.width - 10, 4), GetElementColor(elementId));
         }
 
-        // 오른쪽의 마우스 오버 아이템 상세 정보와 골드를 표시합니다.
         private void DrawTooltipPanel()
         {
             var rect = new Rect(Screen.width - 345, 160, 310, 300);
-            GUI.Box(rect, "아이템 정보");
+            GUI.Box(rect, "\uC544\uC774\uD15C \uC815\uBCF4");
 
             GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 32, rect.width - 28, rect.height - 46));
-            GUILayout.Label("골드: " + inventoryRuntime.DebugGold);
-            GUILayout.Label("모드: " + GetModeDisplayName());
+            GUILayout.Label("\uACE8\uB4DC: " + inventoryRuntime.Wallet.Gold);
+            GUILayout.Label("\uBAA8\uB4DC: " + GetModeDisplayName());
             GUILayout.Label(BuildDungeonFloorText());
             GUILayout.Space(8);
 
             var slot = inventoryRuntime.Grid.GetSlot(hoveredSlot >= 0 ? hoveredSlot : selectedSlot);
             if (slot == null || !slot.HasItem)
             {
-                GUILayout.Label("아이템에 마우스를 올려주세요.");
+                GUILayout.Label("\uC544\uC774\uD15C\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB824\uC8FC\uC138\uC694.");
             }
             else
             {
                 GUILayout.Label(slot.item.displayName);
                 GUILayout.Label("#" + slot.item.itemId);
-                GUILayout.Label("등급: " + slot.item.rarityId);
-                GUILayout.Label("속성: " + BuildElementText(slot.item));
-                GUILayout.Label("판매가: " + slot.item.sellPrice + " 골드");
+                GUILayout.Label("\uB4F1\uAE09: " + slot.item.rarityId);
+                GUILayout.Label("\uC18D\uC131: " + BuildElementText(slot.item));
+                int sellPrice = inventoryRuntime.PriceService != null
+                    ? inventoryRuntime.PriceService.CalculateShopSellPrice(slot.item)
+                    : 0;
+                GUILayout.Label("\uD310\uB9E4\uAC00: " + sellPrice + " \uACE8\uB4DC");
                 GUILayout.Space(12);
-                GUILayout.Label("F: 버리기");
+
+                if (allowDiscardKey)
+                {
+                    GUILayout.Label("F: \uBC84\uB9AC\uAE30");
+                }
+                else if (showSellPriceHint)
+                {
+                    GUILayout.Label("\uD074\uB9AD \uC2DC \uD310\uB9E4: " + sellPrice + " \uACE8\uB4DC");
+                }
+                else
+                {
+                    GUILayout.Label("\uD604\uC7AC \uBAA8\uB4DC\uC5D0\uC11C\uB294 F \uBC84\uB9AC\uAE30\uB97C \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+                }
             }
 
             GUILayout.EndArea();
         }
 
-        // 하단 조작 패널을 표시합니다.
         private void DrawControlPanel()
         {
-            var rect = new Rect(Screen.width * 0.5f - 250, 570, 500, 150);
-            GUI.Box(rect, "테스트 모드");
+            var rect = new Rect(Screen.width * 0.5f - 250, 570, 500, externalPanelMode ? 110 : 150);
+            GUI.Box(rect, externalPanelMode ? "\uC778\uBCA4\uD1A0\uB9AC \uBAA8\uB4DC" : "\uD14C\uC2A4\uD2B8 \uBAA8\uB4DC");
 
             GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 30, rect.width - 28, rect.height - 38));
-            GUILayout.BeginHorizontal();
-
-            if (GUILayout.Button("일반"))
+            if (!externalPanelMode)
             {
-                EnterMode(InventoryInteractionMode.Normal);
+                DrawDebugButtons();
+            }
+            else
+            {
+                GUILayout.Label(BuildModeHelpText());
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button(externalCloseButtonText, GUILayout.Width(180f), GUILayout.Height(30f)))
+                {
+                    if (externalCloseAction != null)
+                    {
+                        externalCloseAction.Invoke();
+                    }
+                    else
+                    {
+                        HidePanel();
+                    }
+                }
+
+                if (mode == InventoryInteractionMode.Swap && externalCancelAction != null)
+                {
+                    if (GUILayout.Button("\uC2A4\uC651 \uCDE8\uC18C", GUILayout.Width(180f), GUILayout.Height(30f)))
+                    {
+                        externalCancelAction.Invoke();
+                    }
+                }
+                GUILayout.EndHorizontal();
             }
 
-            if (GUILayout.Button("스왑 모드 3회"))
-            {
-                EnterSwapMode(3);
-            }
-
-            if (GUILayout.Button("스왑 모드 5회"))
-            {
-                EnterSwapMode(5);
-            }
-
-            if (GUILayout.Button("판매 모드"))
-            {
-                EnterMode(InventoryInteractionMode.Sell);
-            }
-
-            if (GUILayout.Button("프레임 모드"))
-            {
-                EnterMode(InventoryInteractionMode.FrameElement);
-            }
-
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-
-            if (GUILayout.Button("랜덤 획득"))
-            {
-                GrantRandomItem();
-            }
-
-            if (GUILayout.Button("슬롯 강화"))
-            {
-                UpgradeSelectedSlot();
-            }
-
-            if (GUILayout.Button("전체 비우기"))
-            {
-                inventoryRuntime.ClearInventoryForTest();
-                ResetSelection();
-                message = "인벤토리와 테스트 골드를 초기화했습니다.";
-            }
-
-            GUILayout.EndHorizontal();
-            GUILayout.Label(BuildModeHelpText());
             GUILayout.Label(message ?? string.Empty);
             GUILayout.EndArea();
         }
 
-        // 현재 모드를 변경합니다.
+        private void DrawDebugButtons()
+        {
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("\uC77C\uBC18")) EnterMode(InventoryInteractionMode.Normal);
+            if (GUILayout.Button("\uC2A4\uC651 3\uD68C")) EnterSwapMode(3);
+            if (GUILayout.Button("\uC2A4\uC651 5\uD68C")) EnterSwapMode(5);
+            if (GUILayout.Button("\uD310\uB9E4")) EnterMode(InventoryInteractionMode.Sell);
+            if (GUILayout.Button("\uD504\uB808\uC784")) EnterMode(InventoryInteractionMode.FrameElement);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("\uB79C\uB364 \uD68D\uB4DD"))
+            {
+                GrantRandomItem();
+            }
+
+            if (GUILayout.Button("\uC2AC\uB86F \uAC15\uD654"))
+            {
+                UpgradeSelectedSlot();
+            }
+
+            if (GUILayout.Button("\uC804\uCCB4 \uBE44\uC6B0\uAE30"))
+            {
+                ClearInventoryForDebug();
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label(BuildModeHelpText());
+        }
+
         private void EnterMode(InventoryInteractionMode nextMode)
         {
             mode = nextMode;
             swapFirstSlot = -1;
             selectedSlot = -1;
 
-            if (nextMode != InventoryInteractionMode.Swap)
+            if (inventoryRuntime != null && inventoryRuntime.Grid != null && nextMode != InventoryInteractionMode.Swap)
             {
                 inventoryRuntime.Grid.ClearTemporarySwapCount();
             }
 
-            message = GetModeDisplayName() + " 전환";
+            message = GetModeDisplayName() + " \uBAA8\uB4DC";
         }
 
-        // 특정 상황용 스왑 모드를 시작합니다.
         private void EnterSwapMode(int swapCount)
         {
             mode = InventoryInteractionMode.Swap;
             selectedSlot = -1;
             swapFirstSlot = -1;
             inventoryRuntime.Grid.SetTemporarySwapCount(swapCount);
-            message = "스왑 모드 시작: " + swapCount + "회";
+            message = "\uC2A4\uC651 \uBAA8\uB4DC \uC2DC\uC791: " + swapCount + "\uD68C";
         }
 
-        // 슬롯 클릭을 현재 모드에 맞게 처리합니다.
         private void HandleSlotClicked(int index)
         {
             selectedSlot = index;
+
+            if (externalSlotClickAction != null)
+            {
+                externalSlotClickAction.Invoke(index);
+                return;
+            }
 
             if (mode == InventoryInteractionMode.Sell)
             {
@@ -408,26 +593,25 @@ namespace FlatVenture.Inventory
             }
         }
 
-        // 스왑 모드에서 첫 번째/두 번째 슬롯 선택을 처리합니다.
         private void HandleSwapSlotClicked(int index)
         {
             if (inventoryRuntime.Grid.TemporarySwapCount <= 0)
             {
-                message = "현재 스왑 가능한 상황이 아닙니다.";
+                message = "\uD604\uC7AC \uC2A4\uC651 \uAC00\uB2A5\uD55C \uC0C1\uD669\uC774 \uC544\uB2D9\uB2C8\uB2E4.";
                 return;
             }
 
             if (swapFirstSlot < 0)
             {
                 swapFirstSlot = index;
-                message = "스왑할 두 번째 칸을 선택하세요.";
+                message = "\uC2A4\uC651\uD560 \uB450 \uBC88\uC9F8 \uCE78\uC744 \uC120\uD0DD\uD558\uC138\uC694.";
                 return;
             }
 
             if (swapFirstSlot == index)
             {
                 swapFirstSlot = -1;
-                message = "스왑 첫 번째 선택을 취소했습니다.";
+                message = "\uC2A4\uC651 \uCCAB \uBC88\uC9F8 \uC120\uD0DD\uC744 \uCDE8\uC18C\uD588\uC2B5\uB2C8\uB2E4.";
                 return;
             }
 
@@ -435,6 +619,10 @@ namespace FlatVenture.Inventory
             if (inventoryRuntime.Grid.TrySwapItems(swapFirstSlot, index, out swapMessage))
             {
                 inventoryRuntime.RecalculateSynergy();
+                if (externalSyncActiveSave)
+                {
+                    inventoryRuntime.SyncActiveSaveData();
+                }
             }
 
             swapFirstSlot = -1;
@@ -443,13 +631,41 @@ namespace FlatVenture.Inventory
             if (inventoryRuntime.Grid.TemporarySwapCount <= 0)
             {
                 mode = InventoryInteractionMode.Normal;
-                message += " / 스왑 모드 종료";
+                message += " / \uC2A4\uC651 \uBAA8\uB4DC \uC885\uB8CC";
             }
+        }
+
+        private void DiscardHoveredOrSelectedItem()
+        {
+            int targetSlot = hoveredSlot >= 0 ? hoveredSlot : selectedSlot;
+            if (!HasRuntime())
+            {
+                return;
+            }
+
+            InventoryItem removedItem;
+            if (!inventoryRuntime.Grid.TryRemoveItem(targetSlot, out removedItem))
+            {
+                message = "\uBC84\uB9B4 \uC544\uC774\uD15C\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB824\uC8FC\uC138\uC694.";
+                return;
+            }
+
+            if (selectedSlot == targetSlot) selectedSlot = -1;
+            if (swapFirstSlot == targetSlot) swapFirstSlot = -1;
+
+            message = removedItem.displayName + " \uBC84\uB9BC";
+            inventoryRuntime.RecalculateSynergy();
+            inventoryRuntime.SyncActiveSaveData();
         }
 
         // 랜덤 아이템 1개를 지급합니다.
         private void GrantRandomItem()
         {
+            if (!HasRuntime())
+            {
+                return;
+            }
+
             var items = inventoryRuntime.SortedItems;
             if (items.Count == 0)
             {
@@ -459,71 +675,54 @@ namespace FlatVenture.Inventory
 
             if (items.Count == 0)
             {
-                message = "지급할 아이템 데이터가 없습니다.";
+                message = "\uC9C0\uAE09\uD560 \uC544\uC774\uD15C \uB370\uC774\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.";
                 return;
             }
 
-            var record = items[Random.Range(0, items.Count)];
+            var record = items[UnityEngine.Random.Range(0, items.Count)];
             InventoryPosition position;
             inventoryRuntime.TryGrantItem(record, out position, out message);
         }
 
-        // 지정한 슬롯의 아이템을 판매하고 골드를 추가합니다.
+        // 지정 슬롯의 아이템을 판매하고 필요하면 외부 판매 완료 콜백을 실행합니다.
         private void SellSlot(int index)
         {
-            InventoryItem removedItem;
-            if (!inventoryRuntime.Grid.TryRemoveItem(index, out removedItem))
+            if (!HasRuntime())
             {
-                message = "판매할 아이템이 없습니다.";
                 return;
             }
 
-            inventoryRuntime.AddDebugGold(removedItem.sellPrice);
-            inventoryRuntime.RecalculateSynergy();
-            message = removedItem.displayName + " 판매: +" + removedItem.sellPrice + " 골드";
-        }
-
-        // 마우스 오버 또는 선택 슬롯의 아이템을 버립니다.
-        private void DiscardHoveredOrSelectedItem()
-        {
-            int targetSlot = hoveredSlot >= 0 ? hoveredSlot : selectedSlot;
-
-            InventoryItem removedItem;
-            if (!inventoryRuntime.Grid.TryRemoveItem(targetSlot, out removedItem))
+            int earnedGold;
+            if (!inventoryRuntime.TrySellItemAt(index, externalSyncActiveSave, out earnedGold, out message))
             {
-                message = "버릴 아이템에 마우스를 올려주세요.";
                 return;
             }
 
-            if (selectedSlot == targetSlot)
+            if (externalSellAction != null)
             {
-                selectedSlot = -1;
+                externalSellAction.Invoke();
             }
-
-            if (swapFirstSlot == targetSlot)
-            {
-                swapFirstSlot = -1;
-            }
-
-            message = removedItem.displayName + " 버림";
-            inventoryRuntime.RecalculateSynergy();
         }
 
-        // 지정한 슬롯의 프레임 속성을 다음 속성으로 변경합니다.
+        // 지정 슬롯의 프레임 속성을 다음 속성으로 순환시킵니다.
         private void CycleFrameElement(int index)
         {
+            if (!HasRuntime())
+            {
+                return;
+            }
+
             var slot = inventoryRuntime.Grid.GetSlot(index);
             var elements = inventoryRuntime.SortedElementIds;
-
             if (slot == null)
             {
-                message = "프레임 속성을 바꿀 슬롯을 선택해주세요.";
+                message = "\uD504\uB808\uC784 \uC18D\uC131\uC744 \uBC14\uAFC0 \uC2AC\uB86F\uC744 \uC120\uD0DD\uD574\uC8FC\uC138\uC694.";
                 return;
             }
 
             if (elements.Count == 0)
             {
-                message = "사용할 속성 정의가 없습니다.";
+                message = "\uC0AC\uC6A9\uD560 \uC18D\uC131 \uC815\uC758\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.";
                 return;
             }
 
@@ -532,41 +731,57 @@ namespace FlatVenture.Inventory
             if (nextIndex >= elements.Count)
             {
                 slot.SetFrameElement(null);
-                message = "프레임 속성 제거";
+                message = "\uD504\uB808\uC784 \uC18D\uC131 \uC81C\uAC70";
             }
             else
             {
                 slot.SetFrameElement(elements[nextIndex]);
-                message = "프레임 속성: " + inventoryRuntime.GetElementDisplayName(slot.frameElementId);
+                message = "\uD504\uB808\uC784 \uC18D\uC131: " + inventoryRuntime.GetElementDisplayName(slot.frameElementId);
             }
 
             inventoryRuntime.RecalculateSynergy();
+            inventoryRuntime.SyncActiveSaveData();
         }
 
-        // 선택한 슬롯에 강화 수치를 적용합니다.
+        // 선택 슬롯에 테스트용 강화 수치를 적용합니다.
         private void UpgradeSelectedSlot()
         {
+            if (!HasRuntime())
+            {
+                return;
+            }
+
             int upgradeAmount;
             inventoryRuntime.TryAddRolledSlotUpgrade(selectedSlot, out upgradeAmount, out message);
         }
 
-        // 선택 상태를 초기화합니다.
+        // 테스트용으로 인벤토리와 골드를 초기화합니다.
+        private void ClearInventoryForDebug()
+        {
+            if (!HasRuntime())
+            {
+                return;
+            }
+
+            inventoryRuntime.ClearInventoryForTest();
+            ResetSelection();
+            message = "\uC778\uBCA4\uD1A0\uB9AC\uC640 \uACE8\uB4DC\uB97C \uCD08\uAE30\uD654\uD588\uC2B5\uB2C8\uB2E4.";
+        }
+
         private void ResetSelection()
         {
             selectedSlot = -1;
             swapFirstSlot = -1;
         }
 
-        // 현재 모드의 표시 이름을 반환합니다.
-        // 현재 세션의 던전 층을 디버그 패널에 표시합니다.
         private static string BuildDungeonFloorText()
         {
             if (!SaveGameSession.HasActiveSave || SaveGameSession.CurrentSaveData == null || SaveGameSession.CurrentSaveData.dungeon == null)
             {
-                return "던전 층: -";
+                return "\uB358\uC804 \uCE35: -";
             }
 
-            return "던전 층: " + SaveGameSession.CurrentSaveData.dungeon.currentFloor;
+            return "\uB358\uC804 \uCE35: " + SaveGameSession.CurrentSaveData.dungeon.currentFloor;
         }
 
         private string GetModeDisplayName()
@@ -574,44 +789,36 @@ namespace FlatVenture.Inventory
             switch (mode)
             {
                 case InventoryInteractionMode.Swap:
-                    return "스왑";
+                    return "\uC2A4\uC651";
                 case InventoryInteractionMode.Sell:
-                    return "판매";
+                    return "\uD310\uB9E4";
                 case InventoryInteractionMode.FrameElement:
-                    return "프레임";
+                    return "\uD504\uB808\uC784";
                 default:
-                    return "일반";
+                    return "\uC77C\uBC18";
             }
         }
 
-        // 현재 모드의 도움말을 만듭니다.
         private string BuildModeHelpText()
         {
             if (mode == InventoryInteractionMode.Swap)
             {
-                return "스왑: 첫 칸 선택 후 두 번째 칸 선택 / 남은 횟수 " + inventoryRuntime.Grid.TemporarySwapCount;
+                return "\uC2A4\uC651: \uCCAB \uCE78 \uC120\uD0DD \uD6C4 \uB450 \uBC88\uC9F8 \uCE78 \uC120\uD0DD / \uB0A8\uC740 \uD69F\uC218 " + inventoryRuntime.Grid.TemporarySwapCount;
             }
 
             if (mode == InventoryInteractionMode.Sell)
             {
-                return "판매: 아이템 칸 클릭 시 즉시 판매";
+                return "\uD310\uB9E4: \uC544\uC774\uD15C \uCE78 \uD074\uB9AD \uC2DC \uC989\uC2DC \uD310\uB9E4";
             }
 
             if (mode == InventoryInteractionMode.FrameElement)
             {
-                return "프레임: 슬롯 클릭 시 프레임 속성 변경";
+                return "\uD504\uB808\uC784: \uC2AC\uB86F \uD074\uB9AD \uC2DC \uD504\uB808\uC784 \uC18D\uC131 \uBCC0\uACBD";
             }
 
-            return "일반: 슬롯 선택, F로 아이템 버리기";
+            return allowDiscardKey ? "\uC77C\uBC18: \uC2AC\uB86F \uC120\uD0DD, F\uB85C \uC544\uC774\uD15C \uBC84\uB9AC\uAE30" : "\uC77C\uBC18: \uC2AC\uB86F \uC120\uD0DD";
         }
 
-        // 선택 상태인지 확인합니다.
-        private bool IsSelected(int index)
-        {
-            return selectedSlot == index;
-        }
-
-        // 아이템 속성 표시 문자열을 만듭니다.
         private string BuildElementText(InventoryItem item)
         {
             if (item == null || item.elements.Count == 0)
@@ -634,40 +841,12 @@ namespace FlatVenture.Inventory
             return parts.Count > 0 ? string.Join(", ", parts.ToArray()) : "-";
         }
 
-        // UI에 표시할 아이템 대표 속성을 찾습니다. advanced 속성은 표시하지 않습니다.
-        private bool TryGetDisplayElementId(InventoryItem item, out string elementId)
-        {
-            elementId = null;
-            if (item == null)
-            {
-                return false;
-            }
-
-            int bestValue = int.MinValue;
-            for (int i = 0; i < item.elements.Count; i++)
-            {
-                var element = item.elements[i];
-                if (!inventoryRuntime.IsElementVisibleInInventory(element.elementId))
-                {
-                    continue;
-                }
-
-                if (element.elementValue > bestValue)
-                {
-                    bestValue = element.elementValue;
-                    elementId = element.elementId;
-                }
-            }
-
-            return !string.IsNullOrEmpty(elementId);
-        }
-
         // 리스트에서 문자열의 위치를 찾습니다.
         private static int IndexOf(IReadOnlyList<string> values, string value)
         {
             for (int i = 0; i < values.Count; i++)
             {
-                if (values[i] == value)
+                if (string.Equals(values[i], value, StringComparison.Ordinal))
                 {
                     return i;
                 }
@@ -676,51 +855,24 @@ namespace FlatVenture.Inventory
             return -1;
         }
 
-        // 속성 ID에 맞는 UI 색상을 반환합니다.
         private static Color GetElementColor(string elementId)
         {
             switch (elementId)
             {
-                case "fire":
-                    return new Color(0.95f, 0.22f, 0.12f, 1f);
-                case "water":
-                    return new Color(0.18f, 0.52f, 0.95f, 1f);
-                case "nature":
-                    return new Color(0.22f, 0.75f, 0.32f, 1f);
-                case "earth":
-                    return new Color(0.66f, 0.48f, 0.27f, 1f);
-                case "lightning":
-                    return new Color(1f, 0.86f, 0.18f, 1f);
-                case "poison":
-                    return new Color(0.62f, 0.32f, 0.88f, 1f);
-                case "dark":
-                    return new Color(0.32f, 0.24f, 0.58f, 1f);
-                case "curse":
-                    return new Color(0.55f, 0.06f, 0.12f, 1f);
-                case "light":
-                    return new Color(1f, 0.95f, 0.62f, 1f);
-                case "neutral":
-                    return new Color(0.68f, 0.72f, 0.76f, 1f);
-                case "lava":
-                    return new Color(1f, 0.38f, 0.04f, 1f);
-                case "ice":
-                    return new Color(0.45f, 0.9f, 1f, 1f);
-                case "wind":
-                    return new Color(0.5f, 1f, 0.72f, 1f);
-                case "steel":
-                    return new Color(0.58f, 0.64f, 0.7f, 1f);
-                case "void":
-                    return new Color(0.15f, 0.08f, 0.24f, 1f);
-                case "chemical":
-                    return new Color(0.2f, 0.95f, 0.42f, 1f);
-                case "harmony":
-                    return new Color(0.94f, 0.74f, 1f, 1f);
-                default:
-                    return ItemIconResolver.GetPlaceholderColor(elementId);
+                case "fire": return new Color(0.95f, 0.22f, 0.16f, 1f);
+                case "water": return new Color(0.20f, 0.62f, 0.95f, 1f);
+                case "grass": return new Color(0.25f, 0.78f, 0.30f, 1f);
+                case "electric": return new Color(1f, 0.88f, 0.18f, 1f);
+                case "ice": return new Color(0.55f, 0.9f, 1f, 1f);
+                case "earth": return new Color(0.62f, 0.44f, 0.24f, 1f);
+                case "wind": return new Color(0.52f, 0.95f, 0.75f, 1f);
+                case "light": return new Color(1f, 0.95f, 0.62f, 1f);
+                case "dark": return new Color(0.45f, 0.34f, 0.88f, 1f);
+                case "poison": return new Color(0.55f, 0.25f, 0.85f, 1f);
+                default: return new Color(0.78f, 0.82f, 0.9f, 1f);
             }
         }
 
-        // 단색 사각형을 그립니다.
         private static void DrawFilledRect(Rect rect, Color color)
         {
             var previousColor = GUI.color;
@@ -729,7 +881,6 @@ namespace FlatVenture.Inventory
             GUI.color = previousColor;
         }
 
-        // 사각형 테두리를 그립니다.
         private static void DrawBorder(Rect rect, Color color, float thickness)
         {
             DrawFilledRect(new Rect(rect.x, rect.y, rect.width, thickness), color);
@@ -738,7 +889,6 @@ namespace FlatVenture.Inventory
             DrawFilledRect(new Rect(rect.xMax - thickness, rect.y, thickness, rect.height), color);
         }
 
-        // Sprite를 IMGUI에 맞게 표시합니다.
         private static void DrawSprite(Rect rect, Sprite sprite)
         {
             if (sprite == null || sprite.texture == null)

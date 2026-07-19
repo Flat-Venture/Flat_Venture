@@ -14,7 +14,7 @@ namespace FlatVenture.SaveLoad
         [SerializeField] private bool enableDebugSaveKeys = true;
         [SerializeField] private Key saveKey = Key.F5;
         [SerializeField] private Key printKey = Key.F9;
-        [SerializeField] private int debugDungeonGoldAddAmount = 10;
+        [SerializeField] private int testGoldAddAmount = 10;
 
         // Start에서 SaveGameSession.CurrentSaveData를 읽은 뒤 호출됩니다.
         // 다른 임시 테스트 컴포넌트가 현재 세이브 데이터를 받아야 할 때 Inspector나 코드에서 연결합니다.
@@ -70,22 +70,41 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
-            CaptureInventoryIfExists(CurrentSaveData);
+            if (!IsActiveDungeonRun(CurrentSaveData))
+            {
+                CaptureInventoryIfExists(CurrentSaveData);
+            }
+
             SaveLoadService.Save(CurrentSlotIndex, CurrentSaveData);
             Debug.Log("[GameSceneSaveEntry] Save complete. Slot " + CurrentSlotIndex);
+        }
+
+        private static bool IsActiveDungeonRun(SaveData saveData)
+        {
+            return saveData != null && saveData.dungeon != null && saveData.dungeon.isInDungeon;
         }
 
         // 씬에 인벤토리 런타임이 있으면 저장 직전에 현재 인벤토리 상태를 SaveData에 반영합니다.
         private static void CaptureInventoryIfExists(SaveData saveData)
         {
-            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            var inventoryRuntime = FindInventoryRuntimeIncludingInactive();
             if (inventoryRuntime != null)
             {
+                var capturedInventory = inventoryRuntime.CaptureSnapshot();
+                if (saveData != null
+                    && saveData.dungeon != null
+                    && !InventorySaveMapper.HasMeaningfulState(capturedInventory)
+                    && InventorySaveMapper.HasMeaningfulState(saveData.dungeon.inventory))
+                {
+                    Debug.LogWarning("[GameSceneSaveEntry] 빈 인벤토리 캡처가 기존 저장 인벤토리를 덮어쓰지 않도록 건너뜁니다.");
+                    return;
+                }
+
                 inventoryRuntime.CaptureToSaveData(saveData);
             }
         }
 
-        // 테스트 확인용으로 던전 골드를 조금 올린 뒤 저장합니다.
+        // 테스트 확인용으로 인벤토리 골드를 조금 올린 뒤 저장합니다.
         public void SaveCurrentSessionWithDebugProgress()
         {
             if (CurrentSaveData == null)
@@ -94,14 +113,25 @@ namespace FlatVenture.SaveLoad
                 return;
             }
 
-            var inventoryRuntime = FindFirstObjectByType<InventoryRuntimeBehaviour>();
+            var inventoryRuntime = FindInventoryRuntimeIncludingInactive();
             if (inventoryRuntime != null)
-                inventoryRuntime.AddDebugGold(debugDungeonGoldAddAmount);
+                inventoryRuntime.Wallet.AddGold(testGoldAddAmount);
             else
-                CurrentSaveData.dungeon.gold += debugDungeonGoldAddAmount;
+            {
+                if (CurrentSaveData.dungeon.inventory == null)
+                    CurrentSaveData.dungeon.inventory = new InventorySaveData();
+
+                CurrentSaveData.dungeon.inventory.gold += testGoldAddAmount;
+            }
 
             SaveCurrentSession();
-            Debug.Log("[GameSceneSaveEntry] Debug dungeon gold added: +" + debugDungeonGoldAddAmount);
+            Debug.Log("[GameSceneSaveEntry] Test gold added: +" + testGoldAddAmount);
+        }
+
+        private static InventoryRuntimeBehaviour FindInventoryRuntimeIncludingInactive()
+        {
+            var runtimes = FindObjectsByType<InventoryRuntimeBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            return runtimes.Length > 0 ? runtimes[0] : null;
         }
 
         // 게임 씬 입장 로그를 만듭니다.
@@ -120,7 +150,7 @@ namespace FlatVenture.SaveLoad
                 + "\nIn Dungeon: " + dungeon.isInDungeon
                 + "\nDungeon Player Level: " + dungeon.playerLevel
                 + "\nDungeon Player Exp: " + dungeon.playerExp
-                + "\nDungeon Gold: " + dungeon.gold
+                + "\nInventory Gold: " + (dungeon.inventory != null ? dungeon.inventory.gold : 0)
                 + "\nDungeon State: " + dungeon.dungeonState;
         }
     }
