@@ -7,7 +7,11 @@ elite_reward,common,200,엘리트 전투 보상 기본 등급 비율
 elite_reward,rare,200,엘리트 전투 보상 기본 등급 비율
 elite_reward,epic,80,엘리트 전투 보상 기본 등급 비율
 elite_reward,legendary,20,엘리트 전투 보상 기본 등급 비율
-boss_reward,common,5,보스 보상 예시
-boss_reward,rare,20,보스 보상 예시
-boss_reward,epic,125,보스 보상 예시
-boss_reward,legendary,350,보스 보상 예시
+boss_reward,common,5,보스 보상 기본 등급 비율
+boss_reward,rare,20,보스 보상 기본 등급 비율
+boss_reward,epic,125,보스 보상 기본 등급 비율
+boss_reward,legendary,350,보스 보상 기본 등급 비율
+shop_default,common,290,상점 아이템 출현 기본 등급 비율
+shop_default,rare,160,상점 아이템 출현 기본 등급 비율
+shop_default,epic,40,상점 아이템 출현 기본 등급 비율
+shop_default,legendary,10,상점 아이템 출현 기본 등급 비율

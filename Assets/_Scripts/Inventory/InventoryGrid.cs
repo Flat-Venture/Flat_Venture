@@ -186,18 +186,6 @@ namespace FlatVenture.Inventory
             return true;
         }
 
-        // 슬롯 강화 수치를 설정합니다.
-        public bool TrySetSlotUpgrade(int index, int level)
-        {
-            if (!IsValidIndex(index))
-            {
-                return false;
-            }
-
-            slots[index].SetUpgradeLevel(level);
-            return true;
-        }
-
         // 슬롯 강화 수치에 변화량을 더합니다. 정식 강화 시스템에서는 이 변화량만 결정해서 넘기면 됩니다.
         public bool TryAddSlotUpgrade(int index, int upgradeAmount)
         {
@@ -219,18 +207,6 @@ namespace FlatVenture.Inventory
             }
 
             slots[index].SetFrameElement(elementId);
-            return true;
-        }
-
-        // 슬롯 봉인 상태를 설정합니다.
-        public bool TrySetSealed(int index, bool sealedState)
-        {
-            if (!IsValidIndex(index))
-            {
-                return false;
-            }
-
-            slots[index].SetSealed(sealedState);
             return true;
         }
 

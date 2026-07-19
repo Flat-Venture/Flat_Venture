@@ -1,5 +1,5 @@
-﻿rarity_id,display_name,sort_order,color_hex,description
-common,일반,1,#B0B0B0,기본 스탯과 속성 포인트를 채우는 등급
-rare,희귀,2,#4BA3FF,조건부 발동과 빌드 방향을 강화하는 등급
-epic,영웅,3,#B65CFF,핵심 기믹과 스킬 변화를 제공하는 등급
-legendary,전설,4,#FFB800,규칙 변경과 빌드 완성을 담당하는 등급
+﻿rarity_id,display_name,sort_order,color_hex,base_price,sell_rate,description
+common,일반,1,#B0B0B0,500,0.5,기본 스탯과 속성 포인트를 채우는 등급
+rare,희귀,2,#4BA3FF,1000,0.5,조건부 발동과 빌드 방향을 강화하는 등급
+epic,영웅,3,#B65CFF,1500,0.5,핵심 기믹과 스킬 변화를 제공하는 등급
+legendary,전설,4,#FFB800,2000,0.5,규칙 변경과 빌드 완성을 담당하는 등급

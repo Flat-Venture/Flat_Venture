@@ -8,6 +8,8 @@
         public string displayName;
         public int sortOrder;
         public string colorHex;
+        public int basePrice;
+        public float sellRate;
         public string description;
     }
 

@@ -23,9 +23,30 @@ public class StageManager : MonoBehaviour
     [Header("UI Settings")]
     public GameObject mapCanvas; //맵 캔버스를 On/Off 하기 위한 변수
 
-    private RoomController currentActiveRoom;
+    private IDungeonRoomController currentActiveRoom;
+    private GameObject currentActiveRoomObject;
     private Action openMapCallback;
     private MapNode currentNode; //방금 입장한 노드를 기억해둘 변수
+
+    public bool IsInActiveRoom
+    {
+        get { return currentActiveRoomObject != null; }
+    }
+
+    public bool IsInCombatRoom
+    {
+        get
+        {
+            if (currentActiveRoomObject == null || currentNode == null)
+            {
+                return false;
+            }
+
+            return currentNode.RoomType == RoomType.Normal
+                || currentNode.RoomType == RoomType.Elite
+                || currentNode.RoomType == RoomType.Boss;
+        }
+    }
 
     /// <summary>
     /// MapTestRunner에서 호출하여 지도를 다시 여는 콜백 함수
@@ -48,7 +69,7 @@ public class StageManager : MonoBehaviour
         if (mapCanvas != null) mapCanvas.SetActive(false);
 
         //기존 활성화된 방이 있으면 메모리에서 제거
-        if (currentActiveRoom != null) Destroy(currentActiveRoom.gameObject);
+        if (currentActiveRoomObject != null) Destroy(currentActiveRoomObject);
 
         //노드의 RoomType에 따라 방 프리팹을 생성
         GameObject roomPrefabToSpawn = GetRoomPrefab(node.RoomType);
@@ -57,44 +78,42 @@ public class StageManager : MonoBehaviour
         {
             //씬의 원점(0, 0, 0)에 새로운 방 생성
             GameObject newRoomObject = Instantiate(roomPrefabToSpawn, Vector3.zero, Quaternion.identity);
-            currentActiveRoom = newRoomObject.GetComponent<RoomController>();
+            currentActiveRoomObject = newRoomObject;
+            currentActiveRoom = newRoomObject.GetComponent<IDungeonRoomController>();
 
             if (currentActiveRoom != null)
             {
-                currentActiveRoom.currentRoomType = node.RoomType;
-                currentActiveRoom.currentNodeId = node.NodeID;
-
-                //포탈 탑승 시 호출될 이벤트를 구독
-                currentActiveRoom.onRoomCleared += HandleRoomCleared;
-                currentActiveRoom.onPortalGenerated += HandlePortalGenerated;
+                // 방 컨트롤러가 직접 StageManager를 참조하지 않도록, 필요한 진행 콜백만 컨텍스트로 전달합니다.
+                var context = new DungeonRoomContext(node.RoomType, node.NodeID, node, HandleRoomCleared, HandlePortalGenerated);
+                currentActiveRoom.InitializeRoom(context);
 
                 //충돌 문제를 방지하기 위해 CharacterController를 비활성화 후 플레이어 위치 이동
-                if (currentActiveRoom.playerSpawnPoint != null && player != null)
+                if (currentActiveRoom.PlayerSpawnPoint != null && player != null)
                 {
                     CharacterController characterController = player.GetComponent<CharacterController>();
                     if (characterController != null) characterController.enabled = false;
 
-                    player.transform.position = currentActiveRoom.playerSpawnPoint.position;
+                    player.transform.position = currentActiveRoom.PlayerSpawnPoint.position;
                     if (characterController != null) characterController.enabled = true;
                 }
 
-                //방 세팅 끝. 몬스터 스폰 이벤트 실행
+                //방 세팅 끝. 방 타입별 시작 이벤트 실행
                 currentActiveRoom.StartRoomEvent(startFromPortalCheckpoint);
             }
 
             else
             {
-                Debug.LogWarning("[StageManager] 생성된 방 프리팹에 RoomController 컴포넌트가 없습니다.");
+                Debug.LogWarning("[StageManager] 생성된 방 프리팹에 IDungeonRoomController 컴포넌트가 없습니다.");
             }
 
-            //플레이어를 활성화하여 전투 시작
+            //플레이어를 활성화하여 방 진행 시작
             if (player != null) player.SetActive(true);
         }
 
         else
         {
             Debug.LogWarning($"[StageManager] {node.RoomType}에 해당하는 프리팹이 등록되지 않았습니다.");
-            HandleRoomCleared(null);
+            HandleRoomCleared();
         }
 
     }
@@ -117,17 +136,14 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    private void HandleRoomCleared(RoomController clearedRoom)
+    private void HandleRoomCleared()
     {
-        if (clearedRoom != null) 
+        if (currentActiveRoomObject != null)
         {
-            //이벤트 구독 해제
-            clearedRoom.onRoomCleared -= HandleRoomCleared;
-            clearedRoom.onPortalGenerated -= HandlePortalGenerated;
-
             //포탈을 탔으므로 던전 방 오브젝트를 완전 파괴
-            Destroy(clearedRoom.gameObject);
-            if (currentActiveRoom == clearedRoom) currentActiveRoom = null;
+            Destroy(currentActiveRoomObject);
+            currentActiveRoomObject = null;
+            currentActiveRoom = null;
         }
 
         Debug.Log("<color=green>[Core Loop]</color> 포탈 탑승 및 방 정리 완료! 지도로 복귀합니다.");
@@ -139,10 +155,11 @@ public class StageManager : MonoBehaviour
         if (mapCanvas != null) mapCanvas.SetActive(true);
 
         //다시 맵을 열기 위한 델리게이트 실행
+        // 포탈 탑승 후 다음 노드를 선택할 수 있는 지도 화면으로 돌아갑니다.
         openMapCallback?.Invoke();
     }
 
-    private void HandlePortalGenerated(RoomController clearedRoom)
+    private void HandlePortalGenerated()
     {
         if (currentNode == null)
         {
@@ -150,6 +167,8 @@ public class StageManager : MonoBehaviour
         }
 
         Debug.Log($"<color=yellow>[Save Data 준비완료]</color> 포탈 생성 저장. 현재 층: {currentNode.Floor}, 노드 ID: {currentNode.NodeID}");
+        // 전투방처럼 포탈 생성 시점이 체크포인트인 방에서만 호출됩니다.
+        // 특수 방은 PortalSpawner에서 이 호출을 끄고, 다음 노드 선택 시점에 저장합니다.
         DungeonMapSaveBridge.SavePortalGenerated(currentNode);
     }
 }

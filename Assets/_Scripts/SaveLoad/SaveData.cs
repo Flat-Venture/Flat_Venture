@@ -95,7 +95,6 @@ namespace FlatVenture.SaveLoad
         public int currentFloor;
         public int playerLevel = 1;
         public int playerExp;
-        public int gold;
         public string currentNodeId;
         public List<string> clearedNodeIds = new List<string>();
         public List<string> availableNextNodeIds = new List<string>();
@@ -120,7 +119,7 @@ namespace FlatVenture.SaveLoad
     {
         public int width = 5;
         public int height = 5;
-        public int debugGold;
+        public int gold;
         public List<InventorySlotSaveData> slots = new List<InventorySlotSaveData>();
     }
 
@@ -145,7 +144,6 @@ namespace FlatVenture.SaveLoad
         public string rarityId;
         public bool isCursed;
         public bool isUnique;
-        public int sellPrice;
         public List<InventoryItemElementSaveData> elements = new List<InventoryItemElementSaveData>();
     }
 

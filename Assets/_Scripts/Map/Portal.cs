@@ -47,7 +47,7 @@ public class Portal : MonoBehaviour
 
     private bool ShouldBlockUntilExit(Collider playerCollider)
     {
-        if (FlatVenture.Reward.DungeonRewardSelectionBehaviour.IsOpen)
+        if (FlatVenture.Reward.DungeonRewardSelectionController.IsOpen)
         {
             blockedUntilExit.Add(playerCollider);
             return true;

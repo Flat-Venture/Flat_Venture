@@ -266,6 +266,7 @@ GameObject:
   - component: {fileID: 8636395941627654594}
   - component: {fileID: 386625741912474819}
   - component: {fileID: 7474419543289673393}
+  - component: {fileID: 901000000000000001}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -349,8 +350,23 @@ MonoBehaviour:
   - {fileID: 7774701371451334709, guid: 4b77eea699fab544abe6f239d698f6c9, type: 3}
   randomEliteTraitPrefabs:
   - {fileID: 4685166448086673618, guid: a3b3d27f84ccac545a4d26c5492b00a4, type: 3}
-  portalPrefab: {fileID: 8251684540803734717, guid: f781a6dc5af2fb44eb67e00b3259898c, type: 3}
+  portalSpawner: {fileID: 901000000000000001}
   currentRoomType: 1
+--- !u!114 &901000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4281184754642624086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3b487502a9243f6a730947042e8441a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PortalSpawner
+  portalPrefab: {fileID: 8251684540803734717, guid: f781a6dc5af2fb44eb67e00b3259898c, type: 3}
+  portalSpawnPoint: {fileID: 0}
+  saveWhenPortalGenerated: 1
 --- !u!1 &4826801575556752939
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,81 +1,162 @@
+using FlatVenture.Inventory;
+using FlatVenture.SaveLoad;
 using UnityEngine;
 
-/// <summary>
-/// 몬스터가 등장하지 않고 모닥불 상호작용과 포탈 생성을 관리하는 휴식 방 전용 컨트롤러
-/// </summary>
-public class RestRoomController : MonoBehaviour
+// 몬스터가 등장하지 않고 휴식/스왑 선택지를 제공하는 휴식 방 컨트롤러입니다.
+public class RestRoomController : SpecialRoomControllerBase
 {
-    [Header("Room Settings")]
-    [Tooltip("플레이어가 스폰될 위치")]
-    public Transform playerSpawnPoint;
-    
-    [Header("Portal Settings")]
-    [Tooltip("다음 방으로 넘어갈 포탈 프리팹")]
-    public GameObject portalPrefab;
-    [Tooltip("선택을 마치면 포탈이 생성될 위치")]
-    public Transform portalSpawnPoint;
+    private const int RestSwapCount = 3;
 
-    [Header("UI Settings")]
-    [Tooltip("화면에 띄울 휴식 방 전용 UI 패널")]
-    public GameObject restUIPanel;
+    private bool isOpen;
+    private bool isChoiceCompleted;
+    private string message;
+    private InventorySaveData swapStartSnapshot;
 
-    private void Start()
+    public bool IsOpen
     {
-        //방이 시작될 때 UI는 무조건 꺼둠
-        if (restUIPanel != null)
-        {
-            restUIPanel.SetActive(false);
-        }
+        get { return isOpen; }
     }
 
-    /// <summary>
-    /// StageManager가 방을 세팅할 때 호출하는 시작 함수
-    /// </summary>
-    public void StartRoomEvent()
+    public string Message
     {
-        Debug.Log("<color=green>[Rest Room]</color> 휴식 방에 입장했습니다. 평화롭습니다.");
-        // 휴식방은 몬스터를 스폰할 필요가 없으므로 바로 대기 상태로 들어감
+        get { return message; }
     }
 
-    /// <summary>
-    /// 모닥불 스크립트(CampfireInteract)의 UnityEvent에서 호출할 함수
-    /// </summary>
-    public void OpenRestUI()
+    public int SwapCount
     {
-        Debug.Log("<color=orange>[Rest Room]</color> 휴식 방 UI를 엽니다.");
-        if (restUIPanel != null)
-        {
-            restUIPanel.SetActive(true);
-            
-            //TODO: 필요하다면 UI가 켜졌을 때 플레이어의 이동을 막거나 Time.timeScale = 0f 로 정지
-        }
+        get { return RestSwapCount; }
     }
 
-    /// <summary>
-    /// UI에서 [휴식] 또는 [아이템 교환] 버튼을 눌러 선택을 완전히 마쳤을 때 호출할 함수
-    /// </summary>
-    public void OnChoiceCompleted()
+    public override bool IsInteractionCompleted
     {
-        //UI 닫기
-        if (restUIPanel != null)
-        {
-            restUIPanel.SetActive(false);
-        }
+        get { return isChoiceCompleted; }
+    }
 
-        //밖으로 나갈 포탈 열어주기
+    // StageManager가 방 입장 시 호출합니다.
+    // 특수 방은 포탈 생성 시 저장하지 않으므로 startFromPortalCheckpoint 값은 사용하지 않습니다.
+    public override void StartRoomEvent(bool startFromPortalCheckpoint = false)
+    {
+        Debug.Log("<color=green>[Rest Room]</color> 휴식 방에 입장했습니다.");
+        isOpen = false;
+        isChoiceCompleted = false;
         SpawnPortal();
     }
 
-    private void SpawnPortal()
+    // SpecialRoomInteract 또는 기존 CampfireInteract UnityEvent에서 호출합니다.
+    public override void OpenInteractionUI()
     {
-        if (portalPrefab != null && portalSpawnPoint != null)
+        OpenRestUI();
+    }
+
+    // 휴식 선택지 UI를 엽니다.
+    public void OpenRestUI()
+    {
+        if (isChoiceCompleted)
         {
-            Instantiate(portalPrefab, portalSpawnPoint.position, Quaternion.identity);
-            Debug.Log("<color=cyan>[Rest Room]</color> 포탈이 열렸습니다");
+            message = "\uC774\uBBF8 \uC120\uD0DD\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.";
+            return;
         }
-        else
+
+        FindInventoryIfNeeded();
+        isOpen = true;
+        DungeonUiInputBlocker.SetBlocked(this, true);
+        message = string.Empty;
+    }
+
+    // HP 회복 선택입니다. 실제 회복 적용은 플레이어 시스템 연결 후 추가합니다.
+    public void SelectRest()
+    {
+        if (isChoiceCompleted)
         {
-            Debug.LogError("RestRoomController에 포탈 프리팹이나 스폰 위치가 할당되지 않았습니다!");
+            return;
+        }
+
+        // TODO: 플레이어 HP 회복 적용
+
+        message = "\uD734\uC2DD\uC744 \uC120\uD0DD\uD588\uC2B5\uB2C8\uB2E4. HP \uD68C\uBCF5\uC740 \uD50C\uB808\uC774\uC5B4 \uC2DC\uC2A4\uD15C \uC5F0\uACB0 \uD6C4 \uC801\uC6A9\uD569\uB2C8\uB2E4.";
+        CompleteChoice();
+    }
+
+    // 아이템 위치 스왑 모드를 엽니다. 스왑 완료 버튼을 누른 뒤 포탈이 생성됩니다.
+    // 특수 방 정책상 스왑 결과는 즉시 저장하지 않고 다음 노드 선택 시점에 저장합니다.
+    public void SelectSwap()
+    {
+        if (isChoiceCompleted)
+        {
+            return;
+        }
+
+        FindInventoryIfNeeded();
+        if (inventoryRuntime == null || inventoryRuntime.Grid == null)
+        {
+            message = "InventoryRuntimeBehaviour\uB97C \uCC3E\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.";
+            return;
+        }
+
+        inventoryRuntime.Grid.SetTemporarySwapCount(RestSwapCount);
+        swapStartSnapshot = inventoryRuntime.CaptureSnapshot();
+        isOpen = false;
+        ShowInventorySwapPanel();
+        message = "\uC544\uC774\uD15C \uC704\uCE58 \uC2A4\uC651 " + RestSwapCount + "\uD68C\uAC00 \uD65C\uC131\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.";
+    }
+
+    // 선택지를 완료합니다.
+    // 휴식 방 포탈은 입장 시 이미 열려 있고, 결과 확정 저장은 다음 노드 선택 시점입니다.
+    private void CompleteChoice()
+    {
+        isChoiceCompleted = true;
+        isOpen = false;
+        DungeonUiInputBlocker.SetBlocked(this, false);
+    }
+
+    // 휴식 UI를 닫습니다. 닫기는 선택 완료가 아니므로 포탈을 생성하지 않습니다.
+    public void CloseUI()
+    {
+        isOpen = false;
+        DungeonUiInputBlocker.SetBlocked(this, false);
+    }
+
+    // 인벤토리 스왑 패널을 엽니다.
+    private void ShowInventorySwapPanel()
+    {
+        var panel = FindFirstObjectByType<InventoryDebugPanelBehaviour>(FindObjectsInactive.Include);
+        if (panel != null)
+        {
+            // syncActiveSave=false: 스왑 결과는 런타임에만 반영하고 즉시 저장하지 않습니다.
+            panel.ShowSwapPanel(RestSwapCount, CompleteSwapChoice, false, CancelSwapChoice);
+        }
+    }
+
+    // 스왑 패널에서 완료 버튼을 눌렀을 때 호출됩니다.
+    private void CompleteSwapChoice()
+    {
+        swapStartSnapshot = null;
+        HideInventoryPanel();
+        CompleteChoice();
+    }
+
+    // 스왑 시작 시점의 인벤토리로 되돌리고 휴식 선택지 UI로 복귀합니다.
+    private void CancelSwapChoice()
+    {
+        if (inventoryRuntime != null && swapStartSnapshot != null)
+        {
+            inventoryRuntime.RestoreSnapshot(swapStartSnapshot);
+            inventoryRuntime.Grid.ClearTemporarySwapCount();
+        }
+
+        swapStartSnapshot = null;
+        HideInventoryPanel();
+        isOpen = true;
+        message = "스왑을 취소했습니다. 다시 선택할 수 있습니다.";
+    }
+
+    // 열려 있는 임시 인벤토리 패널을 닫습니다.
+    private void HideInventoryPanel()
+    {
+        var panel = FindFirstObjectByType<InventoryDebugPanelBehaviour>(FindObjectsInactive.Include);
+        if (panel != null)
+        {
+            panel.HidePanel();
         }
     }
 }

@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace FlatVenture.Inventory
 {
-    // 한 씬에서 공유해서 사용하는 인벤토리 런타임 허브입니다.
-    // 테스트 UI, 치트 지급창, 이후 정식 UI는 이 컴포넌트의 InventoryGrid를 함께 바라보면 됩니다.
+    // 씬에서 공유해서 사용하는 인벤토리 런타임 허브입니다.
+    // Grid, Wallet, 시너지 계산을 묶고, 세부 계산/저장 변환은 전용 클래스로 위임합니다.
     public sealed class InventoryRuntimeBehaviour : MonoBehaviour
     {
         private static readonly List<float> SlotUpgradeWeights = new List<float> { 80f, 19f, 1f };
@@ -23,19 +23,17 @@ namespace FlatVenture.Inventory
         private ISeedService seedService;
 
         public InventoryGrid Grid { get; private set; }
+        // 던전 안에서 쓰는 골드입니다. 저장도 InventorySaveData 안에 함께 들어갑니다.
+        public InventoryWallet Wallet { get; private set; }
+
+        // 희귀도 CSV 기준 가격 계산은 전용 서비스에 맡깁니다.
+        public InventoryPriceService PriceService { get; private set; }
         public GameDataCatalog Catalog { get; private set; }
         public InventorySynergyResult SynergyResult { get; private set; } = new InventorySynergyResult();
-        public int DebugGold { get; private set; }
 
         public IReadOnlyList<ItemRecord> SortedItems
         {
             get { return sortedItems; }
-        }
-
-        // 던전 입장/로드 쪽에서 현재 던전 SeedService를 넘겨주면 가격/강화 같은 재현 대상에 사용합니다.
-        public void SetSeedService(ISeedService nextSeedService)
-        {
-            seedService = nextSeedService;
         }
 
         public IReadOnlyList<string> SortedElementIds
@@ -65,10 +63,17 @@ namespace FlatVenture.Inventory
             }
         }
 
+        // 던전 입장/로드 쪽에서 현재 던전 SeedService를 넘겨주면 강화 확률 같은 재현 대상에 사용합니다.
+        public void SetSeedService(ISeedService nextSeedService)
+        {
+            seedService = nextSeedService;
+        }
+
         // 인벤토리와 CSV 카탈로그 캐시를 준비합니다.
         private void Awake()
         {
             Grid = new InventoryGrid(width, height);
+            Wallet = new InventoryWallet();
             RefreshCatalog();
             RecalculateSynergy();
         }
@@ -90,6 +95,7 @@ namespace FlatVenture.Inventory
             Catalog = dataLoader != null ? dataLoader.Catalog : null;
             sortedItems.Clear();
             sortedElementIds.Clear();
+            PriceService = new InventoryPriceService(Catalog);
 
             if (Catalog == null)
             {
@@ -116,8 +122,15 @@ namespace FlatVenture.Inventory
             synergyCalculator = new InventorySynergyCalculator(Catalog);
         }
 
-        // CSV 아이템을 인벤토리의 랜덤 빈 칸에 넣습니다.
+        // CSV 아이템을 인벤토리의 무작위 빈 칸에 넣습니다.
         public bool TryGrantItem(ItemRecord record, out InventoryPosition position, out string message)
+        {
+            return TryGrantItem(record, true, out position, out message);
+        }
+
+        // CSV 아이템을 인벤토리에 넣고, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        // 보상/특수 방처럼 다음 체크포인트까지 저장하면 안 되는 흐름에서는 syncActiveSave를 false로 넘깁니다.
+        public bool TryGrantItem(ItemRecord record, bool syncActiveSave, out InventoryPosition position, out string message)
         {
             position = new InventoryPosition();
 
@@ -127,8 +140,6 @@ namespace FlatVenture.Inventory
                 message = "아이템 데이터가 비어 있습니다.";
                 return false;
             }
-
-            item.sellPrice = CalculateSellPrice(item);
 
             if (item.isUnique && Grid.ContainsItemId(item.itemId))
             {
@@ -144,6 +155,10 @@ namespace FlatVenture.Inventory
 
             message = item.displayName + " 획득: " + position;
             RecalculateSynergy();
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
             return true;
         }
 
@@ -158,37 +173,17 @@ namespace FlatVenture.Inventory
             SynergyResult = synergyCalculator.Calculate(Grid);
         }
 
-        // 테스트용 골드를 증가시킵니다.
-        public void AddDebugGold(int amount)
-        {
-            DebugGold += Mathf.Max(0, amount);
-
-            if (SaveGameSession.HasActiveSave && SaveGameSession.CurrentSaveData != null && SaveGameSession.CurrentSaveData.dungeon != null)
-            {
-                SaveGameSession.CurrentSaveData.dungeon.gold = DebugGold;
-            }
-        }
-
-        // 인벤토리와 테스트 골드를 초기화합니다.
+        // 인벤토리와 골드를 초기화합니다.
         public void ClearInventoryForTest()
         {
             Grid.ClearAll();
-            DebugGold = 0;
+            Wallet.Clear();
             RecalculateSynergy();
-        }
-
-        // 현재 활성 세이브에 인벤토리 상태를 기록합니다.
-        public void CaptureToActiveSave()
-        {
-            if (!SaveGameSession.HasActiveSave || SaveGameSession.CurrentSaveData == null)
-            {
-                return;
-            }
-
-            CaptureToSaveData(SaveGameSession.CurrentSaveData);
+            SyncActiveSaveData();
         }
 
         // 지정한 세이브 데이터에 현재 인벤토리 상태를 기록합니다.
+        // DungeonMapSaveBridge나 게임 종료 저장처럼 명확한 저장 시점에서 호출합니다.
         public void CaptureToSaveData(SaveData saveData)
         {
             if (saveData == null || saveData.dungeon == null || Grid == null)
@@ -196,8 +191,26 @@ namespace FlatVenture.Inventory
                 return;
             }
 
-            saveData.dungeon.inventory = BuildInventorySaveData();
-            saveData.dungeon.gold = DebugGold;
+            saveData.dungeon.inventory = CaptureSnapshot();
+        }
+
+        // 현재 런타임 인벤토리를 저장 가능한 스냅샷으로 만듭니다.
+        public InventorySaveData CaptureSnapshot()
+        {
+            return InventorySaveMapper.Capture(Grid, Wallet);
+        }
+
+        // 저장 파일을 건드리지 않고 임시 스냅샷 상태로 인벤토리를 되돌립니다.
+        public void RestoreSnapshot(InventorySaveData inventorySaveData)
+        {
+            if (inventorySaveData == null || Grid == null)
+            {
+                return;
+            }
+
+            RefreshCatalog();
+            InventorySaveMapper.Restore(inventorySaveData, Grid, Catalog, Wallet);
+            RecalculateSynergy();
         }
 
         // 현재 활성 세이브에서 인벤토리 상태를 복원합니다.
@@ -220,164 +233,11 @@ namespace FlatVenture.Inventory
             }
 
             RefreshCatalog();
-            Grid.ClearAll();
-
-            var inventorySaveData = saveData.dungeon.inventory;
-            DebugGold = inventorySaveData.debugGold > 0 ? inventorySaveData.debugGold : saveData.dungeon.gold;
-
-            if (inventorySaveData.slots != null)
-            {
-                for (int i = 0; i < inventorySaveData.slots.Count; i++)
-                {
-                    RestoreSlot(inventorySaveData.slots[i]);
-                }
-            }
-
+            InventorySaveMapper.Restore(saveData.dungeon.inventory, Grid, Catalog, Wallet);
             RecalculateSynergy();
         }
 
-        // 현재 인벤토리 상태를 저장 가능한 데이터로 변환합니다.
-        private InventorySaveData BuildInventorySaveData()
-        {
-            var inventorySaveData = new InventorySaveData
-            {
-                width = Grid.Width,
-                height = Grid.Height,
-                debugGold = DebugGold,
-                slots = new List<InventorySlotSaveData>()
-            };
-
-            for (int i = 0; i < Grid.Slots.Count; i++)
-            {
-                var slot = Grid.Slots[i];
-                inventorySaveData.slots.Add(BuildSlotSaveData(slot));
-            }
-
-            return inventorySaveData;
-        }
-
-        // 슬롯 하나를 저장 가능한 데이터로 변환합니다.
-        private static InventorySlotSaveData BuildSlotSaveData(InventorySlot slot)
-        {
-            return new InventorySlotSaveData
-            {
-                slotIndex = slot.position.index,
-                frameElementId = slot.frameElementId,
-                upgradeLevel = slot.upgradeLevel,
-                isSealed = slot.isSealed,
-                item = BuildItemSaveData(slot.item)
-            };
-        }
-
-        // 아이템 인스턴스를 저장 가능한 데이터로 변환합니다.
-        private static InventoryItemSaveData BuildItemSaveData(InventoryItem item)
-        {
-            if (item == null)
-            {
-                return null;
-            }
-
-            var itemSaveData = new InventoryItemSaveData
-            {
-                instanceId = item.instanceId,
-                itemId = item.itemId,
-                displayName = item.displayName,
-                rarityId = item.rarityId,
-                isCursed = item.isCursed,
-                isUnique = item.isUnique,
-                sellPrice = item.sellPrice,
-                elements = new List<InventoryItemElementSaveData>()
-            };
-
-            for (int i = 0; i < item.elements.Count; i++)
-            {
-                itemSaveData.elements.Add(new InventoryItemElementSaveData
-                {
-                    elementId = item.elements[i].elementId,
-                    elementValue = item.elements[i].elementValue
-                });
-            }
-
-            return itemSaveData;
-        }
-
-        // 저장된 슬롯 데이터를 현재 인벤토리에 복원합니다.
-        private void RestoreSlot(InventorySlotSaveData slotSaveData)
-        {
-            if (slotSaveData == null)
-            {
-                return;
-            }
-
-            var slot = Grid.GetSlot(slotSaveData.slotIndex);
-            if (slot == null)
-            {
-                return;
-            }
-
-            slot.SetFrameElement(slotSaveData.frameElementId);
-            slot.SetUpgradeLevel(slotSaveData.upgradeLevel);
-            slot.SetSealed(slotSaveData.isSealed);
-
-            if (IsValidSavedItem(slotSaveData.item))
-            {
-                var restoredItem = BuildInventoryItem(slotSaveData.item);
-                if (restoredItem != null)
-                {
-                    Grid.TryAddItemAt(slotSaveData.slotIndex, restoredItem);
-                }
-            }
-        }
-
-        // 저장된 아이템 데이터를 런타임 인벤토리 아이템으로 복원합니다.
-        private InventoryItem BuildInventoryItem(InventoryItemSaveData itemSaveData)
-        {
-            if (!IsValidSavedItem(itemSaveData))
-            {
-                return null;
-            }
-
-            InventoryItem item = null;
-
-            ItemRecord itemRecord;
-            if (Catalog != null && Catalog.TryGetItem(itemSaveData.itemId, out itemRecord))
-            {
-                item = InventoryItem.FromItemRecord(itemRecord);
-            }
-
-            if (item == null)
-            {
-                item = new InventoryItem();
-            }
-
-            item.instanceId = string.IsNullOrEmpty(itemSaveData.instanceId) ? Guid.NewGuid().ToString("N") : itemSaveData.instanceId;
-            item.itemId = itemSaveData.itemId;
-            item.displayName = itemSaveData.displayName;
-            item.rarityId = itemSaveData.rarityId;
-            item.isCursed = itemSaveData.isCursed;
-            item.isUnique = itemSaveData.isUnique;
-            item.sellPrice = itemSaveData.sellPrice;
-
-            item.elements.Clear();
-            if (itemSaveData.elements != null)
-            {
-                for (int i = 0; i < itemSaveData.elements.Count; i++)
-                {
-                    var element = itemSaveData.elements[i];
-                    item.elements.Add(new InventoryItemElement(element.elementId, element.elementValue));
-                }
-            }
-
-            return item;
-        }
-
         // 속성 ID의 표시 이름을 반환합니다.
-        // JsonUtility가 빈 하위 객체를 만들더라도 실제 아이템 ID가 없으면 빈 칸으로 처리합니다.
-        private static bool IsValidSavedItem(InventoryItemSaveData itemSaveData)
-        {
-            return itemSaveData != null && !string.IsNullOrWhiteSpace(itemSaveData.itemId);
-        }
-
         public string GetElementDisplayName(string elementId)
         {
             if (Catalog != null && Catalog.elements != null)
@@ -392,7 +252,7 @@ namespace FlatVenture.Inventory
             return elementId;
         }
 
-        // 인벤토리 테스트 UI와 프레임 속성 선택에 표시할 수 있는 속성인지 확인합니다.
+        // 인벤토리 테스트 UI에서 프레임 속성 선택지로 표시해도 되는 속성인지 확인합니다.
         public bool IsElementVisibleInInventory(string elementId)
         {
             if (string.IsNullOrEmpty(elementId))
@@ -410,34 +270,14 @@ namespace FlatVenture.Inventory
                 || definition.elementRole != "advanced";
         }
 
-        // 등급 기준 판매가를 10% 오차 범위 안에서 계산합니다.
-        public int CalculateSellPrice(InventoryItem item)
-        {
-            return CalculateSellPrice(item, seedService);
-        }
-
-        // SeedService가 연결되어 있으면 Shop 스트림으로 판매 가격 오차를 계산합니다.
-        public int CalculateSellPrice(InventoryItem item, ISeedService sourceSeedService)
-        {
-            var random = sourceSeedService != null ? sourceSeedService.GetStream(SeedStreamNames.Shop) : null;
-            return CalculateSellPrice(item, random);
-        }
-
-        // 판매 가격은 등급 기준 가격에 10% 오차를 더합니다.
-        public int CalculateSellPrice(InventoryItem item, IRandomStream random)
-        {
-            if (item != null && item.sellPrice > 0)
-            {
-                return item.sellPrice;
-            }
-
-            int basePrice = GetBasePriceByRarity(item != null ? item.rarityId : null);
-            float multiplier = random != null ? random.Range(0.9f, 1.1f) : UnityEngine.Random.Range(0.9f, 1.1f);
-            return Mathf.RoundToInt(basePrice * multiplier);
-        }
-
-        // Forge 스트림으로 슬롯 강화 수치를 뽑고 선택된 슬롯에 적용합니다.
+        // Forge 스트림으로 슬롯 강화 수치를 뽑고 선택한 슬롯에 적용합니다.
         public bool TryAddRolledSlotUpgrade(int index, out int upgradeAmount, out string message)
+        {
+            return TryAddRolledSlotUpgrade(index, true, out upgradeAmount, out message);
+        }
+
+        // Forge 스트림으로 슬롯 강화 수치를 뽑고, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        public bool TryAddRolledSlotUpgrade(int index, bool syncActiveSave, out int upgradeAmount, out string message)
         {
             upgradeAmount = RollSlotUpgradeAmount(seedService);
 
@@ -449,10 +289,177 @@ namespace FlatVenture.Inventory
 
             var slot = Grid.GetSlot(index);
             message = "슬롯 강화 변화량 +" + upgradeAmount + " / 현재 +" + (slot != null ? slot.upgradeLevel : 0);
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
             return true;
         }
 
-        // SeedService가 연결되어 있으면 Forge 스트림을 사용하고, 없으면 테스트용 기본값 +1을 반환합니다.
+        // 골드를 지불하고 선택 슬롯을 강화합니다.
+        public bool TryPurchaseSlotUpgrade(int index, int cost, out int upgradeAmount, out string message)
+        {
+            return TryPurchaseSlotUpgrade(index, cost, true, out upgradeAmount, out message);
+        }
+
+        // 골드를 지불하고 선택 슬롯을 강화한 뒤, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        // 특수 방 제련소에서는 syncActiveSave=false로 호출해 다음 노드 선택 전까지 저장하지 않습니다.
+        public bool TryPurchaseSlotUpgrade(int index, int cost, bool syncActiveSave, out int upgradeAmount, out string message)
+        {
+            upgradeAmount = 0;
+            string spendMessage;
+            if (!Wallet.TrySpendGold(cost, out spendMessage))
+            {
+                message = spendMessage;
+                return false;
+            }
+
+            if (!TryAddRolledSlotUpgrade(index, false, out upgradeAmount, out message))
+            {
+                Wallet.AddGold(cost);
+                return false;
+            }
+
+            RecalculateSynergy();
+            message += " / 비용 " + cost + " 골드";
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
+            return true;
+        }
+
+        // 골드를 지불하고 슬롯 프레임 속성을 지정합니다. 빈 elementId를 넘기면 속성을 제거합니다.
+        public bool TryPurchaseFrameElement(int index, string elementId, int cost, out string message)
+        {
+            return TryPurchaseFrameElement(index, elementId, cost, true, out message);
+        }
+
+        // 골드를 지불하고 슬롯 프레임 속성을 지정한 뒤, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        // 같은 슬롯에 다시 속성을 부여하면 기존 frameElementId를 새 값으로 덮어씁니다.
+        public bool TryPurchaseFrameElement(int index, string elementId, int cost, bool syncActiveSave, out string message)
+        {
+            var slot = Grid.GetSlot(index);
+            if (slot == null)
+            {
+                message = "프레임 속성을 적용할 슬롯을 선택해주세요.";
+                return false;
+            }
+
+            string spendMessage;
+            if (!Wallet.TrySpendGold(cost, out spendMessage))
+            {
+                message = spendMessage;
+                return false;
+            }
+
+            slot.SetFrameElement(elementId);
+            RecalculateSynergy();
+            message = string.IsNullOrEmpty(elementId)
+                ? "프레임 속성을 제거했습니다. / 비용 " + cost + " 골드"
+                : "프레임 속성 적용: " + GetElementDisplayName(elementId) + " / 비용 " + cost + " 골드";
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
+            return true;
+        }
+
+        // 지정 슬롯 아이템을 판매하고 가격 서비스의 판매 비율에 맞춰 골드를 지급합니다.
+        public bool TrySellItemAt(int index, out int earnedGold, out string message)
+        {
+            return TrySellItemAt(index, true, out earnedGold, out message);
+        }
+
+        // 지정 슬롯 아이템을 판매하고, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        // 상점 판매 모드에서는 특수 방 정책에 맞춰 syncActiveSave=false로 호출합니다.
+        public bool TrySellItemAt(int index, bool syncActiveSave, out int earnedGold, out string message)
+        {
+            earnedGold = 0;
+
+            InventoryItem removedItem;
+            if (!Grid.TryRemoveItem(index, out removedItem))
+            {
+                message = "판매할 아이템이 없습니다.";
+                return false;
+            }
+
+            earnedGold = PriceService != null ? PriceService.CalculateShopSellPrice(removedItem) : 0;
+            Wallet.AddGold(earnedGold);
+            RecalculateSynergy();
+            message = removedItem.displayName + " 판매: +" + earnedGold + " 골드";
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
+            return true;
+        }
+
+        // 지정 슬롯의 아이템을 새 아이템 데이터로 교체합니다. 제련소 등급업 테스트에 사용합니다.
+        public bool TryReplaceItemAt(int index, ItemRecord record, int cost, out string message)
+        {
+            return TryReplaceItemAt(index, record, cost, true, out message);
+        }
+
+        // 지정 슬롯의 아이템을 새 아이템으로 교체하고, 필요할 때만 활성 세이브에 즉시 반영합니다.
+        // 제련소 등급업은 기존 슬롯 위치를 유지한 채 아이템 내용만 교체합니다.
+        public bool TryReplaceItemAt(int index, ItemRecord record, int cost, bool syncActiveSave, out string message)
+        {
+            var slot = Grid.GetSlot(index);
+            if (slot == null || !slot.HasItem)
+            {
+                message = "등급업할 아이템을 선택해주세요.";
+                return false;
+            }
+
+            var nextItem = InventoryItem.FromItemRecord(record);
+            if (nextItem == null)
+            {
+                message = "교체할 아이템 데이터가 없습니다.";
+                return false;
+            }
+
+            if (nextItem.isUnique && Grid.ContainsItemId(nextItem.itemId))
+            {
+                message = "고유 아이템은 중복 획득할 수 없습니다: " + nextItem.displayName;
+                return false;
+            }
+
+            string spendMessage;
+            if (!Wallet.TrySpendGold(cost, out spendMessage))
+            {
+                message = spendMessage;
+                return false;
+            }
+
+            slot.item = nextItem;
+            RecalculateSynergy();
+            message = "아이템 등급업: " + nextItem.displayName + " / 비용 " + cost + " 골드";
+            if (syncActiveSave)
+            {
+                SyncActiveSaveData();
+            }
+            return true;
+        }
+
+        // 기능 결과를 현재 메모리 세이브에만 반영합니다. 파일 저장은 포탈 생성/게임 종료 시점에서 처리합니다.
+        // 단, PortalGenerated 체크포인트 이후의 보상 선택 결과는 저장에 섞이면 안 되므로 내부에서 방어합니다.
+        public void SyncActiveSaveData()
+        {
+            if (!SaveGameSession.HasActiveSave || SaveGameSession.CurrentSaveData == null)
+            {
+                return;
+            }
+
+            var dungeon = SaveGameSession.CurrentSaveData.dungeon;
+            if (dungeon != null && dungeon.dungeonState == DungeonSaveState.PortalGenerated)
+            {
+                return;
+            }
+
+            CaptureToSaveData(SaveGameSession.CurrentSaveData);
+        }
+
         public int RollSlotUpgradeAmount(ISeedService sourceSeedService)
         {
             var random = sourceSeedService != null ? sourceSeedService.GetStream(SeedStreamNames.Forge) : null;
@@ -468,33 +475,6 @@ namespace FlatVenture.Inventory
             }
 
             return random.WeightedIndex(SlotUpgradeWeights) + 1;
-        }
-
-        // 등급 순서에 따라 1000, 2000, 3000, 4000 기준가를 반환합니다.
-        private int GetBasePriceByRarity(string rarityId)
-        {
-            int sortOrder = 1;
-
-            if (Catalog != null && Catalog.rarities != null)
-            {
-                RarityDefinition rarity;
-                if (Catalog.rarities.TryGetValue(rarityId, out rarity))
-                {
-                    sortOrder = rarity.sortOrder;
-                }
-            }
-
-            if (sortOrder < 1)
-            {
-                sortOrder = 1;
-            }
-
-            if (sortOrder > 4)
-            {
-                sortOrder = 4;
-            }
-
-            return sortOrder * 1000;
         }
 
         // item_id를 기준으로 아이템 목록을 정렬합니다.

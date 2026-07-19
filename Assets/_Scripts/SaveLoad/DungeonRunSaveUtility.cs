@@ -8,6 +8,8 @@ namespace FlatVenture.SaveLoad
     // 아이템 획득처럼 자주 일어나는 일은 여기서 메모리만 바꾸고, 실제 파일 저장은 체크포인트에서 호출합니다.
     public static class DungeonRunSaveUtility
     {
+        public const int DefaultStartingGold = 20000;
+
         // 새 던전을 시작할 때 이전 던전 진행 데이터와 획득 아이템을 비운 뒤 시작 상태를 설정합니다.
         public static void StartDungeon(SaveData saveData, int seed)
         {
@@ -22,6 +24,7 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.playerLevel = 1;
             saveData.dungeon.playerExp = 0;
             saveData.dungeon.currentNodeId = string.Empty;
+            saveData.dungeon.inventory.gold = DefaultStartingGold;
             saveData.dungeon.dungeonState = DungeonSaveState.Map;
         }
 
@@ -36,7 +39,6 @@ namespace FlatVenture.SaveLoad
             saveData.dungeon.currentFloor = 0;
             saveData.dungeon.playerLevel = 0;
             saveData.dungeon.playerExp = 0;
-            saveData.dungeon.gold = 0;
             saveData.dungeon.currentNodeId = string.Empty;
             EnsureLists(saveData.dungeon);
             saveData.dungeon.clearedNodeIds.Clear();
