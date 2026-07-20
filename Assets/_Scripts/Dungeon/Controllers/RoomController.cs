@@ -80,27 +80,22 @@ public class RoomController : MonoBehaviour, IDungeonRoomController
             {
                 activeMonsters.Add(monster);
 
-                //만약 현재 방이 엘리트 방이고, 설정해둔 특성 프리팹이 있다면 무작위로 하나를 골라 부착
-                if (currentRoomType == RoomType.Elite && randomEliteTraitPrefabs != null && randomEliteTraitPrefabs.Length > 0)
+                //현재 방이 엘리트 방이라면 몬스터 패턴 매니저에게 엘리트라고 알려주기만 함
+                if (currentRoomType == RoomType.Elite)
                 {
-                    int randIdx = UnityEngine.Random.Range(0, randomEliteTraitPrefabs.Length);
-                    
-                    //몬스터를 부모로 하여 특성 오브젝트 생성
-                    GameObject traitObj = Instantiate(randomEliteTraitPrefabs[randIdx], monster.transform);
-                    MonsterTrait extraTrait = traitObj.GetComponent<MonsterTrait>();
-                    
-                    if (extraTrait != null)
+                    MonsterPatternManager patternManager = monsterObject.GetComponent<MonsterPatternManager>();
+                    if (patternManager != null)
                     {
-                        monster.AttachDynamicTrait(extraTrait);
+                        patternManager.isElite = true;
                     }
                 }
 
-                //몬스터 코어의 onDeathCallback을 구독하여 죽음을 감지
+                //몬스터 코어의 사망 이벤트를 구독하여 방 클리어를 감지
                 monster.onDeathCallback += CheckRoomClear;
             }
         }
 
-        //스폰될 몬스터가 없는 방이거나 모두 스폰했는데 0마리라면 즉시 클리어
+        //스폰될 몬스터가 없는 방이거나 모두 스폰했는데 남아있는 몬스터가 없다면 즉시 클리어
         if (activeMonsters.Count == 0) ClearRoom();
     }
 

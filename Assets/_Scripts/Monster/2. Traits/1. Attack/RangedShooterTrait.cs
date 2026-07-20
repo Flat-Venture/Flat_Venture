@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class RangedShooterTrait : MonsterTrait
 {
     [Header("Attack Settings")]
-    [Tooltip("원거리 공격 사거리 (이 거리 안에 플레이어가 들어와야 쏩니다)")]
+    [Tooltip("원거리 공격 사거리 (이 거리 안에 플레이어가 들어와야 사격)")]
     public float attackRange = 10f;
 
     [Tooltip("공격 쿨타임 (공격 속도)")]

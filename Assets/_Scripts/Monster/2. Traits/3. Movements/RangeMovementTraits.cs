@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// 원거리 몬스터용 이동 파츠. 타겟과 일정 거리를 유지 (하이브리드)
+/// 원거리 몬스터용 이동 파츠. 타겟과 일정 거리를 유지
 /// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(NavMeshAgent))]
 public class RangedMovementTrait : MonsterTrait

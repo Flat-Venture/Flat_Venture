@@ -105,6 +105,20 @@ public class MonsterController : MonoBehaviour, IPlayerAttackTarget
         }
     } 
 
+    public void Heal(float amount)
+    {
+        //죽은 상태면 회복되지 않도록 방어
+        if (CurrentHP <= 0) return;
+
+        CurrentHP += amount;
+        
+        //최대 체력을 넘지 않도록 보정
+        if (CurrentHP > maxHP)
+        {
+            CurrentHP = maxHP;
+        }
+    }
+
     private void Die()
     {
         Debug.Log($"[Monster] {gameObject.name} 사망");
