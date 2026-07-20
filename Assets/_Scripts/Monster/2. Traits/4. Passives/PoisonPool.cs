@@ -1,5 +1,4 @@
 using UnityEngine;
-using FlatVenture.NUH.Player.Health;
 
 /// <summary>
 /// 바닥에 깔려서 범위 내 플레이어에게 지속 데미지를 주는 장판 오브젝트

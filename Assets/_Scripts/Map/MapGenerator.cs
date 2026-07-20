@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using FlatVenture.Enums;
-using FlatVenture.NUH.Seed;
 
 /// <summary>
 /// 시드값을 기반으로 지도의 전체 구조와 방 배치를 생성하는 클래스

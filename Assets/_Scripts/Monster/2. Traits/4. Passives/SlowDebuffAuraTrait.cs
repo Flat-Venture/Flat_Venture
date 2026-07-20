@@ -1,6 +1,4 @@
 using UnityEngine;
-using FlatVenture.NUH.Player;
-using FlatVenture.NUH.Player.State;
 
 /// <summary>
 /// 몬스터 주변 일정 범위 내에 들어온 플레이어의 이동 속도를 늦추는 디버프 오라

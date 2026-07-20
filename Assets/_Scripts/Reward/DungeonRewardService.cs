@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using FlatVenture.Enums;
 using FlatVenture.Inventory;
 using FlatVenture.ItemData;
-using FlatVenture.NUH.Seed;
 
 namespace FlatVenture.Reward
 {
