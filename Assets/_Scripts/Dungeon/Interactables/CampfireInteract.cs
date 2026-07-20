@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.Events;
-using FlatVenture.NUH.Player.State; // 플레이어 상태 접근용
-using FlatVenture.NUH.Player;       // PlayerController 접근용
 
 /// <summary>
 /// 휴식 방 중앙에 배치되어 플레이어와 상호작용하는 모닥불 오브젝트

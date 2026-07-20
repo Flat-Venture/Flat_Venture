@@ -1,5 +1,4 @@
 using UnityEngine;
-using FlatVenture.NUH.Player.Health;
 
 /// <summary>
 /// 적의 투사체를 담당하며, 플레이어 피격 처리 및 스스로 풀(Pool)로 돌아가는 기능

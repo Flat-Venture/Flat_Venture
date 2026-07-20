@@ -1,7 +1,6 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using FlatVenture.NUH.Seed;
 using FlatVenture.SaveLoad;
 
 /// <summary>
@@ -176,7 +175,7 @@ public class MapPresenter
     public void GenerateNewDungeonMap()
     {
         // 무작위 시드를 생성합니다.
-        int newSeed = FlatVenture.NUH.Seed.SeedValue.Generate();
+        int newSeed = SeedValue.Generate();
 
         GenerateDungeonMap(newSeed, true);
     }

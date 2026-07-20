@@ -1,5 +1,4 @@
 using UnityEngine;
-using FlatVenture.NUH.Player.Health;
 
 /// <summary>
 /// 몬스터가 죽을 때 폭발하여 주변 플레이어에게 데미지를 주는 특성
