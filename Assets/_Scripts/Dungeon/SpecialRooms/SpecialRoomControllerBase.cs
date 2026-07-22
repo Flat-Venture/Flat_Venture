@@ -33,6 +33,12 @@ public abstract class SpecialRoomControllerBase : MonoBehaviour, IDungeonRoomCon
         get { return false; }
     }
 
+    // UI가 열려 있거나 기능 선택용 인벤토리 패널을 사용 중이면 추가 F 상호작용을 막습니다.
+    public virtual bool IsInteractionBusy
+    {
+        get { return false; }
+    }
+
     // StageManager가 현재 노드 정보를 전달합니다.
     public virtual void InitializeRoom(DungeonRoomContext context)
     {
