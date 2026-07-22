@@ -15,6 +15,7 @@ namespace FlatVenture.Inventory
         public bool isCursed;
         public bool isUnique;
         public readonly List<InventoryItemElement> elements = new List<InventoryItemElement>();
+        public readonly List<InventoryItemStat> stats = new List<InventoryItemStat>();
 
         // CSV 아이템 레코드에서 인벤토리용 아이템 인스턴스를 생성합니다.
         public static InventoryItem FromItemRecord(ItemRecord record)
@@ -38,6 +39,12 @@ namespace FlatVenture.Inventory
             {
                 var element = record.elements[i];
                 item.elements.Add(new InventoryItemElement(element.elementId, element.elementValue));
+            }
+
+            for (int i = 0; i < record.stats.Count; i++)
+            {
+                var stat = record.stats[i];
+                item.stats.Add(new InventoryItemStat(stat.statId, stat.operation, stat.value, stat.appliesTo, stat.conditionId, stat.description));
             }
 
             return item;
@@ -79,6 +86,28 @@ namespace FlatVenture.Inventory
         {
             this.elementId = elementId;
             this.elementValue = elementValue;
+        }
+    }
+
+    // 아이템 하나가 가진 스탯 보정 정보입니다.
+    [Serializable]
+    public struct InventoryItemStat
+    {
+        public string statId;
+        public string operation;
+        public float value;
+        public string appliesTo;
+        public string conditionId;
+        public string description;
+
+        public InventoryItemStat(string statId, string operation, float value, string appliesTo, string conditionId, string description)
+        {
+            this.statId = statId;
+            this.operation = operation;
+            this.value = value;
+            this.appliesTo = appliesTo;
+            this.conditionId = conditionId;
+            this.description = description;
         }
     }
 }

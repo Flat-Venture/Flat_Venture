@@ -43,6 +43,11 @@ public sealed class ShopRoomController : SpecialRoomControllerBase
         get { return false; }
     }
 
+    public override bool IsInteractionBusy
+    {
+        get { return isOpen || isSellMode; }
+    }
+
     // 방 입장 시 상품 목록을 만들고 포탈을 바로 생성합니다.
     // 특수 방은 포탈 생성 시 저장하지 않으므로 startFromPortalCheckpoint 값은 사용하지 않습니다.
     public override void StartRoomEvent(bool startFromPortalCheckpoint = false)
@@ -51,6 +56,8 @@ public sealed class ShopRoomController : SpecialRoomControllerBase
         ResolveReferences();
         BuildShopItems();
         soldShopIndices.Clear();
+        isOpen = false;
+        isSellMode = false;
         SpawnPortal();
     }
 
@@ -58,6 +65,11 @@ public sealed class ShopRoomController : SpecialRoomControllerBase
     // 상점은 포탈이 처음부터 열려 있으므로 UI를 닫아도 방 진행 자체는 유지됩니다.
     public override void OpenInteractionUI()
     {
+        if (IsInteractionBusy)
+        {
+            return;
+        }
+
         ResolveReferences();
         if (shopItems.Count == 0)
         {

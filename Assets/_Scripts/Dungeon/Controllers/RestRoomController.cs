@@ -32,6 +32,11 @@ public class RestRoomController : SpecialRoomControllerBase
         get { return isChoiceCompleted; }
     }
 
+    public override bool IsInteractionBusy
+    {
+        get { return isOpen || swapStartSnapshot != null; }
+    }
+
     // StageManager가 방 입장 시 호출합니다.
     // 특수 방은 포탈 생성 시 저장하지 않으므로 startFromPortalCheckpoint 값은 사용하지 않습니다.
     public override void StartRoomEvent(bool startFromPortalCheckpoint = false)
@@ -39,6 +44,7 @@ public class RestRoomController : SpecialRoomControllerBase
         Debug.Log("<color=green>[Rest Room]</color> 휴식 방에 입장했습니다.");
         isOpen = false;
         isChoiceCompleted = false;
+        swapStartSnapshot = null;
         SpawnPortal();
     }
 
@@ -51,6 +57,11 @@ public class RestRoomController : SpecialRoomControllerBase
     // 휴식 선택지 UI를 엽니다.
     public void OpenRestUI()
     {
+        if (IsInteractionBusy)
+        {
+            return;
+        }
+
         if (isChoiceCompleted)
         {
             message = "\uC774\uBBF8 \uC120\uD0DD\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.";
