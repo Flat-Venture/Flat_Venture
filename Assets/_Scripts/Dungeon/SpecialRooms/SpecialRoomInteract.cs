@@ -26,6 +26,7 @@ public sealed class SpecialRoomInteract : MonoBehaviour
             && isPlayerInRange
             && !DungeonUiInputBlocker.BlocksGameplayInput
             && !IsInteractionCompleted()
+            && !IsInteractionBusy()
             && keyboard.fKey.wasPressedThisFrame)
         {
             Interact();
@@ -38,6 +39,11 @@ public sealed class SpecialRoomInteract : MonoBehaviour
         if (roomController == null)
         {
             Debug.LogWarning("[SpecialRoomInteract] 연결된 방 컨트롤러가 없습니다.", this);
+            return;
+        }
+
+        if (IsInteractionCompleted() || IsInteractionBusy())
+        {
             return;
         }
 
@@ -74,6 +80,12 @@ public sealed class SpecialRoomInteract : MonoBehaviour
     private bool IsInteractionCompleted()
     {
         return roomController != null && roomController.IsInteractionCompleted;
+    }
+
+    // 현재 방이 UI 또는 기능 처리 중이면 추가 상호작용을 막습니다.
+    private bool IsInteractionBusy()
+    {
+        return roomController != null && roomController.IsInteractionBusy;
     }
 
     // 범위를 벗어나면 F키 입력 대상에서 제외합니다.

@@ -19,6 +19,7 @@ namespace FlatVenture.Inventory
         private readonly List<ItemRecord> sortedItems = new List<ItemRecord>();
         private readonly List<string> sortedElementIds = new List<string>();
         private InventorySynergyCalculator synergyCalculator;
+        private InventoryStatCalculator statCalculator;
         private ISeedService seedService;
 
         public InventoryGrid Grid { get; private set; }
@@ -29,6 +30,7 @@ namespace FlatVenture.Inventory
         public InventoryPriceService PriceService { get; private set; }
         public GameDataCatalog Catalog { get; private set; }
         public InventorySynergyResult SynergyResult { get; private set; } = new InventorySynergyResult();
+        public InventoryStatResult StatResult { get; private set; } = new InventoryStatResult();
 
         public IReadOnlyList<ItemRecord> SortedItems
         {
@@ -75,6 +77,7 @@ namespace FlatVenture.Inventory
             Wallet = new InventoryWallet();
             RefreshCatalog();
             RecalculateSynergy();
+            RecalculateStats();
         }
 
         // 저장 세션이 있으면 던전 인벤토리 상태를 복원합니다.
@@ -99,6 +102,7 @@ namespace FlatVenture.Inventory
             if (Catalog == null)
             {
                 synergyCalculator = new InventorySynergyCalculator(null);
+                statCalculator = new InventoryStatCalculator();
                 return;
             }
 
@@ -119,6 +123,7 @@ namespace FlatVenture.Inventory
 
             sortedElementIds.Sort(StringComparer.Ordinal);
             synergyCalculator = new InventorySynergyCalculator(Catalog);
+            statCalculator = new InventoryStatCalculator();
         }
 
         // CSV 아이템을 인벤토리의 무작위 빈 칸에 넣습니다.
@@ -154,6 +159,7 @@ namespace FlatVenture.Inventory
 
             message = item.displayName + " 획득: " + position;
             RecalculateSynergy();
+            RecalculateStats();
             if (syncActiveSave)
             {
                 SyncActiveSaveData();
@@ -172,12 +178,50 @@ namespace FlatVenture.Inventory
             SynergyResult = synergyCalculator.Calculate(Grid);
         }
 
+        // 인벤토리 아이템의 현재 적용 스탯을 다시 계산합니다.
+        public void RecalculateStats()
+        {
+            if (statCalculator == null)
+            {
+                statCalculator = new InventoryStatCalculator();
+            }
+
+            StatResult = statCalculator.Calculate(Grid);
+        }
+
+        // add operation으로 합산된 스탯 값을 반환합니다.
+        public float GetAdditiveStatValue(string statId)
+        {
+            return StatResult != null ? StatResult.GetAdditiveValue(statId) : 0f;
+        }
+
+        // multiply operation으로 곱해진 스탯 값을 반환합니다.
+        public float GetMultiplierStatValue(string statId)
+        {
+            return StatResult != null ? StatResult.GetMultiplierValue(statId) : 1f;
+        }
+
+        // add operation 스탯이 존재하면 값을 반환합니다.
+        public bool TryGetAdditiveStatValue(string statId, out float value)
+        {
+            value = GetAdditiveStatValue(statId);
+            return StatResult != null && StatResult.AdditiveValues.ContainsKey(statId);
+        }
+
+        // multiply operation 스탯이 존재하면 값을 반환합니다.
+        public bool TryGetMultiplierStatValue(string statId, out float value)
+        {
+            value = GetMultiplierStatValue(statId);
+            return StatResult != null && StatResult.MultiplierValues.ContainsKey(statId);
+        }
+
         // 인벤토리와 골드를 초기화합니다.
         public void ClearInventoryForTest()
         {
             Grid.ClearAll();
             Wallet.Clear();
             RecalculateSynergy();
+            RecalculateStats();
             SyncActiveSaveData();
         }
 
@@ -210,6 +254,7 @@ namespace FlatVenture.Inventory
             RefreshCatalog();
             InventorySaveMapper.Restore(inventorySaveData, Grid, Catalog, Wallet);
             RecalculateSynergy();
+            RecalculateStats();
         }
 
         // 현재 활성 세이브에서 인벤토리 상태를 복원합니다.
@@ -234,6 +279,7 @@ namespace FlatVenture.Inventory
             RefreshCatalog();
             InventorySaveMapper.Restore(saveData.dungeon.inventory, Grid, Catalog, Wallet);
             RecalculateSynergy();
+            RecalculateStats();
         }
 
         // 속성 ID의 표시 이름을 반환합니다.
@@ -320,6 +366,7 @@ namespace FlatVenture.Inventory
             }
 
             RecalculateSynergy();
+            RecalculateStats();
             message += " / 비용 " + cost + " 골드";
             if (syncActiveSave)
             {
@@ -354,6 +401,7 @@ namespace FlatVenture.Inventory
 
             slot.SetFrameElement(elementId);
             RecalculateSynergy();
+            RecalculateStats();
             message = string.IsNullOrEmpty(elementId)
                 ? "프레임 속성을 제거했습니다. / 비용 " + cost + " 골드"
                 : "프레임 속성 적용: " + GetElementDisplayName(elementId) + " / 비용 " + cost + " 골드";
@@ -386,6 +434,7 @@ namespace FlatVenture.Inventory
             earnedGold = PriceService != null ? PriceService.CalculateShopSellPrice(removedItem) : 0;
             Wallet.AddGold(earnedGold);
             RecalculateSynergy();
+            RecalculateStats();
             message = removedItem.displayName + " 판매: +" + earnedGold + " 골드";
             if (syncActiveSave)
             {
@@ -433,6 +482,7 @@ namespace FlatVenture.Inventory
 
             slot.item = nextItem;
             RecalculateSynergy();
+            RecalculateStats();
             message = "아이템 등급업: " + nextItem.displayName + " / 비용 " + cost + " 골드";
             if (syncActiveSave)
             {

@@ -68,6 +68,11 @@ public sealed class ForgeRoomController : SpecialRoomControllerBase
         get { return isChoiceCompleted; }
     }
 
+    public override bool IsInteractionBusy
+    {
+        get { return isOpen || mode != ForgeMode.Menu; }
+    }
+
     // 방 입장 시 제련소 상태를 초기화하고 포탈을 바로 생성합니다.
     // 특수 방은 포탈 생성 시 저장하지 않으므로 startFromPortalCheckpoint 값은 사용하지 않습니다.
     public override void StartRoomEvent(bool startFromPortalCheckpoint = false)
@@ -76,12 +81,19 @@ public sealed class ForgeRoomController : SpecialRoomControllerBase
         ResolveReferences();
         isOpen = false;
         isChoiceCompleted = false;
+        mode = ForgeMode.Menu;
+        selectedSlot = -1;
         SpawnPortal();
     }
 
     // NPC 상호작용으로 제련소 선택지 UI를 엽니다.
     public override void OpenInteractionUI()
     {
+        if (IsInteractionBusy)
+        {
+            return;
+        }
+
         if (isChoiceCompleted)
         {
             message = "이미 제련소 기능을 사용했습니다.";

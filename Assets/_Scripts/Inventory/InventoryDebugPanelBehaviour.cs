@@ -20,6 +20,7 @@ namespace FlatVenture.Inventory
         }
 
         [SerializeField] private InventoryRuntimeBehaviour inventoryRuntime;
+        [SerializeField] private GameDataLoaderBehaviour dataLoader;
         [SerializeField] private ItemAssetDatabaseSO itemAssetDatabase;
         [SerializeField] private Key toggleKey = Key.I;
         [SerializeField] private Key discardKey = Key.F;
@@ -39,6 +40,7 @@ namespace FlatVenture.Inventory
         private Action externalSellAction;
         private bool externalSyncActiveSave = true;
         private string message;
+        private Vector2 appliedStatScroll;
 
         public ItemAssetDatabaseSO ItemAssetDatabase
         {
@@ -49,6 +51,7 @@ namespace FlatVenture.Inventory
         {
             isVisible = false;
             FindRuntimeIfNeeded();
+            FindDataLoaderIfNeeded();
         }
 
         private void Update()
@@ -106,7 +109,9 @@ namespace FlatVenture.Inventory
             hoveredSlot = -1;
             DrawSynergyPanel();
             DrawInventoryPanel();
+            DrawStatusPanel();
             DrawTooltipPanel();
+            DrawAppliedStatPanel();
             DrawControlPanel();
         }
 
@@ -122,6 +127,17 @@ namespace FlatVenture.Inventory
             {
                 inventoryRuntime = runtimes[0];
             }
+        }
+
+        // 스탯 표시명 조회에 사용할 게임 데이터 로더를 찾습니다.
+        private void FindDataLoaderIfNeeded()
+        {
+            if (dataLoader != null)
+            {
+                return;
+            }
+
+            dataLoader = FindFirstObjectByType<GameDataLoaderBehaviour>();
         }
 
         // 인벤토리 테스트 기능을 실행할 수 있는 런타임 상태인지 확인합니다.
@@ -429,16 +445,11 @@ namespace FlatVenture.Inventory
 
         private void DrawTooltipPanel()
         {
-            var rect = new Rect(Screen.width - 345, 160, 310, 300);
+            var rect = new Rect(Screen.width - 345, 250, 310, 300);
             GUI.Box(rect, "\uC544\uC774\uD15C \uC815\uBCF4");
 
             GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 32, rect.width - 28, rect.height - 46));
-            GUILayout.Label("\uACE8\uB4DC: " + inventoryRuntime.Wallet.Gold);
-            GUILayout.Label("\uBAA8\uB4DC: " + GetModeDisplayName());
-            GUILayout.Label(BuildDungeonFloorText());
-            GUILayout.Space(8);
-
-            var slot = inventoryRuntime.Grid.GetSlot(hoveredSlot >= 0 ? hoveredSlot : selectedSlot);
+            var slot = hoveredSlot >= 0 ? inventoryRuntime.Grid.GetSlot(hoveredSlot) : null;
             if (slot == null || !slot.HasItem)
             {
                 GUILayout.Label("\uC544\uC774\uD15C\uC5D0 \uB9C8\uC6B0\uC2A4\uB97C \uC62C\uB824\uC8FC\uC138\uC694.");
@@ -449,11 +460,14 @@ namespace FlatVenture.Inventory
                 GUILayout.Label("#" + slot.item.itemId);
                 GUILayout.Label("\uB4F1\uAE09: " + slot.item.rarityId);
                 GUILayout.Label("\uC18D\uC131: " + BuildElementText(slot.item));
+                GUILayout.Space(6);
+                GUILayout.Label(BuildItemStatText(slot.item));
+                GUILayout.FlexibleSpace();
+
                 int sellPrice = inventoryRuntime.PriceService != null
                     ? inventoryRuntime.PriceService.CalculateShopSellPrice(slot.item)
                     : 0;
                 GUILayout.Label("\uD310\uB9E4\uAC00: " + sellPrice + " \uACE8\uB4DC");
-                GUILayout.Space(12);
 
                 if (allowDiscardKey)
                 {
@@ -470,6 +484,143 @@ namespace FlatVenture.Inventory
             }
 
             GUILayout.EndArea();
+        }
+
+        // 골드, 현재 모드, 던전 층처럼 아이템과 무관한 상태 정보를 따로 표시합니다.
+        private void DrawStatusPanel()
+        {
+            var rect = new Rect(Screen.width - 345, 115, 310, 120);
+            GUI.Box(rect, "\uC0C1\uD0DC \uC815\uBCF4");
+
+            GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 32, rect.width - 28, rect.height - 44));
+            GUILayout.Label("\uACE8\uB4DC: " + inventoryRuntime.Wallet.Gold);
+            GUILayout.Label("\uBAA8\uB4DC: " + GetModeDisplayName());
+            GUILayout.Label(BuildDungeonFloorText());
+            GUILayout.EndArea();
+        }
+
+        // 현재 인벤토리 아이템으로 적용 중인 스탯 합계를 표시합니다.
+        private void DrawAppliedStatPanel()
+        {
+            var rect = new Rect(Screen.width - 345, 565, 310, 190);
+            GUI.Box(rect, "\uC801\uC6A9 \uC2A4\uD0EF");
+
+            GUILayout.BeginArea(new Rect(rect.x + 14, rect.y + 32, rect.width - 28, rect.height - 46));
+            appliedStatScroll = GUILayout.BeginScrollView(appliedStatScroll);
+            var statResult = inventoryRuntime.StatResult;
+            if (statResult == null || (statResult.AdditiveValues.Count == 0 && statResult.MultiplierValues.Count == 0))
+            {
+                GUILayout.Label("- \uC801\uC6A9 \uC2A4\uD0EF \uC5C6\uC74C");
+            }
+            else
+            {
+                foreach (var pair in statResult.AdditiveValues)
+                {
+                    GUILayout.Label(GetStatDisplayName(pair.Key) + ": " + FormatAdditiveStatValue(pair.Key, pair.Value));
+                }
+
+                foreach (var pair in statResult.MultiplierValues)
+                {
+                    GUILayout.Label(GetStatDisplayName(pair.Key) + ": x" + pair.Value.ToString("0.##"));
+                }
+            }
+
+            if (statResult != null && statResult.ConditionalSources.Count > 0)
+            {
+                GUILayout.Space(6);
+                GUILayout.Label("\uC870\uAC74\uBD80: " + statResult.ConditionalSources.Count + "\uAC1C");
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndArea();
+        }
+
+        // 스탯 id를 사람이 읽기 쉬운 표시명으로 변환합니다.
+        private string GetStatDisplayName(string statId)
+        {
+            FindDataLoaderIfNeeded();
+
+            StatDefinition definition;
+            if (dataLoader != null && dataLoader.Catalog != null && dataLoader.Catalog.stats.TryGetValue(statId, out definition) && !string.IsNullOrWhiteSpace(definition.displayName))
+            {
+                return definition.displayName;
+            }
+
+            return GetFallbackStatDisplayName(statId);
+        }
+
+        // add operation으로 합산된 스탯 값을 UI에 표시할 문자열로 만듭니다.
+        private string FormatAdditiveStatValue(string statId, float value)
+        {
+            FindDataLoaderIfNeeded();
+
+            StatDefinition definition = null;
+            if (dataLoader != null && dataLoader.Catalog != null)
+            {
+                dataLoader.Catalog.stats.TryGetValue(statId, out definition);
+            }
+
+            string sign = value > 0f ? "+" : string.Empty;
+            string suffix = IsPercentStat(statId, definition) ? "%" : string.Empty;
+            return sign + value.ToString("0.##") + suffix;
+        }
+
+        // 카탈로그 조회가 실패해도 임시 인벤토리 UI에서는 사람이 읽을 수 있는 스탯명을 보여줍니다.
+        private static string GetFallbackStatDisplayName(string statId)
+        {
+            if (string.IsNullOrWhiteSpace(statId))
+            {
+                return "-";
+            }
+
+            switch (statId)
+            {
+                case "attack": return "공격력";
+                case "skill_damage_percent": return "스킬 피해";
+                case "damage_over_time_percent": return "지속 피해";
+                case "basic_attack_damage_percent": return "기본 공격 피해";
+                case "attack_speed_percent": return "공격 속도";
+                case "move_speed_percent": return "이동 속도";
+                case "max_hp": return "최대 HP";
+                case "damage_taken_percent": return "받는 피해";
+                case "shield": return "보호막";
+                case "defense": return "방어력";
+                case "evasion": return "회피율";
+                case "cooldown_reduction_percent": return "쿨타임 감소";
+                case "proc_chance_percent": return "발동 확률";
+                case "crit_chance_percent": return "치명타 확률";
+                case "crit_damage_percent": return "치명타 피해";
+                case "exp_gain_percent": return "경험치 획득";
+                case "gold_gain_percent": return "골드 획득";
+                case "projectile_count": return "투사체 개수";
+                case "projectile_damage_percent": return "투사체 피해";
+                case "projectile_speed_percent": return "투사체 속도";
+                case "projectile_size_percent": return "투사체 크기";
+                case "area_percent": return "스킬/공격 범위";
+                case "casting_speed_percent": return "시전 속도";
+                case "dash_cooldown_reduction_percent": return "대시 쿨타임 감소";
+                case "dash_count": return "대시 횟수";
+                case "dash_distance_percent": return "대시 거리";
+                case "life_steal_percent": return "피흡";
+                case "toughness": return "강인함";
+                case "luck": return "행운";
+                case "reroll_cost_percent": return "리롤 비용";
+                case "all_damage_percent": return "모든 피해";
+                case "final_damage_percent": return "최종 피해";
+                case "final_damage_multiplier": return "최종 피해 배율";
+                default: return statId;
+            }
+        }
+
+        // 퍼센트형 스탯인지 확인해 수치 뒤에 %를 붙일지 결정합니다.
+        private static bool IsPercentStat(string statId, StatDefinition definition)
+        {
+            if (definition != null)
+            {
+                return string.Equals(definition.valueType, "percent", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return !string.IsNullOrWhiteSpace(statId) && statId.EndsWith("_percent", StringComparison.OrdinalIgnoreCase);
         }
 
         private void DrawControlPanel()
@@ -619,6 +770,7 @@ namespace FlatVenture.Inventory
             if (inventoryRuntime.Grid.TrySwapItems(swapFirstSlot, index, out swapMessage))
             {
                 inventoryRuntime.RecalculateSynergy();
+                inventoryRuntime.RecalculateStats();
                 if (externalSyncActiveSave)
                 {
                     inventoryRuntime.SyncActiveSaveData();
@@ -655,6 +807,7 @@ namespace FlatVenture.Inventory
 
             message = removedItem.displayName + " \uBC84\uB9BC";
             inventoryRuntime.RecalculateSynergy();
+            inventoryRuntime.RecalculateStats();
             inventoryRuntime.SyncActiveSaveData();
         }
 
@@ -740,6 +893,7 @@ namespace FlatVenture.Inventory
             }
 
             inventoryRuntime.RecalculateSynergy();
+            inventoryRuntime.RecalculateStats();
             inventoryRuntime.SyncActiveSaveData();
         }
 
@@ -839,6 +993,69 @@ namespace FlatVenture.Inventory
             }
 
             return parts.Count > 0 ? string.Join(", ", parts.ToArray()) : "-";
+        }
+
+        // 아이템 하나가 가진 스탯 목록을 툴팁 표시용 문자열로 만듭니다.
+        private string BuildItemStatText(InventoryItem item)
+        {
+            if (item == null || item.stats.Count == 0)
+            {
+                return "\uC2A4\uD0EF: \uC5C6\uC74C";
+            }
+
+            var parts = new List<string>();
+            parts.Add("\uC2A4\uD0EF:");
+            for (int i = 0; i < item.stats.Count; i++)
+            {
+                parts.Add("- " + BuildSingleItemStatText(item.stats[i]));
+            }
+
+            return string.Join("\n", parts.ToArray());
+        }
+
+        // 아이템 스탯 하나를 표시명, 수치, 조건 설명이 포함된 한 줄로 변환합니다.
+        private string BuildSingleItemStatText(InventoryItemStat stat)
+        {
+            return GetStatDisplayName(stat.statId) + " " + FormatItemStatValue(stat) + GetConditionSuffix(stat.conditionId);
+        }
+
+        // 개별 아이템 스탯 수치를 operation과 value_type에 맞춰 표시합니다.
+        private string FormatItemStatValue(InventoryItemStat stat)
+        {
+            StatDefinition definition = null;
+            FindDataLoaderIfNeeded();
+            if (dataLoader != null && dataLoader.Catalog != null)
+            {
+                dataLoader.Catalog.stats.TryGetValue(stat.statId, out definition);
+            }
+
+            if (string.Equals(stat.operation, "multiply", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(stat.operation, "multiplier", StringComparison.OrdinalIgnoreCase))
+            {
+                return "x" + stat.value.ToString("0.##");
+            }
+
+            string sign = stat.value > 0f ? "+" : string.Empty;
+            string suffix = IsPercentStat(stat.statId, definition) ? "%" : string.Empty;
+            return sign + stat.value.ToString("0.##") + suffix;
+        }
+
+        // 조건부 스탯이면 조건 설명을 괄호로 붙입니다.
+        private string GetConditionSuffix(string conditionId)
+        {
+            if (string.IsNullOrWhiteSpace(conditionId))
+            {
+                return string.Empty;
+            }
+
+            FindDataLoaderIfNeeded();
+            ConditionDefinition condition;
+            if (dataLoader != null && dataLoader.Catalog != null && dataLoader.Catalog.conditions.TryGetValue(conditionId, out condition) && !string.IsNullOrWhiteSpace(condition.description))
+            {
+                return " (" + condition.description + ")";
+            }
+
+            return " (" + conditionId + ")";
         }
 
         // 리스트에서 문자열의 위치를 찾습니다.

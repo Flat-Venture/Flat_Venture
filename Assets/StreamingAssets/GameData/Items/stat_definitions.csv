@@ -1,6 +1,7 @@
 ﻿stat_id,display_name,stat_group,value_type,stack_rule,min_value,max_value,description
 attack,공격력,combat,flat,additive,,,기본 공격 및 일부 물리 계수에 사용
 skill_damage_percent,스킬 피해,combat,percent,additive,,,액티브/패시브 스킬 피해 증가율
+damage_over_time_percent,지속 피해,combat,percent,additive,,,화상/중독 등 지속 피해 증가율
 basic_attack_damage_percent,기본 공격 피해,combat,percent,additive,,,기본 공격 피해 증가율
 attack_speed_percent,공격 속도,combat,percent,additive,,,기본 공격 주기 감소 또는 공격 속도 증가
 move_speed_percent,이동 속도,movement,percent,additive,,,캐릭터 이동 속도 증가
