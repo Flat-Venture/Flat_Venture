@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using FlatVenture.NUH.Player.Combat;
 
 public class HealingPillar : MonoBehaviour, IPlayerAttackTarget
 {

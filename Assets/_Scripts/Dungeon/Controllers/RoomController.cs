@@ -80,14 +80,15 @@ public class RoomController : MonoBehaviour, IDungeonRoomController
             {
                 activeMonsters.Add(monster);
 
-                //현재 방이 엘리트 방이라면 몬스터 패턴 매니저에게 엘리트라고 알려주기만 함
-                if (currentRoomType == RoomType.Elite)
+                //몬스터 패턴 매니저에게 명시적으로 초기화 신호와 데이터를 전달
+                MonsterPatternManager patternManager = monsterObject.GetComponent<MonsterPatternManager>();
+
+                if (patternManager != null)
                 {
-                    MonsterPatternManager patternManager = monsterObject.GetComponent<MonsterPatternManager>();
-                    if (patternManager != null)
-                    {
-                        patternManager.isElite = true;
-                    }
+                    bool isEliteRoom = (currentRoomType == RoomType.Elite);
+                    
+                    //TODO: 임시로 Act1과 1층을 전달 중이며 추후 roomContext의 실제 데이터로 치환
+                    patternManager.SetupPattern(ActLevel.Act1, 1, isEliteRoom);
                 }
 
                 //몬스터 코어의 사망 이벤트를 구독하여 방 클리어를 감지

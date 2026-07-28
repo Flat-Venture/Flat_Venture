@@ -1057,6 +1057,7 @@ GameObject:
   - component: {fileID: 1666145365}
   - component: {fileID: 1666145366}
   - component: {fileID: 1666145367}
+  - component: {fileID: 1666145368}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1114,6 +1115,34 @@ MonoBehaviour:
   unknownRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
   bossRoomPrefab: {fileID: 4281184754642624086, guid: 2fa8d109a2be5ad4b8a1e5468d90404d, type: 3}
   mapCanvas: {fileID: 1607552813}
+--- !u!114 &1666145368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666145364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf1dd31960f11f34f81b55f575a14dca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterPatternManager
+  currentAct: 1
+  currentFloor: 1
+  isElite: 0
+  patternPrefabs:
+  - {fileID: 7449511733987085997, guid: 62e01214744eb174f91b8b03e8913f7a, type: 3}
+  - {fileID: 860784044034637327, guid: 0ed49bf47f8b1dc40bfbbe60763e4086, type: 3}
+  - {fileID: 2086036873217696335, guid: a3b3d27f84ccac545a4d26c5492b00a4, type: 3}
+  eliteTraitPrefabs:
+  - {fileID: 1259978350597792803, guid: a49f95a301634274b976053fc8553c42, type: 3}
+  - {fileID: 199822080140973604, guid: ba2f901a41ba2e74d99d3964af88c56d, type: 3}
+  - {fileID: 404884278696080024, guid: 49a19ef10cbb6b345be6164907eff958, type: 3}
+  - {fileID: 2691756299715485745, guid: e2d29d7439ea99a4aa849fe0f768b0eb, type: 3}
+  - {fileID: 8190449666697666754, guid: 5b39f21ee98909d48aa9bd8f0260953b, type: 3}
+  - {fileID: 2847816223478263416, guid: 600dcdde1eebd6e4caa5662142853d63, type: 3}
+  - {fileID: 6202440055538036119, guid: aa605f99e6c52484184cc6a3fffd13fa, type: 3}
+  - {fileID: 7948367301459936809, guid: c17fa3c8e26e81f4294df92aa4326489, type: 3}
 --- !u!1 &1684736285
 GameObject:
   m_ObjectHideFlags: 0

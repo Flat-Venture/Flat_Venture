@@ -29,9 +29,12 @@ public class MonsterPatternManager : MonoBehaviour
         controller = GetComponent<MonsterController>();
     }
 
-    private void Start()
+    public void SetupPattern(ActLevel act, int floor, bool eliteFlag)
     {
-        //게임 시작 시 막과 층수에 맞춰 패턴을 조합
+        currentAct = act;
+        currentFloor = floor;
+        isElite = eliteFlag;
+
         ApplyPatternsByStage();
     }
 
@@ -57,6 +60,7 @@ public class MonsterPatternManager : MonoBehaviour
 
         for (int i = 0; i < finalCount; i++)
         {
+            //원본 프리팹을 자식 객체로 생성
             MonsterTrait spawnedTrait = Instantiate(shuffledPool[i], transform);
             
             if (controller != null)
