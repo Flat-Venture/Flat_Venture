@@ -1,0 +1,11 @@
+﻿item_id,stat_id,operation,value,applies_to,condition_id,description
+item_fire_rare_01,fire_power,add,1,player,,불 속성 계수 +1
+item_fire_rare_02,lightning_power,add,1,player,,번개 속성 계수 +1
+item_water_epic_01,water_power,add,2,player,,물 속성 계수 +2
+item_nature_epic_01,nature_power,add,2,player,,풀 속성 계수 +2
+item_earth_epic_01,earth_power,add,2,player,,땅 속성 계수 +2
+item_lightning_epic_01,lightning_power,add,2,player,,번개 속성 계수 +2
+item_poison_legendary_01,poison_power,add,3,player,,독 속성 계수 +3
+item_dark_legendary_01,dark_power,add,3,player,,어둠 속성 계수 +3
+item_neutral_rare_01,neutral_power,add,1,player,,무 속성 계수 +1
+item_curse_epic_01,curse_power,add,2,player,,저주 속성 계수 +2

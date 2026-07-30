@@ -319,6 +319,15 @@ public sealed class ShopRoomDebugView : MonoBehaviour
             case "all_damage_percent": return "모든 피해";
             case "final_damage_percent": return "최종 피해";
             case "final_damage_multiplier": return "최종 피해 배율";
+            case "fire_power": return "불 속성 계수";
+            case "water_power": return "물 속성 계수";
+            case "nature_power": return "풀 속성 계수";
+            case "earth_power": return "땅 속성 계수";
+            case "lightning_power": return "번개 속성 계수";
+            case "poison_power": return "독 속성 계수";
+            case "dark_power": return "어둠 속성 계수";
+            case "neutral_power": return "무 속성 계수";
+            case "curse_power": return "저주 속성 계수";
             default: return statId;
         }
     }
