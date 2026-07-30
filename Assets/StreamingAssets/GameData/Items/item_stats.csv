@@ -1,324 +1,432 @@
 ﻿item_id,stat_id,operation,value,applies_to,condition_id,description
-item_fire_common_01,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
-item_fire_common_02,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
-item_fire_common_03,basic_attack_damage_percent,add,3,player,,불: 기본 공격 피해 증가
-item_fire_common_04,proc_chance_percent,add,4,player,,불: 폭발 발동 확률 증가
-item_fire_common_05,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
-item_fire_common_06,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
-item_fire_common_07,basic_attack_damage_percent,add,3,player,,불: 기본 공격 피해 증가
-item_fire_common_08,proc_chance_percent,add,4,player,,불: 폭발 발동 확률 증가
-item_fire_common_09,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
-item_fire_common_10,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
-item_fire_rare_01,crit_damage_percent,add,8,player,,불: 치명타 피해 증가
-item_fire_rare_02,basic_attack_damage_percent,add,7,player,,불: 기본 공격 피해 증가
-item_fire_rare_03,proc_chance_percent,add,8,player,,불: 폭발 발동 확률 증가
-item_fire_rare_04,crit_chance_percent,add,9,player,,불: 치명타 확률 증가
-item_fire_rare_05,crit_damage_percent,add,12,player,,불: 치명타 피해 증가
-item_fire_rare_06,basic_attack_damage_percent,add,6,player,,불: 기본 공격 피해 증가
-item_fire_rare_07,proc_chance_percent,add,7,player,,불: 폭발 발동 확률 증가
-item_fire_rare_08,crit_chance_percent,add,8,player,,불: 치명타 확률 증가
-item_fire_epic_01,crit_chance_percent,add,10,player,,불: 치명타 확률 증가
-item_fire_epic_01,crit_damage_percent,add,15,player,while_low_hp,불: 체력 50% 이하일 때 치명타 피해 증가
-item_fire_epic_02,crit_chance_percent,add,11,player,,불: 치명타 확률 증가
-item_fire_epic_02,crit_damage_percent,add,16,player,,불: 치명타 피해 증가
-item_fire_epic_03,crit_chance_percent,add,12,player,,불: 치명타 확률 증가
-item_fire_epic_03,crit_damage_percent,add,17,player,,불: 치명타 피해 증가
-item_fire_epic_04,crit_chance_percent,add,13,player,,불: 치명타 확률 증가
-item_fire_epic_04,crit_damage_percent,add,18,player,,불: 치명타 피해 증가
-item_fire_epic_05,crit_chance_percent,add,14,player,,불: 치명타 확률 증가
-item_fire_epic_05,crit_damage_percent,add,19,player,,불: 치명타 피해 증가
-item_fire_legendary_01,crit_chance_percent,add,16,player,,불: 치명타 확률 증가
-item_fire_legendary_01,crit_damage_percent,add,23,player,,불: 치명타 피해 증가
-item_fire_legendary_01,final_damage_percent,add,8,player,while_low_hp,불: 체력 50% 이하일 때 최종 피해 증가
-item_fire_legendary_02,crit_chance_percent,add,17,player,,불: 치명타 확률 증가
-item_fire_legendary_02,crit_damage_percent,add,24,player,,불: 치명타 피해 증가
-item_fire_legendary_02,final_damage_percent,add,9,player,,불: 최종 피해 증가
-item_water_common_01,max_hp,add,2,player,,물: 최대 체력 증가
-item_water_common_02,cooldown_reduction_percent,add,2,player,,물: 쿨타임 감소
-item_water_common_03,shield,add,6,player,,물: 보호막 증가
-item_water_common_04,max_hp,add,8,player,,물: 최대 체력 증가
-item_water_common_05,cooldown_reduction_percent,add,1,player,,물: 쿨타임 감소
-item_water_common_06,shield,add,4,player,,물: 보호막 증가
-item_water_common_07,max_hp,add,6,player,,물: 최대 체력 증가
-item_water_common_08,cooldown_reduction_percent,add,4,player,,물: 쿨타임 감소
-item_water_common_09,shield,add,2,player,,물: 보호막 증가
-item_water_common_10,max_hp,add,4,player,,물: 최대 체력 증가
-item_water_rare_01,cooldown_reduction_percent,add,5,player,,물: 쿨타임 감소
-item_water_rare_02,shield,add,12,player,,물: 보호막 증가
-item_water_rare_03,max_hp,add,14,player,,물: 최대 체력 증가
-item_water_rare_04,cooldown_reduction_percent,add,8,player,,물: 쿨타임 감소
-item_water_rare_05,shield,add,18,player,,물: 보호막 증가
-item_water_rare_06,max_hp,add,10,player,,물: 최대 체력 증가
-item_water_rare_07,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
-item_water_rare_08,shield,add,14,player,,물: 보호막 증가
-item_water_epic_01,max_hp,add,20,player,while_low_hp,물: 체력 50% 이하일 때 최대 체력 증가
-item_water_epic_01,cooldown_reduction_percent,add,5,player,,물: 쿨타임 감소
-item_water_epic_02,max_hp,add,22,player,,물: 최대 체력 증가
-item_water_epic_02,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
-item_water_epic_03,max_hp,add,24,player,,물: 최대 체력 증가
-item_water_epic_03,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
-item_water_epic_04,max_hp,add,26,player,,물: 최대 체력 증가
-item_water_epic_04,cooldown_reduction_percent,add,7,player,,물: 쿨타임 감소
-item_water_epic_05,max_hp,add,28,player,,물: 최대 체력 증가
-item_water_epic_05,cooldown_reduction_percent,add,7,player,,물: 쿨타임 감소
-item_water_legendary_01,max_hp,add,32,player,,물: 최대 체력 증가
-item_water_legendary_01,shield,add,36,player,,물: 보호막 증가
-item_water_legendary_01,cooldown_reduction_percent,add,8,player,while_has_shield,물: 보호막 보유 중 쿨타임 감소
-item_water_legendary_02,max_hp,add,34,player,,물: 최대 체력 증가
-item_water_legendary_02,shield,add,38,player,,물: 보호막 증가
-item_water_legendary_02,cooldown_reduction_percent,add,9,player,,물: 쿨타임 감소
-item_nature_common_01,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
-item_nature_common_02,move_speed_percent,add,2,player,,풀: 이동 속도 증가
-item_nature_common_03,evasion,add,3,player,,풀: 회피율 증가
-item_nature_common_04,dash_cooldown_reduction_percent,add,4,player,,풀: 대시 쿨타임 감소
-item_nature_common_05,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
-item_nature_common_06,move_speed_percent,add,2,player,,풀: 이동 속도 증가
-item_nature_common_07,evasion,add,3,player,,풀: 회피율 증가
-item_nature_common_08,dash_cooldown_reduction_percent,add,4,player,,풀: 대시 쿨타임 감소
-item_nature_common_09,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
-item_nature_common_10,move_speed_percent,add,2,player,,풀: 이동 속도 증가
-item_nature_rare_01,move_speed_percent,add,6,player,,풀: 이동 속도 증가
-item_nature_rare_02,evasion,add,7,player,,풀: 회피율 증가
-item_nature_rare_03,dash_cooldown_reduction_percent,add,8,player,,풀: 대시 쿨타임 감소
-item_nature_rare_04,attack_speed_percent,add,9,player,,풀: 공격 속도 증가
-item_nature_rare_05,move_speed_percent,add,10,player,,풀: 이동 속도 증가
-item_nature_rare_06,evasion,add,6,player,,풀: 회피율 증가
-item_nature_rare_07,dash_cooldown_reduction_percent,add,7,player,,풀: 대시 쿨타임 감소
-item_nature_rare_08,attack_speed_percent,add,8,player,,풀: 공격 속도 증가
-item_nature_epic_01,attack_speed_percent,add,10,player,,풀: 공격 속도 증가
-item_nature_epic_01,dash_distance_percent,add,12,player,while_low_hp,풀: 체력 50% 이하일 때 대시 거리 증가
-item_nature_epic_02,attack_speed_percent,add,11,player,,풀: 공격 속도 증가
-item_nature_epic_02,dash_distance_percent,add,13,player,,풀: 대시 거리 증가
-item_nature_epic_03,attack_speed_percent,add,12,player,,풀: 공격 속도 증가
-item_nature_epic_03,dash_distance_percent,add,14,player,,풀: 대시 거리 증가
-item_nature_epic_04,attack_speed_percent,add,13,player,,풀: 공격 속도 증가
-item_nature_epic_04,dash_distance_percent,add,15,player,,풀: 대시 거리 증가
-item_nature_epic_05,attack_speed_percent,add,14,player,,풀: 공격 속도 증가
-item_nature_epic_05,dash_distance_percent,add,16,player,,풀: 대시 거리 증가
-item_nature_legendary_01,move_speed_percent,add,16,player,,풀: 이동 속도 증가
-item_nature_legendary_01,attack_speed_percent,add,18,player,,풀: 공격 속도 증가
-item_nature_legendary_01,evasion,add,8,player,while_low_hp,풀: 체력 50% 이하일 때 회피율 증가
-item_nature_legendary_02,move_speed_percent,add,17,player,,풀: 이동 속도 증가
-item_nature_legendary_02,attack_speed_percent,add,19,player,,풀: 공격 속도 증가
-item_nature_legendary_02,evasion,add,9,player,,풀: 회피율 증가
-item_earth_common_01,defense,add,1,player,,땅: 방어력 증가
-item_earth_common_02,shield,add,4,player,,땅: 보호막 증가
-item_earth_common_03,damage_taken_percent,add,-3,player,,땅: 받는 피해 감소
-item_earth_common_04,toughness,add,4,player,,땅: 강인함 증가
-item_earth_common_05,defense,add,1,player,,땅: 방어력 증가
-item_earth_common_06,shield,add,4,player,,땅: 보호막 증가
-item_earth_common_07,damage_taken_percent,add,-3,player,,땅: 받는 피해 감소
-item_earth_common_08,toughness,add,4,player,,땅: 강인함 증가
-item_earth_common_09,defense,add,1,player,,땅: 방어력 증가
-item_earth_common_10,shield,add,4,player,,땅: 보호막 증가
-item_earth_rare_01,damage_taken_percent,add,-5,player,,땅: 받는 피해 감소
-item_earth_rare_02,toughness,add,6,player,,땅: 강인함 증가
-item_earth_rare_03,defense,add,7,player,,땅: 방어력 증가
-item_earth_rare_04,shield,add,16,player,,땅: 보호막 증가
-item_earth_rare_05,damage_taken_percent,add,-9,player,,땅: 받는 피해 감소
-item_earth_rare_06,toughness,add,5,player,,땅: 강인함 증가
-item_earth_rare_07,defense,add,6,player,,땅: 방어력 증가
-item_earth_rare_08,shield,add,14,player,,땅: 보호막 증가
-item_earth_epic_01,shield,add,20,player,,땅: 보호막 증가
-item_earth_epic_01,damage_taken_percent,add,-5,player,while_has_shield,땅: 보호막 보유 중 받는 피해 감소
-item_earth_epic_02,shield,add,22,player,,땅: 보호막 증가
-item_earth_epic_02,damage_taken_percent,add,-6,player,,땅: 받는 피해 감소
-item_earth_epic_03,shield,add,24,player,,땅: 보호막 증가
-item_earth_epic_03,damage_taken_percent,add,-6,player,,땅: 받는 피해 감소
-item_earth_epic_04,shield,add,26,player,,땅: 보호막 증가
-item_earth_epic_04,damage_taken_percent,add,-7,player,,땅: 받는 피해 감소
-item_earth_epic_05,shield,add,28,player,,땅: 보호막 증가
-item_earth_epic_05,damage_taken_percent,add,-7,player,,땅: 받는 피해 감소
-item_earth_legendary_01,defense,add,16,player,,땅: 방어력 증가
-item_earth_legendary_01,shield,add,32,player,,땅: 보호막 증가
-item_earth_legendary_01,toughness,add,8,player,while_has_shield,땅: 보호막 보유 중 강인함 증가
-item_earth_legendary_02,defense,add,17,player,,땅: 방어력 증가
-item_earth_legendary_02,shield,add,34,player,,땅: 보호막 증가
-item_earth_legendary_02,toughness,add,9,player,,땅: 강인함 증가
-item_lightning_common_01,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
-item_lightning_common_02,all_damage_percent,add,2,player,,번개: 피해 증가
-item_lightning_common_03,projectile_speed_percent,add,3,projectile,,번개: 투사체 속도 증가
-item_lightning_common_04,proc_chance_percent,add,4,player,,번개: 발동 확률 증가
-item_lightning_common_05,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
-item_lightning_common_06,all_damage_percent,add,2,player,,번개: 피해 증가
-item_lightning_common_07,projectile_speed_percent,add,3,projectile,,번개: 투사체 속도 증가
-item_lightning_common_08,proc_chance_percent,add,4,player,,번개: 발동 확률 증가
-item_lightning_common_09,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
-item_lightning_common_10,all_damage_percent,add,2,player,,번개: 피해 증가
-item_lightning_rare_01,all_damage_percent,add,6,player,,번개: 피해 증가
-item_lightning_rare_02,projectile_speed_percent,add,7,projectile,,번개: 투사체 속도 증가
-item_lightning_rare_03,proc_chance_percent,add,8,player,,번개: 발동 확률 증가
-item_lightning_rare_04,casting_speed_percent,add,9,player,,번개: 시전 속도 증가
-item_lightning_rare_05,all_damage_percent,add,10,player,,번개: 피해 증가
-item_lightning_rare_06,projectile_speed_percent,add,6,projectile,,번개: 투사체 속도 증가
-item_lightning_rare_07,proc_chance_percent,add,7,player,,번개: 발동 확률 증가
-item_lightning_rare_08,casting_speed_percent,add,8,player,,번개: 시전 속도 증가
-item_lightning_epic_01,casting_speed_percent,add,10,player,while_low_hp,번개: 체력 50% 이하일 때 시전 속도 증가
-item_lightning_epic_01,all_damage_percent,add,5,player,,번개: 피해 증가
-item_lightning_epic_02,casting_speed_percent,add,11,player,,번개: 시전 속도 증가
-item_lightning_epic_02,all_damage_percent,add,6,player,,번개: 피해 증가
-item_lightning_epic_03,casting_speed_percent,add,12,player,,번개: 시전 속도 증가
-item_lightning_epic_03,all_damage_percent,add,6,player,,번개: 피해 증가
-item_lightning_epic_04,casting_speed_percent,add,13,player,,번개: 시전 속도 증가
-item_lightning_epic_04,all_damage_percent,add,7,player,,번개: 피해 증가
-item_lightning_epic_05,casting_speed_percent,add,14,player,,번개: 시전 속도 증가
-item_lightning_epic_05,all_damage_percent,add,7,player,,번개: 피해 증가
-item_lightning_legendary_01,casting_speed_percent,add,16,player,,번개: 시전 속도 증가
-item_lightning_legendary_01,all_damage_percent,add,8,player,,번개: 피해 증가
-item_lightning_legendary_01,final_damage_percent,add,5,player,while_low_hp,번개: 체력 50% 이하일 때 최종 피해 증가
-item_lightning_legendary_02,casting_speed_percent,add,17,player,,번개: 시전 속도 증가
-item_lightning_legendary_02,all_damage_percent,add,9,player,,번개: 피해 증가
-item_lightning_legendary_02,final_damage_percent,add,5,player,,번개: 최종 피해 증가
-item_poison_common_01,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
-item_poison_common_02,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
-item_poison_common_03,cooldown_reduction_percent,add,2,player,,독: 쿨타임 감소
-item_poison_common_04,area_percent,add,4,player,,독: 장판 범위 증가
-item_poison_common_05,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
-item_poison_common_06,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
-item_poison_common_07,cooldown_reduction_percent,add,2,player,,독: 쿨타임 감소
-item_poison_common_08,area_percent,add,4,player,,독: 장판 범위 증가
-item_poison_common_09,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
-item_poison_common_10,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
-item_poison_rare_01,cooldown_reduction_percent,add,3,player,,독: 쿨타임 감소
-item_poison_rare_02,area_percent,add,7,player,,독: 장판 범위 증가
-item_poison_rare_03,damage_over_time_percent,add,8,player,,독: 지속 피해 증가
-item_poison_rare_04,skill_damage_percent,add,9,player,,독: 스킬 피해 증가
-item_poison_rare_05,cooldown_reduction_percent,add,5,player,,독: 쿨타임 감소
-item_poison_rare_06,area_percent,add,6,player,,독: 장판 범위 증가
-item_poison_rare_07,damage_over_time_percent,add,7,player,,독: 지속 피해 증가
-item_poison_rare_08,skill_damage_percent,add,8,player,,독: 스킬 피해 증가
-item_poison_epic_01,cooldown_reduction_percent,add,5,player,while_low_hp,독: 체력 50% 이하일 때 쿨타임 감소
-item_poison_epic_01,area_percent,add,5,player,,독: 장판 범위 증가
-item_poison_epic_02,damage_over_time_percent,add,11,player,,독: 지속 피해 증가
-item_poison_epic_02,skill_damage_percent,add,6,player,,독: 스킬 피해 증가
-item_poison_epic_03,cooldown_reduction_percent,add,6,player,,독: 쿨타임 감소
-item_poison_epic_03,area_percent,add,6,player,,독: 장판 범위 증가
-item_poison_epic_04,damage_over_time_percent,add,13,player,,독: 지속 피해 증가
-item_poison_epic_04,skill_damage_percent,add,7,player,,독: 스킬 피해 증가
-item_poison_epic_05,cooldown_reduction_percent,add,7,player,,독: 쿨타임 감소
-item_poison_epic_05,area_percent,add,7,player,,독: 장판 범위 증가
-item_poison_legendary_01,damage_over_time_percent,add,16,player,while_low_hp,독: 체력 50% 이하일 때 지속 피해 증가
-item_poison_legendary_01,skill_damage_percent,add,8,player,,독: 스킬 피해 증가
-item_poison_legendary_01,cooldown_reduction_percent,add,9,player,,독: 쿨타임 감소
-item_poison_legendary_02,area_percent,add,17,player,,독: 장판 범위 증가
-item_poison_legendary_02,damage_over_time_percent,add,9,player,,독: 지속 피해 증가
-item_poison_legendary_02,skill_damage_percent,add,19,player,,독: 스킬 피해 증가
+item_curse_common_01,attack,add,-1,player,,저주: 공격력 감소
+item_curse_common_02,skill_damage_percent,add,-2,player,,저주: 스킬 피해 감소
+item_curse_common_03,attack_speed_percent,add,-3,player,,저주: 공격 속도 감소
+item_curse_common_04,move_speed_percent,add,-4,player,,저주: 이동 속도 감소
+item_curse_common_04,curse_power,add,1,player,,저주 속성 계수 +1
+item_curse_common_05,max_hp,add,-2,player,,저주: 최대 체력 감소
+item_curse_common_06,evasion,add,-2,player,,저주: 회피율 감소
+item_curse_common_07,attack,add,-3,player,,저주: 공격력 감소
+item_curse_common_08,skill_damage_percent,add,-4,player,,저주: 스킬 피해 감소
+item_curse_common_08,curse_power,add,1,player,,저주 속성 계수 +1
+item_curse_common_09,attack_speed_percent,add,-1,player,,저주: 공격 속도 감소
+item_curse_common_10,move_speed_percent,add,-2,player,,저주: 이동 속도 감소
+item_curse_epic_01,attack,add,-10,player,while_low_hp,저주: 체력 50% 이하일 때 공격력 감소
+item_curse_epic_01,cooldown_reduction_percent,add,-5,player,,저주: 쿨타임 감소 효율 저하
+item_curse_epic_01,curse_power,add,2,player,,저주 속성 계수 +2
+item_curse_epic_02,skill_damage_percent,add,-11,player,,저주: 스킬 피해 감소
+item_curse_epic_02,casting_speed_percent,add,-11,player,,저주: 시전 속도 감소
+item_curse_epic_02,curse_power,add,2,player,,저주 속성 계수 +2
+item_curse_epic_03,attack_speed_percent,add,-12,player,,저주: 공격 속도 감소
+item_curse_epic_03,damage_taken_percent,add,6,player,,저주: 받는 피해 증가
+item_curse_epic_04,move_speed_percent,add,-13,player,,저주: 이동 속도 감소
+item_curse_epic_04,shield,add,-26,player,,저주: 보호막 감소
+item_curse_epic_04,curse_power,add,2,player,,저주 속성 계수 +2
+item_curse_epic_05,max_hp,add,-28,player,,저주: 최대 체력 감소
+item_curse_epic_05,crit_chance_percent,add,-7,player,,저주: 치명타 확률 감소
+item_curse_epic_05,curse_power,add,2,player,,저주 속성 계수 +2
+item_curse_legendary_01,attack,add,-16,player,,저주: 공격력 감소
+item_curse_legendary_01,cooldown_reduction_percent,add,-8,player,,저주: 쿨타임 감소 효율 저하
+item_curse_legendary_01,final_damage_multiplier,multiply,0.9,player,while_low_hp,저주: 체력 50% 이하일 때 최종 피해 배율 감소
+item_curse_legendary_01,curse_power,add,3,player,,저주 속성 계수 +3
+item_curse_legendary_02,skill_damage_percent,add,-17,player,,저주: 스킬 피해 감소
+item_curse_legendary_02,casting_speed_percent,add,-17,player,,저주: 시전 속도 감소
+item_curse_legendary_02,final_damage_multiplier,multiply,0.9,player,,저주: 최종 피해 배율 감소
+item_curse_legendary_02,curse_power,add,2,player,,저주 속성 계수 +2
+item_curse_rare_01,attack,add,-5,player,,저주: 공격력 감소
+item_curse_rare_01,cooldown_reduction_percent,add,-3,player,,저주: 쿨타임 감소 효율 저하
+item_curse_rare_02,skill_damage_percent,add,-6,player,,저주: 스킬 피해 감소
+item_curse_rare_02,casting_speed_percent,add,-6,player,,저주: 시전 속도 감소
+item_curse_rare_02,curse_power,add,1,player,,저주 속성 계수 +1
+item_curse_rare_03,attack_speed_percent,add,-7,player,,저주: 공격 속도 감소
+item_curse_rare_03,damage_taken_percent,add,4,player,,저주: 받는 피해 증가
+item_curse_rare_04,move_speed_percent,add,-8,player,,저주: 이동 속도 감소
+item_curse_rare_04,shield,add,-16,player,,저주: 보호막 감소
+item_curse_rare_04,curse_power,add,1,player,,저주 속성 계수 +1
+item_curse_rare_05,max_hp,add,-18,player,,저주: 최대 체력 감소
+item_curse_rare_05,crit_chance_percent,add,-5,player,,저주: 치명타 확률 감소
+item_curse_rare_06,evasion,add,-5,player,,저주: 회피율 감소
+item_curse_rare_06,crit_damage_percent,add,-6,player,,저주: 치명타 피해 감소
+item_curse_rare_06,dark_power,add,1,player,,어둠 속성 계수 +1
+item_curse_rare_07,attack,add,-6,player,,저주: 공격력 감소
+item_curse_rare_07,cooldown_reduction_percent,add,-3,player,,저주: 쿨타임 감소 효율 저하
+item_curse_rare_08,skill_damage_percent,add,-7,player,,저주: 스킬 피해 감소
+item_curse_rare_08,casting_speed_percent,add,-7,player,,저주: 시전 속도 감소
+item_curse_rare_08,curse_power,add,1,player,,저주 속성 계수 +1
 item_dark_common_01,attack,add,1,player,,어둠: 공격력 증가
 item_dark_common_02,skill_damage_percent,add,2,player,,어둠: 스킬 피해 증가
 item_dark_common_03,life_steal_percent,add,3,player,,어둠: 흡혈 증가
 item_dark_common_04,cooldown_reduction_percent,add,4,player,,어둠: 쿨타임 감소
+item_dark_common_04,fire_power,add,1,player,,불 속성 계수 +1
 item_dark_common_05,attack,add,1,player,,어둠: 공격력 증가
 item_dark_common_06,skill_damage_percent,add,2,player,,어둠: 스킬 피해 증가
 item_dark_common_07,life_steal_percent,add,3,player,,어둠: 흡혈 증가
 item_dark_common_08,cooldown_reduction_percent,add,4,player,,어둠: 쿨타임 감소
+item_dark_common_08,fire_power,add,1,player,,불 속성 계수 +1
 item_dark_common_09,attack,add,1,player,,어둠: 공격력 증가
 item_dark_common_10,skill_damage_percent,add,2,player,,어둠: 스킬 피해 증가
-item_dark_rare_01,skill_damage_percent,add,6,player,,어둠: 스킬 피해 증가
-item_dark_rare_02,life_steal_percent,add,7,player,,어둠: 흡혈 증가
-item_dark_rare_02,max_hp,add,-3,player,,어둠: 최대 체력 감소
-item_dark_rare_03,cooldown_reduction_percent,add,8,player,,어둠: 쿨타임 감소
-item_dark_rare_04,attack,add,9,player,,어둠: 공격력 증가
-item_dark_rare_04,max_hp,add,-4,player,,어둠: 최대 체력 감소
-item_dark_rare_05,skill_damage_percent,add,10,player,,어둠: 스킬 피해 증가
-item_dark_rare_06,life_steal_percent,add,6,player,,어둠: 흡혈 증가
-item_dark_rare_06,max_hp,add,-3,player,,어둠: 최대 체력 감소
-item_dark_rare_07,cooldown_reduction_percent,add,7,player,,어둠: 쿨타임 감소
-item_dark_rare_08,attack,add,8,player,,어둠: 공격력 증가
-item_dark_rare_08,max_hp,add,-4,player,,어둠: 최대 체력 감소
 item_dark_epic_01,skill_damage_percent,add,10,player,,어둠: 스킬 피해 증가
 item_dark_epic_01,life_steal_percent,add,5,player,while_low_hp,어둠: 체력 50% 이하일 때 흡혈 증가
 item_dark_epic_01,max_hp,add,-10,player,,어둠: 최대 체력 감소
+item_dark_epic_01,dark_power,add,2,player,,어둠 속성 계수 +2
 item_dark_epic_02,skill_damage_percent,add,11,player,,어둠: 스킬 피해 증가
 item_dark_epic_02,life_steal_percent,add,6,player,,어둠: 흡혈 증가
 item_dark_epic_02,max_hp,add,-11,player,,어둠: 최대 체력 감소
+item_dark_epic_02,dark_power,add,2,player,,어둠 속성 계수 +2
 item_dark_epic_03,skill_damage_percent,add,12,player,,어둠: 스킬 피해 증가
 item_dark_epic_03,life_steal_percent,add,6,player,,어둠: 흡혈 증가
 item_dark_epic_03,max_hp,add,-12,player,,어둠: 최대 체력 감소
 item_dark_epic_04,skill_damage_percent,add,13,player,,어둠: 스킬 피해 증가
 item_dark_epic_04,life_steal_percent,add,7,player,,어둠: 흡혈 증가
 item_dark_epic_04,max_hp,add,-13,player,,어둠: 최대 체력 감소
+item_dark_epic_04,fire_power,add,2,player,,불 속성 계수 +2
 item_dark_epic_05,skill_damage_percent,add,14,player,,어둠: 스킬 피해 증가
 item_dark_epic_05,life_steal_percent,add,7,player,,어둠: 흡혈 증가
 item_dark_epic_05,max_hp,add,-14,player,,어둠: 최대 체력 감소
+item_dark_epic_05,dark_power,add,2,player,,어둠 속성 계수 +2
 item_dark_legendary_01,attack,add,16,player,,어둠: 공격력 증가
 item_dark_legendary_01,skill_damage_percent,add,18,player,,어둠: 스킬 피해 증가
 item_dark_legendary_01,final_damage_multiplier,multiply,1.3,player,while_low_hp,어둠: 체력 50% 이하일 때 최종 피해 배율 증가
+item_dark_legendary_01,dark_power,add,3,player,,어둠 속성 계수 +3
 item_dark_legendary_02,attack,add,17,player,,어둠: 공격력 증가
 item_dark_legendary_02,skill_damage_percent,add,19,player,,어둠: 스킬 피해 증가
 item_dark_legendary_02,final_damage_multiplier,multiply,1.3,player,,어둠: 최종 피해 배율 증가
+item_dark_legendary_02,dark_power,add,2,player,,어둠 속성 계수 +2
+item_dark_rare_01,skill_damage_percent,add,6,player,,어둠: 스킬 피해 증가
+item_dark_rare_02,life_steal_percent,add,7,player,,어둠: 흡혈 증가
+item_dark_rare_02,max_hp,add,-3,player,,어둠: 최대 체력 감소
+item_dark_rare_02,dark_power,add,1,player,,어둠 속성 계수 +1
+item_dark_rare_03,cooldown_reduction_percent,add,8,player,,어둠: 쿨타임 감소
+item_dark_rare_04,attack,add,9,player,,어둠: 공격력 증가
+item_dark_rare_04,max_hp,add,-4,player,,어둠: 최대 체력 감소
+item_dark_rare_04,fire_power,add,1,player,,불 속성 계수 +1
+item_dark_rare_05,skill_damage_percent,add,10,player,,어둠: 스킬 피해 증가
+item_dark_rare_06,life_steal_percent,add,6,player,,어둠: 흡혈 증가
+item_dark_rare_06,max_hp,add,-3,player,,어둠: 최대 체력 감소
+item_dark_rare_06,dark_power,add,1,player,,어둠 속성 계수 +1
+item_dark_rare_07,cooldown_reduction_percent,add,7,player,,어둠: 쿨타임 감소
+item_dark_rare_08,attack,add,8,player,,어둠: 공격력 증가
+item_dark_rare_08,max_hp,add,-4,player,,어둠: 최대 체력 감소
+item_dark_rare_08,fire_power,add,1,player,,불 속성 계수 +1
+item_earth_common_01,defense,add,1,player,,땅: 방어력 증가
+item_earth_common_02,shield,add,4,player,,땅: 보호막 증가
+item_earth_common_03,damage_taken_percent,add,-3,player,,땅: 받는 피해 감소
+item_earth_common_04,toughness,add,4,player,,땅: 강인함 증가
+item_earth_common_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_earth_common_05,defense,add,1,player,,땅: 방어력 증가
+item_earth_common_06,shield,add,4,player,,땅: 보호막 증가
+item_earth_common_07,damage_taken_percent,add,-3,player,,땅: 받는 피해 감소
+item_earth_common_08,toughness,add,4,player,,땅: 강인함 증가
+item_earth_common_08,nature_power,add,1,player,,풀 속성 계수 +1
+item_earth_common_09,defense,add,1,player,,땅: 방어력 증가
+item_earth_common_10,shield,add,4,player,,땅: 보호막 증가
+item_earth_epic_01,shield,add,20,player,,땅: 보호막 증가
+item_earth_epic_01,damage_taken_percent,add,-5,player,while_has_shield,땅: 보호막 보유 중 받는 피해 감소
+item_earth_epic_01,earth_power,add,2,player,,땅 속성 계수 +2
+item_earth_epic_02,shield,add,22,player,,땅: 보호막 증가
+item_earth_epic_02,damage_taken_percent,add,-6,player,,땅: 받는 피해 감소
+item_earth_epic_02,earth_power,add,2,player,,땅 속성 계수 +2
+item_earth_epic_03,shield,add,24,player,,땅: 보호막 증가
+item_earth_epic_03,damage_taken_percent,add,-6,player,,땅: 받는 피해 감소
+item_earth_epic_04,shield,add,26,player,,땅: 보호막 증가
+item_earth_epic_04,damage_taken_percent,add,-7,player,,땅: 받는 피해 감소
+item_earth_epic_04,nature_power,add,2,player,,풀 속성 계수 +2
+item_earth_epic_05,shield,add,28,player,,땅: 보호막 증가
+item_earth_epic_05,damage_taken_percent,add,-7,player,,땅: 받는 피해 감소
+item_earth_epic_05,earth_power,add,2,player,,땅 속성 계수 +2
+item_earth_legendary_01,defense,add,16,player,,땅: 방어력 증가
+item_earth_legendary_01,shield,add,32,player,,땅: 보호막 증가
+item_earth_legendary_01,toughness,add,8,player,while_has_shield,땅: 보호막 보유 중 강인함 증가
+item_earth_legendary_01,earth_power,add,3,player,,땅 속성 계수 +3
+item_earth_legendary_02,defense,add,17,player,,땅: 방어력 증가
+item_earth_legendary_02,shield,add,34,player,,땅: 보호막 증가
+item_earth_legendary_02,toughness,add,9,player,,땅: 강인함 증가
+item_earth_legendary_02,earth_power,add,2,player,,땅 속성 계수 +2
+item_earth_rare_01,damage_taken_percent,add,-5,player,,땅: 받는 피해 감소
+item_earth_rare_02,toughness,add,6,player,,땅: 강인함 증가
+item_earth_rare_02,earth_power,add,1,player,,땅 속성 계수 +1
+item_earth_rare_03,defense,add,7,player,,땅: 방어력 증가
+item_earth_rare_04,shield,add,16,player,,땅: 보호막 증가
+item_earth_rare_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_earth_rare_05,damage_taken_percent,add,-9,player,,땅: 받는 피해 감소
+item_earth_rare_06,toughness,add,5,player,,땅: 강인함 증가
+item_earth_rare_06,earth_power,add,1,player,,땅 속성 계수 +1
+item_earth_rare_07,defense,add,6,player,,땅: 방어력 증가
+item_earth_rare_08,shield,add,14,player,,땅: 보호막 증가
+item_earth_rare_08,nature_power,add,1,player,,풀 속성 계수 +1
+item_fire_common_01,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
+item_fire_common_02,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
+item_fire_common_03,basic_attack_damage_percent,add,3,player,,불: 기본 공격 피해 증가
+item_fire_common_04,proc_chance_percent,add,4,player,,불: 폭발 발동 확률 증가
+item_fire_common_04,dark_power,add,1,player,,어둠 속성 계수 +1
+item_fire_common_05,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
+item_fire_common_06,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
+item_fire_common_07,basic_attack_damage_percent,add,3,player,,불: 기본 공격 피해 증가
+item_fire_common_08,proc_chance_percent,add,4,player,,불: 폭발 발동 확률 증가
+item_fire_common_08,dark_power,add,1,player,,어둠 속성 계수 +1
+item_fire_common_09,crit_chance_percent,add,1,player,,불: 치명타 확률 증가
+item_fire_common_10,crit_damage_percent,add,4,player,,불: 치명타 피해 증가
+item_fire_epic_01,crit_chance_percent,add,10,player,,불: 치명타 확률 증가
+item_fire_epic_01,crit_damage_percent,add,15,player,while_low_hp,불: 체력 50% 이하일 때 치명타 피해 증가
+item_fire_epic_01,fire_power,add,2,player,,불 속성 계수 +2
+item_fire_epic_02,crit_chance_percent,add,11,player,,불: 치명타 확률 증가
+item_fire_epic_02,crit_damage_percent,add,16,player,,불: 치명타 피해 증가
+item_fire_epic_02,fire_power,add,2,player,,불 속성 계수 +2
+item_fire_epic_03,crit_chance_percent,add,12,player,,불: 치명타 확률 증가
+item_fire_epic_03,crit_damage_percent,add,17,player,,불: 치명타 피해 증가
+item_fire_epic_04,crit_chance_percent,add,13,player,,불: 치명타 확률 증가
+item_fire_epic_04,crit_damage_percent,add,18,player,,불: 치명타 피해 증가
+item_fire_epic_04,dark_power,add,2,player,,어둠 속성 계수 +2
+item_fire_epic_05,crit_chance_percent,add,14,player,,불: 치명타 확률 증가
+item_fire_epic_05,crit_damage_percent,add,19,player,,불: 치명타 피해 증가
+item_fire_epic_05,fire_power,add,2,player,,불 속성 계수 +2
+item_fire_legendary_01,crit_chance_percent,add,16,player,,불: 치명타 확률 증가
+item_fire_legendary_01,crit_damage_percent,add,23,player,,불: 치명타 피해 증가
+item_fire_legendary_01,final_damage_percent,add,8,player,while_low_hp,불: 체력 50% 이하일 때 최종 피해 증가
+item_fire_legendary_01,fire_power,add,3,player,,불 속성 계수 +3
+item_fire_legendary_02,crit_chance_percent,add,17,player,,불: 치명타 확률 증가
+item_fire_legendary_02,crit_damage_percent,add,24,player,,불: 치명타 피해 증가
+item_fire_legendary_02,final_damage_percent,add,9,player,,불: 최종 피해 증가
+item_fire_legendary_02,fire_power,add,2,player,,불 속성 계수 +2
+item_fire_rare_01,crit_damage_percent,add,8,player,,불: 치명타 피해 증가
+item_fire_rare_02,basic_attack_damage_percent,add,7,player,,불: 기본 공격 피해 증가
+item_fire_rare_02,fire_power,add,1,player,,불 속성 계수 +1
+item_fire_rare_03,proc_chance_percent,add,8,player,,불: 폭발 발동 확률 증가
+item_fire_rare_04,crit_chance_percent,add,9,player,,불: 치명타 확률 증가
+item_fire_rare_04,dark_power,add,1,player,,어둠 속성 계수 +1
+item_fire_rare_05,crit_damage_percent,add,12,player,,불: 치명타 피해 증가
+item_fire_rare_06,basic_attack_damage_percent,add,6,player,,불: 기본 공격 피해 증가
+item_fire_rare_06,fire_power,add,1,player,,불 속성 계수 +1
+item_fire_rare_07,proc_chance_percent,add,7,player,,불: 폭발 발동 확률 증가
+item_fire_rare_08,crit_chance_percent,add,8,player,,불: 치명타 확률 증가
+item_fire_rare_08,dark_power,add,1,player,,어둠 속성 계수 +1
+item_lightning_common_01,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
+item_lightning_common_02,all_damage_percent,add,2,player,,번개: 피해 증가
+item_lightning_common_03,projectile_speed_percent,add,3,projectile,,번개: 투사체 속도 증가
+item_lightning_common_04,proc_chance_percent,add,4,player,,번개: 발동 확률 증가
+item_lightning_common_04,dark_power,add,1,player,,어둠 속성 계수 +1
+item_lightning_common_05,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
+item_lightning_common_06,all_damage_percent,add,2,player,,번개: 피해 증가
+item_lightning_common_07,projectile_speed_percent,add,3,projectile,,번개: 투사체 속도 증가
+item_lightning_common_08,proc_chance_percent,add,4,player,,번개: 발동 확률 증가
+item_lightning_common_08,dark_power,add,1,player,,어둠 속성 계수 +1
+item_lightning_common_09,casting_speed_percent,add,1,player,,번개: 시전 속도 증가
+item_lightning_common_10,all_damage_percent,add,2,player,,번개: 피해 증가
+item_lightning_epic_01,casting_speed_percent,add,10,player,while_low_hp,번개: 체력 50% 이하일 때 시전 속도 증가
+item_lightning_epic_01,all_damage_percent,add,5,player,,번개: 피해 증가
+item_lightning_epic_01,lightning_power,add,2,player,,번개 속성 계수 +2
+item_lightning_epic_02,casting_speed_percent,add,11,player,,번개: 시전 속도 증가
+item_lightning_epic_02,all_damage_percent,add,6,player,,번개: 피해 증가
+item_lightning_epic_02,lightning_power,add,2,player,,번개 속성 계수 +2
+item_lightning_epic_03,casting_speed_percent,add,12,player,,번개: 시전 속도 증가
+item_lightning_epic_03,all_damage_percent,add,6,player,,번개: 피해 증가
+item_lightning_epic_04,casting_speed_percent,add,13,player,,번개: 시전 속도 증가
+item_lightning_epic_04,all_damage_percent,add,7,player,,번개: 피해 증가
+item_lightning_epic_04,dark_power,add,2,player,,어둠 속성 계수 +2
+item_lightning_epic_05,casting_speed_percent,add,14,player,,번개: 시전 속도 증가
+item_lightning_epic_05,all_damage_percent,add,7,player,,번개: 피해 증가
+item_lightning_epic_05,lightning_power,add,2,player,,번개 속성 계수 +2
+item_lightning_legendary_01,casting_speed_percent,add,16,player,,번개: 시전 속도 증가
+item_lightning_legendary_01,all_damage_percent,add,8,player,,번개: 피해 증가
+item_lightning_legendary_01,final_damage_percent,add,5,player,while_low_hp,번개: 체력 50% 이하일 때 최종 피해 증가
+item_lightning_legendary_01,lightning_power,add,3,player,,번개 속성 계수 +3
+item_lightning_legendary_02,casting_speed_percent,add,17,player,,번개: 시전 속도 증가
+item_lightning_legendary_02,all_damage_percent,add,9,player,,번개: 피해 증가
+item_lightning_legendary_02,final_damage_percent,add,5,player,,번개: 최종 피해 증가
+item_lightning_legendary_02,lightning_power,add,2,player,,번개 속성 계수 +2
+item_lightning_rare_01,all_damage_percent,add,6,player,,번개: 피해 증가
+item_lightning_rare_02,projectile_speed_percent,add,7,projectile,,번개: 투사체 속도 증가
+item_lightning_rare_02,lightning_power,add,1,player,,번개 속성 계수 +1
+item_lightning_rare_03,proc_chance_percent,add,8,player,,번개: 발동 확률 증가
+item_lightning_rare_04,casting_speed_percent,add,9,player,,번개: 시전 속도 증가
+item_lightning_rare_04,dark_power,add,1,player,,어둠 속성 계수 +1
+item_lightning_rare_05,all_damage_percent,add,10,player,,번개: 피해 증가
+item_lightning_rare_06,projectile_speed_percent,add,6,projectile,,번개: 투사체 속도 증가
+item_lightning_rare_06,lightning_power,add,1,player,,번개 속성 계수 +1
+item_lightning_rare_07,proc_chance_percent,add,7,player,,번개: 발동 확률 증가
+item_lightning_rare_08,casting_speed_percent,add,8,player,,번개: 시전 속도 증가
+item_lightning_rare_08,dark_power,add,1,player,,어둠 속성 계수 +1
+item_nature_common_01,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
+item_nature_common_02,move_speed_percent,add,2,player,,풀: 이동 속도 증가
+item_nature_common_03,evasion,add,3,player,,풀: 회피율 증가
+item_nature_common_04,dash_cooldown_reduction_percent,add,4,player,,풀: 대시 쿨타임 감소
+item_nature_common_04,lightning_power,add,1,player,,번개 속성 계수 +1
+item_nature_common_05,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
+item_nature_common_06,move_speed_percent,add,2,player,,풀: 이동 속도 증가
+item_nature_common_07,evasion,add,3,player,,풀: 회피율 증가
+item_nature_common_08,dash_cooldown_reduction_percent,add,4,player,,풀: 대시 쿨타임 감소
+item_nature_common_08,lightning_power,add,1,player,,번개 속성 계수 +1
+item_nature_common_09,attack_speed_percent,add,1,player,,풀: 공격 속도 증가
+item_nature_common_10,move_speed_percent,add,2,player,,풀: 이동 속도 증가
+item_nature_epic_01,attack_speed_percent,add,10,player,,풀: 공격 속도 증가
+item_nature_epic_01,dash_distance_percent,add,12,player,while_low_hp,풀: 체력 50% 이하일 때 대시 거리 증가
+item_nature_epic_01,nature_power,add,2,player,,풀 속성 계수 +2
+item_nature_epic_02,attack_speed_percent,add,11,player,,풀: 공격 속도 증가
+item_nature_epic_02,dash_distance_percent,add,13,player,,풀: 대시 거리 증가
+item_nature_epic_02,nature_power,add,2,player,,풀 속성 계수 +2
+item_nature_epic_03,attack_speed_percent,add,12,player,,풀: 공격 속도 증가
+item_nature_epic_03,dash_distance_percent,add,14,player,,풀: 대시 거리 증가
+item_nature_epic_04,attack_speed_percent,add,13,player,,풀: 공격 속도 증가
+item_nature_epic_04,dash_distance_percent,add,15,player,,풀: 대시 거리 증가
+item_nature_epic_04,lightning_power,add,2,player,,번개 속성 계수 +2
+item_nature_epic_05,attack_speed_percent,add,14,player,,풀: 공격 속도 증가
+item_nature_epic_05,dash_distance_percent,add,16,player,,풀: 대시 거리 증가
+item_nature_epic_05,nature_power,add,2,player,,풀 속성 계수 +2
+item_nature_legendary_01,move_speed_percent,add,16,player,,풀: 이동 속도 증가
+item_nature_legendary_01,attack_speed_percent,add,18,player,,풀: 공격 속도 증가
+item_nature_legendary_01,evasion,add,8,player,while_low_hp,풀: 체력 50% 이하일 때 회피율 증가
+item_nature_legendary_01,nature_power,add,3,player,,풀 속성 계수 +3
+item_nature_legendary_02,move_speed_percent,add,17,player,,풀: 이동 속도 증가
+item_nature_legendary_02,attack_speed_percent,add,19,player,,풀: 공격 속도 증가
+item_nature_legendary_02,evasion,add,9,player,,풀: 회피율 증가
+item_nature_legendary_02,nature_power,add,2,player,,풀 속성 계수 +2
+item_nature_rare_01,move_speed_percent,add,6,player,,풀: 이동 속도 증가
+item_nature_rare_02,evasion,add,7,player,,풀: 회피율 증가
+item_nature_rare_02,nature_power,add,1,player,,풀 속성 계수 +1
+item_nature_rare_03,dash_cooldown_reduction_percent,add,8,player,,풀: 대시 쿨타임 감소
+item_nature_rare_04,attack_speed_percent,add,9,player,,풀: 공격 속도 증가
+item_nature_rare_04,lightning_power,add,1,player,,번개 속성 계수 +1
+item_nature_rare_05,move_speed_percent,add,10,player,,풀: 이동 속도 증가
+item_nature_rare_06,evasion,add,6,player,,풀: 회피율 증가
+item_nature_rare_06,nature_power,add,1,player,,풀 속성 계수 +1
+item_nature_rare_07,dash_cooldown_reduction_percent,add,7,player,,풀: 대시 쿨타임 감소
+item_nature_rare_08,attack_speed_percent,add,8,player,,풀: 공격 속도 증가
+item_nature_rare_08,lightning_power,add,1,player,,번개 속성 계수 +1
 item_neutral_common_01,luck,add,1,player,,무: 행운 증가
 item_neutral_common_02,reroll_cost_percent,add,-2,player,,무: 리롤 비용 감소
 item_neutral_common_03,exp_gain_percent,add,3,player,,무: 경험치 획득량 증가
 item_neutral_common_04,gold_gain_percent,add,4,player,,무: 골드 획득량 증가
+item_neutral_common_04,water_power,add,1,player,,물 속성 계수 +1
 item_neutral_common_05,luck,add,1,player,,무: 행운 증가
 item_neutral_common_06,reroll_cost_percent,add,-2,player,,무: 리롤 비용 감소
 item_neutral_common_07,exp_gain_percent,add,3,player,,무: 경험치 획득량 증가
 item_neutral_common_08,gold_gain_percent,add,4,player,,무: 골드 획득량 증가
+item_neutral_common_08,neutral_power,add,1,player,,무 속성 계수 +1
 item_neutral_common_09,luck,add,1,player,,무: 행운 증가
 item_neutral_common_10,reroll_cost_percent,add,-2,player,,무: 리롤 비용 감소
-item_neutral_rare_01,reroll_cost_percent,add,-5,player,,무: 리롤 비용 감소
-item_neutral_rare_02,exp_gain_percent,add,6,player,,무: 경험치 획득량 증가
-item_neutral_rare_03,gold_gain_percent,add,7,player,,무: 골드 획득량 증가
-item_neutral_rare_04,luck,add,8,player,,무: 행운 증가
-item_neutral_rare_05,reroll_cost_percent,add,-9,player,,무: 리롤 비용 감소
-item_neutral_rare_06,exp_gain_percent,add,5,player,,무: 경험치 획득량 증가
-item_neutral_rare_07,gold_gain_percent,add,6,player,,무: 골드 획득량 증가
-item_neutral_rare_08,luck,add,7,player,,무: 행운 증가
 item_neutral_epic_01,luck,add,10,player,,무: 행운 증가
 item_neutral_epic_01,reroll_cost_percent,add,-5,player,while_has_shield,무: 보호막 보유 중 리롤 비용 감소
+item_neutral_epic_01,neutral_power,add,2,player,,무 속성 계수 +2
 item_neutral_epic_02,luck,add,11,player,,무: 행운 증가
 item_neutral_epic_02,reroll_cost_percent,add,-6,player,,무: 리롤 비용 감소
+item_neutral_epic_02,neutral_power,add,2,player,,무 속성 계수 +2
 item_neutral_epic_03,luck,add,12,player,,무: 행운 증가
 item_neutral_epic_03,reroll_cost_percent,add,-6,player,,무: 리롤 비용 감소
 item_neutral_epic_04,luck,add,13,player,,무: 행운 증가
 item_neutral_epic_04,reroll_cost_percent,add,-7,player,,무: 리롤 비용 감소
+item_neutral_epic_04,water_power,add,2,player,,물 속성 계수 +2
 item_neutral_epic_05,luck,add,14,player,,무: 행운 증가
 item_neutral_epic_05,reroll_cost_percent,add,-7,player,,무: 리롤 비용 감소
+item_neutral_epic_05,lightning_power,add,2,player,,번개 속성 계수 +2
 item_neutral_legendary_01,luck,add,16,player,while_has_shield,무: 보호막 보유 중 행운 증가
 item_neutral_legendary_01,gold_gain_percent,add,18,player,,무: 골드 획득량 증가
 item_neutral_legendary_01,reroll_cost_percent,add,-8,player,,무: 리롤 비용 감소
+item_neutral_legendary_01,neutral_power,add,3,player,,무 속성 계수 +3
 item_neutral_legendary_02,luck,add,17,player,,무: 행운 증가
 item_neutral_legendary_02,gold_gain_percent,add,19,player,,무: 골드 획득량 증가
 item_neutral_legendary_02,reroll_cost_percent,add,-9,player,,무: 리롤 비용 감소
-item_curse_common_01,attack,add,-1,player,,저주: 공격력 감소
-item_curse_common_02,skill_damage_percent,add,-2,player,,저주: 스킬 피해 감소
-item_curse_common_03,attack_speed_percent,add,-3,player,,저주: 공격 속도 감소
-item_curse_common_04,move_speed_percent,add,-4,player,,저주: 이동 속도 감소
-item_curse_common_05,max_hp,add,-2,player,,저주: 최대 체력 감소
-item_curse_common_06,evasion,add,-2,player,,저주: 회피율 감소
-item_curse_common_07,attack,add,-3,player,,저주: 공격력 감소
-item_curse_common_08,skill_damage_percent,add,-4,player,,저주: 스킬 피해 감소
-item_curse_common_09,attack_speed_percent,add,-1,player,,저주: 공격 속도 감소
-item_curse_common_10,move_speed_percent,add,-2,player,,저주: 이동 속도 감소
-item_curse_rare_01,attack,add,-5,player,,저주: 공격력 감소
-item_curse_rare_01,cooldown_reduction_percent,add,-3,player,,저주: 쿨타임 감소 효율 저하
-item_curse_rare_02,skill_damage_percent,add,-6,player,,저주: 스킬 피해 감소
-item_curse_rare_02,casting_speed_percent,add,-6,player,,저주: 시전 속도 감소
-item_curse_rare_03,attack_speed_percent,add,-7,player,,저주: 공격 속도 감소
-item_curse_rare_03,damage_taken_percent,add,4,player,,저주: 받는 피해 증가
-item_curse_rare_04,move_speed_percent,add,-8,player,,저주: 이동 속도 감소
-item_curse_rare_04,shield,add,-16,player,,저주: 보호막 감소
-item_curse_rare_05,max_hp,add,-18,player,,저주: 최대 체력 감소
-item_curse_rare_05,crit_chance_percent,add,-5,player,,저주: 치명타 확률 감소
-item_curse_rare_06,evasion,add,-5,player,,저주: 회피율 감소
-item_curse_rare_06,crit_damage_percent,add,-6,player,,저주: 치명타 피해 감소
-item_curse_rare_07,attack,add,-6,player,,저주: 공격력 감소
-item_curse_rare_07,cooldown_reduction_percent,add,-3,player,,저주: 쿨타임 감소 효율 저하
-item_curse_rare_08,skill_damage_percent,add,-7,player,,저주: 스킬 피해 감소
-item_curse_rare_08,casting_speed_percent,add,-7,player,,저주: 시전 속도 감소
-item_curse_epic_01,attack,add,-10,player,while_low_hp,저주: 체력 50% 이하일 때 공격력 감소
-item_curse_epic_01,cooldown_reduction_percent,add,-5,player,,저주: 쿨타임 감소 효율 저하
-item_curse_epic_02,skill_damage_percent,add,-11,player,,저주: 스킬 피해 감소
-item_curse_epic_02,casting_speed_percent,add,-11,player,,저주: 시전 속도 감소
-item_curse_epic_03,attack_speed_percent,add,-12,player,,저주: 공격 속도 감소
-item_curse_epic_03,damage_taken_percent,add,6,player,,저주: 받는 피해 증가
-item_curse_epic_04,move_speed_percent,add,-13,player,,저주: 이동 속도 감소
-item_curse_epic_04,shield,add,-26,player,,저주: 보호막 감소
-item_curse_epic_05,max_hp,add,-28,player,,저주: 최대 체력 감소
-item_curse_epic_05,crit_chance_percent,add,-7,player,,저주: 치명타 확률 감소
-item_curse_legendary_01,attack,add,-16,player,,저주: 공격력 감소
-item_curse_legendary_01,cooldown_reduction_percent,add,-8,player,,저주: 쿨타임 감소 효율 저하
-item_curse_legendary_01,final_damage_multiplier,multiply,0.9,player,while_low_hp,저주: 체력 50% 이하일 때 최종 피해 배율 감소
-item_curse_legendary_02,skill_damage_percent,add,-17,player,,저주: 스킬 피해 감소
-item_curse_legendary_02,casting_speed_percent,add,-17,player,,저주: 시전 속도 감소
-item_curse_legendary_02,final_damage_multiplier,multiply,0.9,player,,저주: 최종 피해 배율 감소
+item_neutral_legendary_02,neutral_power,add,2,player,,무 속성 계수 +2
+item_neutral_rare_01,reroll_cost_percent,add,-5,player,,무: 리롤 비용 감소
+item_neutral_rare_02,exp_gain_percent,add,6,player,,무: 경험치 획득량 증가
+item_neutral_rare_02,neutral_power,add,1,player,,무 속성 계수 +1
+item_neutral_rare_03,gold_gain_percent,add,7,player,,무: 골드 획득량 증가
+item_neutral_rare_04,luck,add,8,player,,무: 행운 증가
+item_neutral_rare_04,water_power,add,1,player,,물 속성 계수 +1
+item_neutral_rare_05,reroll_cost_percent,add,-9,player,,무: 리롤 비용 감소
+item_neutral_rare_06,exp_gain_percent,add,5,player,,무: 경험치 획득량 증가
+item_neutral_rare_06,poison_power,add,1,player,,독 속성 계수 +1
+item_neutral_rare_07,gold_gain_percent,add,6,player,,무: 골드 획득량 증가
+item_neutral_rare_08,luck,add,7,player,,무: 행운 증가
+item_neutral_rare_08,neutral_power,add,1,player,,무 속성 계수 +1
+item_poison_common_01,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
+item_poison_common_02,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
+item_poison_common_03,cooldown_reduction_percent,add,2,player,,독: 쿨타임 감소
+item_poison_common_04,area_percent,add,4,player,,독: 장판 범위 증가
+item_poison_common_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_poison_common_05,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
+item_poison_common_06,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
+item_poison_common_07,cooldown_reduction_percent,add,2,player,,독: 쿨타임 감소
+item_poison_common_08,area_percent,add,4,player,,독: 장판 범위 증가
+item_poison_common_08,nature_power,add,1,player,,풀 속성 계수 +1
+item_poison_common_09,damage_over_time_percent,add,1,player,,독: 지속 피해 증가
+item_poison_common_10,skill_damage_percent,add,2,player,,독: 스킬 피해 증가
+item_poison_epic_01,cooldown_reduction_percent,add,5,player,while_low_hp,독: 체력 50% 이하일 때 쿨타임 감소
+item_poison_epic_01,area_percent,add,5,player,,독: 장판 범위 증가
+item_poison_epic_01,poison_power,add,2,player,,독 속성 계수 +2
+item_poison_epic_02,damage_over_time_percent,add,11,player,,독: 지속 피해 증가
+item_poison_epic_02,skill_damage_percent,add,6,player,,독: 스킬 피해 증가
+item_poison_epic_02,poison_power,add,2,player,,독 속성 계수 +2
+item_poison_epic_03,cooldown_reduction_percent,add,6,player,,독: 쿨타임 감소
+item_poison_epic_03,area_percent,add,6,player,,독: 장판 범위 증가
+item_poison_epic_04,damage_over_time_percent,add,13,player,,독: 지속 피해 증가
+item_poison_epic_04,skill_damage_percent,add,7,player,,독: 스킬 피해 증가
+item_poison_epic_04,nature_power,add,2,player,,풀 속성 계수 +2
+item_poison_epic_05,cooldown_reduction_percent,add,7,player,,독: 쿨타임 감소
+item_poison_epic_05,area_percent,add,7,player,,독: 장판 범위 증가
+item_poison_epic_05,poison_power,add,2,player,,독 속성 계수 +2
+item_poison_legendary_01,damage_over_time_percent,add,16,player,while_low_hp,독: 체력 50% 이하일 때 지속 피해 증가
+item_poison_legendary_01,skill_damage_percent,add,8,player,,독: 스킬 피해 증가
+item_poison_legendary_01,cooldown_reduction_percent,add,9,player,,독: 쿨타임 감소
+item_poison_legendary_01,poison_power,add,3,player,,독 속성 계수 +3
+item_poison_legendary_02,area_percent,add,17,player,,독: 장판 범위 증가
+item_poison_legendary_02,damage_over_time_percent,add,9,player,,독: 지속 피해 증가
+item_poison_legendary_02,skill_damage_percent,add,19,player,,독: 스킬 피해 증가
+item_poison_legendary_02,poison_power,add,2,player,,독 속성 계수 +2
+item_poison_rare_01,cooldown_reduction_percent,add,3,player,,독: 쿨타임 감소
+item_poison_rare_02,area_percent,add,7,player,,독: 장판 범위 증가
+item_poison_rare_02,poison_power,add,1,player,,독 속성 계수 +1
+item_poison_rare_03,damage_over_time_percent,add,8,player,,독: 지속 피해 증가
+item_poison_rare_04,skill_damage_percent,add,9,player,,독: 스킬 피해 증가
+item_poison_rare_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_poison_rare_05,cooldown_reduction_percent,add,5,player,,독: 쿨타임 감소
+item_poison_rare_06,area_percent,add,6,player,,독: 장판 범위 증가
+item_poison_rare_06,poison_power,add,1,player,,독 속성 계수 +1
+item_poison_rare_07,damage_over_time_percent,add,7,player,,독: 지속 피해 증가
+item_poison_rare_08,skill_damage_percent,add,8,player,,독: 스킬 피해 증가
+item_poison_rare_08,nature_power,add,1,player,,풀 속성 계수 +1
+item_water_common_01,max_hp,add,2,player,,물: 최대 체력 증가
+item_water_common_02,cooldown_reduction_percent,add,2,player,,물: 쿨타임 감소
+item_water_common_03,shield,add,6,player,,물: 보호막 증가
+item_water_common_04,max_hp,add,8,player,,물: 최대 체력 증가
+item_water_common_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_water_common_05,cooldown_reduction_percent,add,1,player,,물: 쿨타임 감소
+item_water_common_06,shield,add,4,player,,물: 보호막 증가
+item_water_common_07,max_hp,add,6,player,,물: 최대 체력 증가
+item_water_common_08,cooldown_reduction_percent,add,4,player,,물: 쿨타임 감소
+item_water_common_08,nature_power,add,1,player,,풀 속성 계수 +1
+item_water_common_09,shield,add,2,player,,물: 보호막 증가
+item_water_common_10,max_hp,add,4,player,,물: 최대 체력 증가
+item_water_epic_01,max_hp,add,20,player,while_low_hp,물: 체력 50% 이하일 때 최대 체력 증가
+item_water_epic_01,cooldown_reduction_percent,add,5,player,,물: 쿨타임 감소
+item_water_epic_01,water_power,add,2,player,,물 속성 계수 +2
+item_water_epic_02,max_hp,add,22,player,,물: 최대 체력 증가
+item_water_epic_02,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
+item_water_epic_02,water_power,add,2,player,,물 속성 계수 +2
+item_water_epic_03,max_hp,add,24,player,,물: 최대 체력 증가
+item_water_epic_03,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
+item_water_epic_04,max_hp,add,26,player,,물: 최대 체력 증가
+item_water_epic_04,cooldown_reduction_percent,add,7,player,,물: 쿨타임 감소
+item_water_epic_04,nature_power,add,2,player,,풀 속성 계수 +2
+item_water_epic_05,max_hp,add,28,player,,물: 최대 체력 증가
+item_water_epic_05,cooldown_reduction_percent,add,7,player,,물: 쿨타임 감소
+item_water_epic_05,water_power,add,2,player,,물 속성 계수 +2
+item_water_legendary_01,max_hp,add,32,player,,물: 최대 체력 증가
+item_water_legendary_01,shield,add,36,player,,물: 보호막 증가
+item_water_legendary_01,cooldown_reduction_percent,add,8,player,while_has_shield,물: 보호막 보유 중 쿨타임 감소
+item_water_legendary_01,water_power,add,3,player,,물 속성 계수 +3
+item_water_legendary_02,max_hp,add,34,player,,물: 최대 체력 증가
+item_water_legendary_02,shield,add,38,player,,물: 보호막 증가
+item_water_legendary_02,cooldown_reduction_percent,add,9,player,,물: 쿨타임 감소
+item_water_legendary_02,water_power,add,2,player,,물 속성 계수 +2
+item_water_rare_01,cooldown_reduction_percent,add,5,player,,물: 쿨타임 감소
+item_water_rare_02,shield,add,12,player,,물: 보호막 증가
+item_water_rare_02,water_power,add,1,player,,물 속성 계수 +1
+item_water_rare_03,max_hp,add,14,player,,물: 최대 체력 증가
+item_water_rare_04,cooldown_reduction_percent,add,8,player,,물: 쿨타임 감소
+item_water_rare_04,nature_power,add,1,player,,풀 속성 계수 +1
+item_water_rare_05,shield,add,18,player,,물: 보호막 증가
+item_water_rare_06,max_hp,add,10,player,,물: 최대 체력 증가
+item_water_rare_06,water_power,add,1,player,,물 속성 계수 +1
+item_water_rare_07,cooldown_reduction_percent,add,6,player,,물: 쿨타임 감소
+item_water_rare_08,shield,add,14,player,,물: 보호막 증가
+item_water_rare_08,nature_power,add,1,player,,풀 속성 계수 +1

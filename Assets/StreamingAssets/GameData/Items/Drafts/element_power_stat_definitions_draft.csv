@@ -1,0 +1,10 @@
+stat_id,display_name,stat_group,value_type,stack_rule,min_value,max_value,description
+fire_power,불 속성 계수,element_power,flat,additive,0,,불 속성 스킬 추가 피해 계산에 사용
+water_power,물 속성 계수,element_power,flat,additive,0,,물 속성 스킬 추가 피해 계산에 사용
+nature_power,풀 속성 계수,element_power,flat,additive,0,,풀 속성 스킬 추가 피해 계산에 사용
+earth_power,땅 속성 계수,element_power,flat,additive,0,,땅 속성 스킬 추가 피해 계산에 사용
+lightning_power,번개 속성 계수,element_power,flat,additive,0,,번개 속성 스킬 추가 피해 계산에 사용
+poison_power,독 속성 계수,element_power,flat,additive,0,,독 속성 스킬 추가 피해 계산에 사용
+dark_power,어둠 속성 계수,element_power,flat,additive,0,,어둠 속성 스킬 추가 피해 계산에 사용
+neutral_power,무 속성 계수,element_power,flat,additive,0,,무 속성 스킬 추가 피해 계산에 사용
+curse_power,저주 속성 계수,element_power,flat,additive,0,,저주 속성 스킬 추가 피해 계산에 사용

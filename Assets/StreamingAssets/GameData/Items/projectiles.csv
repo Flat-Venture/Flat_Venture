@@ -1,9 +1,9 @@
 ﻿projectile_id,display_name,move_type,spawn_pattern,speed,damage_multiplier,pierce_count,split_count,split_angle,on_hit_action_id,next_projectile_id,description
-proj_fire_extra_hit,불 추가타,straight,single,12,0.8,1,0,0,,,일자로 날아가며 1회 관통
+proj_fire_extra_hit,추가타,straight,single,12,0.8,1,0,0,,,일자로 날아가며 1회 관통
 proj_split_on_hit,분열 탄환,straight,single,9,0.7,0,3,25,spawn_projectile,proj_split_child,적중 시 자식 투사체 3개 생성
 proj_split_child,분열 자탄,straight,fan,10,0.4,0,0,0,,,분열 후 퍼져나가는 자식 투사체
-proj_fire_pierce,화염 관통탄,straight,single,12,0.8,999,0,0,,,일자로 날아가며 사실상 무제한 관통
-proj_explosive_fireball,폭발 화염구,straight,single,9,1,0,0,0,area_damage,,적중 시 주변 폭발
+proj_fire_pierce,관통탄,straight,single,12,0.8,999,0,0,,,일자로 날아가며 사실상 무제한 관통
+proj_explosive_fireball,폭발구,straight,single,9,1,0,0,0,area_damage,,적중 시 주변 폭발
 proj_wind_fan,바람 칼날,straight,fan,14,0.5,0,0,0,,,부채꼴로 여러 발 발사되는 바람 투사체
 proj_random_spark,랜덤 불꽃,straight,random,11,0.4,0,0,0,,,시드 랜덤 각도로 여러 발 발사되는 불꽃
 proj_curve_seed,휘는 씨앗,curve,single,8,0.9,0,0,0,,,곡선 이동 수치는 코드 또는 SO 기본값 사용

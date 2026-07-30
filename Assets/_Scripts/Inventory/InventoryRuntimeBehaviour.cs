@@ -215,6 +215,41 @@ namespace FlatVenture.Inventory
             return StatResult != null && StatResult.MultiplierValues.ContainsKey(statId);
         }
 
+        // element_id에 해당하는 속성 계수 스탯 값을 반환합니다.
+        public float GetElementPowerValue(string elementId)
+        {
+            return GetAdditiveStatValue(GetElementPowerStatId(elementId));
+        }
+
+        // element_id에 해당하는 속성 계수 스탯이 있으면 값을 반환합니다.
+        public bool TryGetElementPowerValue(string elementId, out float value)
+        {
+            return TryGetAdditiveStatValue(GetElementPowerStatId(elementId), out value);
+        }
+
+        // element_id를 item_stats.csv에서 사용하는 속성 계수 stat_id로 변환합니다.
+        public static string GetElementPowerStatId(string elementId)
+        {
+            if (string.IsNullOrWhiteSpace(elementId))
+            {
+                return "neutral_power";
+            }
+
+            switch (elementId)
+            {
+                case "fire": return "fire_power";
+                case "water": return "water_power";
+                case "nature": return "nature_power";
+                case "earth": return "earth_power";
+                case "lightning": return "lightning_power";
+                case "poison": return "poison_power";
+                case "dark": return "dark_power";
+                case "curse": return "curse_power";
+                case "neutral": return "neutral_power";
+                default: return elementId + "_power";
+            }
+        }
+
         // 인벤토리와 골드를 초기화합니다.
         public void ClearInventoryForTest()
         {
